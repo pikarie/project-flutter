@@ -1,7 +1,7 @@
 # Project Flutter — Game Design Document
 **Version:** 1.0
 **Date:** 2026-02-08
-**Engine:** Godot 4.x (GDScript)
+**Engine:** Godot 4.x (C# / .NET 8)
 **Developer:** Karianne (solo)
 **Target platforms:** Windows (Steam), potential Linux/Mac
 **Price point:** $4.99–$6.99
@@ -167,11 +167,7 @@ PHOTOGRAPH to document → EARN nectar → BUY new seeds/zones → REPEAT
   - Introduces: water lily, cattail, iris, pond infrastructure
   - New insects: dragonfly, damselfly, water strider, pond skater
 
-- **Zone 4 — Night Garden (5x5 grid)**
-  - Unlock cost: 200 nectar + 18 journal entries
-  - Introduces: moonflower, evening primrose, night-blooming jasmine, white birch
-  - New insects: luna moth, sphinx moth, fireflies, crickets, owl moth
-
+- Night-blooming plants and nocturnal insects appear in any zone during the night cycle
 - Player can switch between zones freely once unlocked
 - Each zone has unique background art and ambient sounds
 - Some insects can ONLY appear in specific zones
@@ -199,11 +195,11 @@ PHOTOGRAPH to document → EARN nectar → BUY new seeds/zones → REPEAT
 | 13 | Iris | Pond | Uncommon | Damselfly, butterflies | No |
 | 14 | Lotus | Pond | Rare | Dragonfly (rare variant) | No |
 | 15 | Passionflower | Pond | Rare | Gulf Fritillary (exclusive) | No |
-| 16 | Moonflower | Night | Uncommon | Sphinx Moth (exclusive) | Yes |
-| 17 | Evening Primrose | Night | Uncommon | Moths, Fireflies | Yes |
-| 18 | Night-Blooming Jasmine | Night | Rare | Luna Moth | Yes |
-| 19 | White Birch (2x2) | Night | Rare | Luna Moth (required pair with Jasmine) | Yes |
-| 20 | Switchgrass | Night | Common | Crickets, Fireflies | Yes |
+| 16 | Moonflower | Starter | Uncommon | Sphinx Moth (exclusive) | Yes |
+| 17 | Evening Primrose | Starter | Uncommon | Moths, Fireflies | Yes |
+| 18 | Night-Blooming Jasmine | Meadow | Rare | Luna Moth | Yes |
+| 19 | White Birch (2x2) | Meadow | Rare | Luna Moth (required pair with Jasmine) | Yes |
+| 20 | Switchgrass | Pond | Common | Crickets, Fireflies | Yes |
 
 ### 5.2 Insects (25 total)
 
@@ -226,12 +222,12 @@ PHOTOGRAPH to document → EARN nectar → BUY new seeds/zones → REPEAT
 | 15 | Pond Skater | Pond | Common | Both | Water tiles present | Easy |
 | 16 | Gulf Fritillary | Pond | Rare | Day | Passionflower (exclusive) | Hard |
 | 17 | Emperor Dragonfly | Pond | Rare | Day | Lotus + 2 water tiles | Hard |
-| 18 | Sphinx Moth | Night | Uncommon | Night | Moonflower (exclusive) | Medium |
-| 19 | Firefly | Night | Uncommon | Night | Evening Primrose + Switchgrass | Medium (timing) |
-| 20 | Cricket | Night | Common | Night | Switchgrass, any grass | Easy (audio first) |
-| 21 | Luna Moth | Night | Rare | Night | Night-Blooming Jasmine + White Birch | Hard |
-| 22 | Owl Moth | Night | Uncommon | Night | Any night-blooming flower | Medium |
-| 23 | Atlas Moth | Night | Very Rare | Night | All 4 night plants blooming | Very Hard |
+| 18 | Sphinx Moth | Starter | Uncommon | Night | Moonflower (exclusive) | Medium |
+| 19 | Firefly | Pond | Uncommon | Night | Evening Primrose + Switchgrass | Medium (timing) |
+| 20 | Cricket | Pond | Common | Night | Switchgrass, any grass | Easy (audio first) |
+| 21 | Luna Moth | Meadow | Rare | Night | Night-Blooming Jasmine + White Birch | Hard |
+| 22 | Owl Moth | Starter | Uncommon | Night | Any night-blooming flower | Medium |
+| 23 | Atlas Moth | Meadow | Very Rare | Night | All 4 night plants blooming | Very Hard |
 | 24 | Jewel Beetle | Meadow | Rare | Day | Sunflower + Goldenrod cluster | Hard |
 | 25 | Monarch Migration | Meadow | Very Rare | Day | 3+ Milkweed + Goldenrod (event) | Special |
 
@@ -245,7 +241,7 @@ PHOTOGRAPH to document → EARN nectar → BUY new seeds/zones → REPEAT
 | Insect garden sprites (25) | 25 | ~32x48 | Small, animated (2-4 frames idle) |
 | Insect journal illustrations (25) | 25 | ~256x256 | Detailed, the "reward" art |
 | Insect silhouettes (25) | 25 | ~256x256 | Grey versions of journal art |
-| Zone backgrounds (4) | 4 | Full screen | Starter, Meadow, Pond, Night |
+| Zone backgrounds (3) | 3 | Full screen | Starter, Meadow, Pond |
 | Tile sprites (soil, grass, water, path) | ~15 | ~64x64 | Reusable across zones |
 | UI elements (buttons, frames, icons) | ~20 | Various | Journal book, seed shop, etc. |
 | Cursor art (3 modes) | 3 | ~32x32 | Trowel, watering can, camera |
@@ -285,20 +281,20 @@ project-flutter/
 ├── scenes/
 │   ├── main/
 │   │   ├── Main.tscn              # Main game scene, manages zone switching
-│   │   └── Main.gd
+│   │   └── Main.cs
 │   ├── garden/
 │   │   ├── Garden.tscn            # Garden grid scene (instanced per zone)
 │   │   ├── GardenTile.tscn        # Individual tile
 │   │   └── GardenCamera.tscn      # Camera with zoom/pan
 │   ├── plants/
 │   │   ├── Plant.tscn             # Base plant scene
-│   │   └── Plant.gd               # Growth logic, watering, harvesting
+│   │   └── Plant.cs               # Growth logic, watering, harvesting
 │   ├── insects/
 │   │   ├── Insect.tscn            # Base insect scene
-│   │   └── Insect.gd              # Movement, behavior patterns, slot system
+│   │   └── Insect.cs              # Movement, behavior patterns, slot system
 │   ├── photography/
 │   │   ├── PhotoMode.tscn         # Photo circle overlay
-│   │   └── PhotoMode.gd           # Focus mechanic, quality calculation
+│   │   └── PhotoMode.cs           # Focus mechanic, quality calculation
 │   └── ui/
 │       ├── Journal.tscn           # Field journal interface
 │       ├── SeedShop.tscn          # Seed purchasing UI
@@ -310,17 +306,17 @@ project-flutter/
 │   └── zone_data/                 # .tres Resource files for zone configs
 ├── scripts/
 │   ├── autoload/
-│   │   ├── GameManager.gd         # Global state, save/load
-│   │   ├── TimeManager.gd         # Day/night cycle, speed control
-│   │   └── JournalManager.gd      # Discovery tracking, completion %
+│   │   ├── GameManager.cs         # Global state, save/load
+│   │   ├── TimeManager.cs         # Day/night cycle, speed control
+│   │   └── JournalManager.cs      # Discovery tracking, completion %
 │   ├── data/
-│   │   ├── PlantData.gd           # Plant Resource class
-│   │   ├── InsectData.gd          # Insect Resource class
-│   │   └── ZoneData.gd            # Zone Resource class
+│   │   ├── PlantData.cs           # Plant Resource class
+│   │   ├── InsectData.cs          # Insect Resource class
+│   │   └── ZoneData.cs            # Zone Resource class
 │   └── systems/
-│       ├── SpawnSystem.gd         # Insect spawn logic, slot management
-│       ├── NectarEconomy.gd       # Currency management
-│       └── PhotoSystem.gd         # Photo quality calculation
+│       ├── SpawnSystem.cs         # Insect spawn logic, slot management
+│       ├── NectarEconomy.cs       # Currency management
+│       └── PhotoSystem.cs         # Photo quality calculation
 ├── art/
 │   ├── plants/                    # Growth stage sprites
 │   ├── insects/                   # Garden sprites + journal illustrations
@@ -342,50 +338,54 @@ project-flutter/
 - This makes post-launch content additions trivial
 
 ### 7.3 PlantData Resource Example
-```gdscript
-class_name PlantData extends Resource
-
-@export var id: String                    # "lavender"
-@export var display_name_en: String       # "Lavender"
-@export var display_name_fr: String       # "Lavande"
-@export var zone: String                  # "starter"
-@export var rarity: String                # "common"
-@export var seed_cost: int                # 5
-@export var nectar_yield: int             # 3
-@export var growth_cycles: int            # 1
-@export var insect_slots: int             # 2
-@export var night_blooming: bool          # false
-@export var growth_sprites: Array[Texture2D]  # 4 stages
-@export var attracted_insects: Array[String]   # ["honeybee", "bumblebee"]
+```csharp
+[GlobalClass]
+public partial class PlantData : Resource
+{
+    [Export] public string Id { get; set; }                    // "lavender"
+    [Export] public string DisplayNameEn { get; set; }         // "Lavender"
+    [Export] public string DisplayNameFr { get; set; }         // "Lavande"
+    [Export] public string Zone { get; set; }                  // "starter"
+    [Export] public string Rarity { get; set; }                // "common"
+    [Export] public int SeedCost { get; set; }                 // 5
+    [Export] public int NectarYield { get; set; }              // 3
+    [Export] public int GrowthCycles { get; set; }             // 1
+    [Export] public int InsectSlots { get; set; }              // 2
+    [Export] public bool NightBlooming { get; set; }           // false
+    [Export] public Texture2D[] GrowthSprites { get; set; }    // 4 stages
+    [Export] public string[] AttractedInsects { get; set; }    // ["honeybee", "bumblebee"]
+}
 ```
 
 ### 7.4 InsectData Resource Example
-```gdscript
-class_name InsectData extends Resource
-
-@export var id: String                    # "monarch_butterfly"
-@export var display_name_en: String       # "Monarch Butterfly"
-@export var display_name_fr: String       # "Papillon Monarque"
-@export var zone: String                  # "meadow"
-@export var rarity: String                # "uncommon"
-@export var time_of_day: String           # "day" / "night" / "both"
-@export var required_plants: Array[String] # ["milkweed"]
-@export var spawn_weight: float           # 0.3 (lower = rarer)
-@export var visit_duration_min: float     # 60.0 (seconds real-time)
-@export var visit_duration_max: float     # 180.0
-@export var photo_difficulty: String      # "medium"
-@export var movement_pattern: String      # "flutter" / "hover" / "crawl" / "erratic"
-@export var movement_speed: float         # 30.0 (pixels/sec)
-@export var pause_frequency: float        # 0.4 (chance to pause each cycle)
-@export var pause_duration: float         # 2.0 (seconds)
-@export var garden_sprite: SpriteFrames   # Animated sprite for garden
-@export var journal_illustration: Texture2D  # Large detailed art
-@export var journal_silhouette: Texture2D    # Grey silhouette
-@export var journal_text_en: String       # Fun fact text
-@export var journal_text_fr: String
-@export var hint_text_en: String          # Discovery hint
-@export var hint_text_fr: String
-@export var ambient_sound: AudioStream    # Bee buzz, cricket chirp, etc.
+```csharp
+[GlobalClass]
+public partial class InsectData : Resource
+{
+    [Export] public string Id { get; set; }                    // "monarch_butterfly"
+    [Export] public string DisplayNameEn { get; set; }         // "Monarch Butterfly"
+    [Export] public string DisplayNameFr { get; set; }         // "Papillon Monarque"
+    [Export] public string Zone { get; set; }                  // "meadow"
+    [Export] public string Rarity { get; set; }                // "uncommon"
+    [Export] public string TimeOfDay { get; set; }             // "day" / "night" / "both"
+    [Export] public string[] RequiredPlants { get; set; }      // ["milkweed"]
+    [Export] public float SpawnWeight { get; set; }            // 0.3 (lower = rarer)
+    [Export] public float VisitDurationMin { get; set; }       // 60.0 (seconds real-time)
+    [Export] public float VisitDurationMax { get; set; }       // 180.0
+    [Export] public string PhotoDifficulty { get; set; }       // "medium"
+    [Export] public string MovementPattern { get; set; }       // "flutter" / "hover" / "crawl" / "erratic"
+    [Export] public float MovementSpeed { get; set; }          // 30.0 (pixels/sec)
+    [Export] public float PauseFrequency { get; set; }         // 0.4 (chance to pause each cycle)
+    [Export] public float PauseDuration { get; set; }          // 2.0 (seconds)
+    [Export] public SpriteFrames GardenSprite { get; set; }    // Animated sprite for garden
+    [Export] public Texture2D JournalIllustration { get; set; } // Large detailed art
+    [Export] public Texture2D JournalSilhouette { get; set; }   // Grey silhouette
+    [Export] public string JournalTextEn { get; set; }         // Fun fact text
+    [Export] public string JournalTextFr { get; set; }
+    [Export] public string HintTextEn { get; set; }            // Discovery hint
+    [Export] public string HintTextFr { get; set; }
+    [Export] public AudioStream AmbientSound { get; set; }     // Bee buzz, cricket chirp, etc.
+}
 ```
 
 ### 7.5 Save System
@@ -434,10 +434,9 @@ class_name InsectData extends Resource
 - [ ] Nectar currency system (harvest flowers, earn nectar)
 - [ ] Seed shop UI (buy seeds with nectar)
 - [ ] Zone unlock system (nectar cost + journal entry requirements)
-- [ ] Build all 4 zones with proper backgrounds
+- [ ] Build all 3 zones with proper backgrounds
 - [ ] Zone switching UI/navigation
 - [ ] Pond zone water tiles (special infrastructure)
-- [ ] Night garden mechanics (night-blooming plants)
 - **Deliverable:** Full progression loop from starter to all zones
 
 ### Sprint 5 — Content & Art (Week 9-10, ~40h)
@@ -473,7 +472,7 @@ class_name InsectData extends Resource
 
 ## 9. Scope Rules (TAPE TO MONITOR)
 
-1. **20 plants. 25 insects. 4 zones. No more at launch.**
+1. **20 plants. 25 insects. 3 zones. No more at launch.**
 2. **No dialogue. No story. No NPCs.** Just garden, journal, and insects.
 3. **No multiplayer.** Single-player only.
 4. **No procedural generation.** Fixed zones, fixed grid sizes.
@@ -502,25 +501,25 @@ class_name InsectData extends Resource
 
 ## 11. Config Variables (Easy to Tweak)
 
-```gdscript
-# TimeManager.gd
-const DAY_CYCLE_DURATION := 300.0    # seconds per full cycle (5 min default)
-const DAWN_RATIO := 0.05             # % of cycle that is dawn
-const DUSK_RATIO := 0.05             # % of cycle that is dusk
+```csharp
+// TimeManager.cs
+public const float DayCycleDuration = 300.0f;    // seconds per full cycle (5 min default)
+public const float DawnRatio = 0.05f;             // % of cycle that is dawn
+public const float DuskRatio = 0.05f;             // % of cycle that is dusk
 
-# SpawnSystem.gd
-const SPAWN_CHECK_INTERVAL := 5.0    # seconds between spawn attempts
-const MAX_INSECTS_PER_ZONE := 10     # population cap
-const DESPAWN_CHECK_INTERVAL := 10.0 # seconds between departure checks
+// SpawnSystem.cs
+public const float SpawnCheckInterval = 5.0f;     // seconds between spawn attempts
+public const int MaxInsectsPerZone = 10;           // population cap
+public const float DespawnCheckInterval = 10.0f;   // seconds between departure checks
 
-# NectarEconomy.gd
-const HARVEST_NECTAR_BASE := 3       # nectar per common plant harvest
-const REGROW_CYCLES := 1             # cycles to re-bloom after harvest
+// NectarEconomy.cs
+public const int HarvestNectarBase = 3;            // nectar per common plant harvest
+public const int RegrowCycles = 1;                 // cycles to re-bloom after harvest
 
-# PhotoSystem.gd
-const FOCUS_DURATION := 1.5          # seconds to close the circle
-const THREE_STAR_RADIUS := 0.15      # % of circle radius for perfect shot
-const TWO_STAR_RADIUS := 0.40        # % for 2-star
+// PhotoSystem.cs
+public const float FocusDuration = 1.5f;           // seconds to close the circle
+public const float ThreeStarRadius = 0.15f;        // % of circle radius for perfect shot
+public const float TwoStarRadius = 0.40f;          // % for 2-star
 ```
 
 ---

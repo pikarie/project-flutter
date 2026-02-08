@@ -20,6 +20,10 @@
 ## Maintenance
 - Supprimer automatiquement les fichiers `nul` (artefacts Windows) dès qu'ils apparaissent.
 
+## Code
+- Utiliser **C#** (dernière version supportée par Godot, soit C# 12 / .NET 8).
+- Ne JAMAIS utiliser GDScript.
+
 ## Langue
 - Communiquer en français.
 - Le code et les commits sont en anglais.
