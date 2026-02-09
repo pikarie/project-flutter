@@ -1,0 +1,33 @@
+Claude prompts
+{
+Peux-tu générer un nom de commit pour les pending changes actuel?
+Regarde les penging changes et génère un message pour ceux ce qui n'est pas encore commit. Tu peux aussi mettre plusieurs ligne dans le commit pour énumérer au besoin.
+}
+
+2026-02-08 2.25
+{
+	-1.25 + 1.0
+	-Search for micro game concepts that can be start and completed in only a few weeks. 
+	-I want to do the full Steam release of a game loop.
+	-Brainstorm with Claude deep search and creation of GDD.md
+	-Create git repo
+	-Begin "Sprint 1"
+	-Finish "Sprint 1"
+	-Commmit
+	{
+		feat(garden): implement Sprint 1 core gameplay loop
+
+		- Add GardenGrid with 4x4 tiled grid and placeholder visuals (_Draw)
+		- Add planting, watering, growth and harvest cycle (left/right click)
+		- Add GardenCamera with WASD pan and mouse wheel zoom
+		- Add DayNightVisuals with CanvasModulate and tween transitions
+		- Add EventBus autoload for centralized signals
+		- Add CellState data class for per-cell garden state
+		- Add HUD with time display, nectar counter and speed controls (x1-x10)
+		- Add Plant scene with growth stages tied to TimeManager
+		- Update TimeManager: granular periods, string-based (C# pattern compat)
+		- Update GDD with 3-layer architecture and sprint 1 details
+		- Update project.godot: input actions, window override, autoloads
+		- Add sprint 1 technical blueprint reference document
+	}
+}

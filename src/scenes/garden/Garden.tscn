@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3 uid="uid://garden001"]
+
+[ext_resource type="Script" path="res://scenes/garden/GardenGrid.cs" id="1"]
+[ext_resource type="Script" path="res://scenes/garden/DayNightVisuals.cs" id="2"]
+
+[sub_resource type="TileSet" id="TileSet_placeholder"]
+tile_size = Vector2i(128, 128)
+
+[node name="Garden" type="Node2D"]
+
+[node name="DayNightVisuals" type="CanvasModulate" parent="."]
+script = ExtResource("2")
+
+[node name="GardenGrid" type="Node2D" parent="."]
+script = ExtResource("1")
+
+[node name="GroundLayer" type="TileMapLayer" parent="GardenGrid"]
+tile_set = SubResource("TileSet_placeholder")
+
+[node name="HoverPreview" type="Sprite2D" parent="GardenGrid"]
+modulate = Color(1, 1, 1, 0.5)
+visible = false
+
+[node name="Plants" type="Node2D" parent="GardenGrid"]

@@ -140,9 +140,10 @@ PHOTOGRAPH to document → EARN nectar → BUY new seeds/zones → REPEAT
 - Economy should feel **generous, not grindy** — a full garden of blooming flowers produces enough nectar passively (from periodic bonus drops?) to slowly progress even without active harvesting. Active harvesting just speeds things up.
 
 ### 4.7 Day/Night Cycle
-- **Configurable cycle duration** (default: ~5 minutes real-time per full day/night, adjustable via config variable `DAY_CYCLE_DURATION`)
-- **Fast-forward button** (x1, x2, x3 speed) for waiting periods (not sure about this)
-- **Visual transition:** gradual color shift, lighting changes, shadows
+- **Configurable cycle duration** (default: ~5 minutes real-time per full day/night, adjustable via config variable `DayCycleDuration`)
+- **Fast-forward button** (x1, x2, x3 speed) for waiting periods
+- **Visual transition:** CanvasModulate with smooth color tweening (Tween, sine easing)
+- **Time periods:** night → dawn → morning → noon → golden_hour → dusk → night
 - **Gameplay impact:**
   - **Daytime insects:** bees, butterflies, ladybugs, dragonflies
   - **Nighttime insects:** moths, fireflies, crickets, luna moth
@@ -283,9 +284,9 @@ project-flutter/
 │   │   ├── Main.tscn              # Main game scene, manages zone switching
 │   │   └── Main.cs
 │   ├── garden/
-│   │   ├── Garden.tscn            # Garden grid scene (instanced per zone)
-│   │   ├── GardenTile.tscn        # Individual tile
-│   │   └── GardenCamera.tscn      # Camera with zoom/pan
+│   │   ├── Garden.tscn            # Garden grid scene (TileMapLayer + Dictionary state)
+│   │   ├── GardenGrid.cs          # Grid manager: TileMapLayer rendering + CellState dictionary
+│   │   └── GardenCamera.cs        # Camera with zoom/pan
 │   ├── plants/
 │   │   ├── Plant.tscn             # Base plant scene
 │   │   └── Plant.cs               # Growth logic, watering, harvesting
@@ -308,11 +309,13 @@ project-flutter/
 │   ├── autoload/
 │   │   ├── GameManager.cs         # Global state, save/load
 │   │   ├── TimeManager.cs         # Day/night cycle, speed control
-│   │   └── JournalManager.cs      # Discovery tracking, completion %
+│   │   ├── JournalManager.cs      # Discovery tracking, completion %
+│   │   └── EventBus.cs            # Centralized signal bus
 │   ├── data/
 │   │   ├── PlantData.cs           # Plant Resource class
 │   │   ├── InsectData.cs          # Insect Resource class
-│   │   └── ZoneData.cs            # Zone Resource class
+│   │   ├── ZoneType.cs            # Zone enum (Starter, Meadow, Pond)
+│   │   └── CellState.cs           # Per-cell garden state
 │   └── systems/
 │       ├── SpawnSystem.cs         # Insect spawn logic, slot management
 │       ├── NectarEconomy.cs       # Currency management
@@ -332,7 +335,14 @@ project-flutter/
     └── fr.csv                     # French strings
 ```
 
-### 7.2 Key Data-Driven Design
+### 7.2 Architecture: 3-Layer Pattern
+- **TileMapLayer** for visual rendering (ground tiles, soil, water)
+- **Dictionary<Vector2I, CellState>** for per-cell game state (what's planted, growth stage, watered)
+- **Scene instances** (Plant.tscn, Insect.tscn) for entities with their own logic
+- **CanvasModulate** for day/night visual tinting (UI on separate CanvasLayer)
+- **`_UnhandledInput()`** for all game-world clicks (prevents UI click-through)
+
+### 7.3 Key Data-Driven Design
 - **All plant and insect data defined in Resource files (.tres)** — no hardcoding
 - Adding a new plant or insect = create a new .tres file + add art assets
 - This makes post-launch content additions trivial
@@ -504,8 +514,8 @@ public partial class InsectData : Resource
 ```csharp
 // TimeManager.cs
 public const float DayCycleDuration = 300.0f;    // seconds per full cycle (5 min default)
-public const float DawnRatio = 0.05f;             // % of cycle that is dawn
-public const float DuskRatio = 0.05f;             // % of cycle that is dusk
+// Time periods: night (<5.5h), dawn (5.5-7h), morning (7-10h),
+//               noon (10-14h), golden_hour (14-17h), dusk (17-19.5h), night (>19.5h)
 
 // SpawnSystem.cs
 public const float SpawnCheckInterval = 5.0f;     // seconds between spawn attempts

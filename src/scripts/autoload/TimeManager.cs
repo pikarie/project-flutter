@@ -2,55 +2,76 @@ using Godot;
 
 public partial class TimeManager : Node
 {
-	[Signal] public delegate void TimeOfDayChangedEventHandler(string timeOfDay);
-	[Signal] public delegate void CycleTickEventHandler(float normalizedTime);
+	[Signal] public delegate void HourPassedEventHandler(int hour);
+	[Signal] public delegate void TimeOfDayChangedEventHandler(string period);
 
 	public const float DayCycleDuration = 300.0f;
-	public const float DawnRatio = 0.05f;
-	public const float DuskRatio = 0.05f;
 
-	public float ElapsedTime { get; private set; }
 	public float SpeedMultiplier { get; private set; } = 1.0f;
-	public string CurrentTimeOfDay { get; private set; } = "day";
+	public float CurrentTimeNormalized { get; private set; } = 0.25f; // Start at morning (6h)
+	public string CurrentPeriod { get; private set; }
 	public bool Paused { get; set; }
+
+	private float _accumulatedTime;
+	private float _secondsPerGameMinute;
+	private int _lastHour = -1;
+
+	public override void _Ready()
+	{
+		_secondsPerGameMinute = DayCycleDuration / (24.0f * 60.0f);
+		CurrentPeriod = GetPeriod();
+	}
 
 	public override void _Process(double delta)
 	{
 		if (Paused) return;
 
-		ElapsedTime += (float)delta * SpeedMultiplier;
-		float normalized = (ElapsedTime % DayCycleDuration) / DayCycleDuration;
-		EmitSignal(SignalName.CycleTick, normalized);
-		UpdateTimeOfDay(normalized);
+		_accumulatedTime += (float)delta * SpeedMultiplier;
+		while (_accumulatedTime >= _secondsPerGameMinute)
+		{
+			_accumulatedTime -= _secondsPerGameMinute;
+			AdvanceMinute();
+		}
 	}
 
-	private void UpdateTimeOfDay(float normalized)
+	private void AdvanceMinute()
 	{
-		string newTime;
-		if (normalized < DawnRatio)
-			newTime = "dawn";
-		else if (normalized < 0.5f - DuskRatio)
-			newTime = "day";
-		else if (normalized < 0.5f + DuskRatio)
-			newTime = "dusk";
-		else
-			newTime = "night";
+		CurrentTimeNormalized += 1.0f / (24.0f * 60.0f);
+		if (CurrentTimeNormalized >= 1.0f) CurrentTimeNormalized -= 1.0f;
 
-		if (newTime != CurrentTimeOfDay)
+		int currentHour = (int)(CurrentTimeNormalized * 24.0f);
+		if (currentHour != _lastHour)
 		{
-			CurrentTimeOfDay = newTime;
-			EmitSignal(SignalName.TimeOfDayChanged, CurrentTimeOfDay);
+			_lastHour = currentHour;
+			EmitSignal(SignalName.HourPassed, currentHour);
 		}
+
+		var period = GetPeriod();
+		if (period != CurrentPeriod)
+		{
+			CurrentPeriod = period;
+			EmitSignal(SignalName.TimeOfDayChanged, CurrentPeriod);
+		}
+	}
+
+	public string GetPeriod()
+	{
+		float hour = CurrentTimeNormalized * 24.0f;
+		return hour switch
+		{
+			< 5.5f  => "night",
+			< 7.0f  => "dawn",
+			< 10.0f => "morning",
+			< 14.0f => "noon",
+			< 17.0f => "golden_hour",
+			< 19.5f => "dusk",
+			_       => "night"
+		};
 	}
 
 	public void SetSpeed(float multiplier) => SpeedMultiplier = multiplier;
 
-	public float GetNormalizedTime() =>
-		(ElapsedTime % DayCycleDuration) / DayCycleDuration;
+	public bool IsDaytime() => CurrentPeriod is "dawn" or "morning" or "noon" or "golden_hour";
 
-	public bool IsDaytime() =>
-		CurrentTimeOfDay is "day" or "dawn";
-
-	public bool IsNighttime() =>
-		CurrentTimeOfDay is "night" or "dusk";
+	public bool IsNighttime() => CurrentPeriod is "dusk" or "night";
 }
