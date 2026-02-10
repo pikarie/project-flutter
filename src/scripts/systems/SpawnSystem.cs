@@ -43,9 +43,10 @@ public partial class SpawnSystem : Node
 		// Population cap
 		if (_insectContainer.GetChildCount() >= MaxInsectsPerZone) return;
 
-		// Find blooming cells
+		// Find blooming cells with available insect slots
 		var bloomingCells = _gardenGrid.GetCells()
-			.Where(kv => kv.Value.CurrentState == CellState.State.Blooming)
+			.Where(kv => kv.Value.CurrentState == CellState.State.Blooming
+						 && kv.Value.HasAvailableSlot())
 			.ToList();
 
 		if (bloomingCells.Count == 0) return;
@@ -53,23 +54,32 @@ public partial class SpawnSystem : Node
 		// 40% quiet ticks for anticipation
 		if (_rng.Randf() > 0.6f) return;
 
-		// Pick a random blooming cell
+		// Pick a random blooming cell with a free slot
 		var target = bloomingCells[_rng.RandiRange(0, bloomingCells.Count - 1)];
 		Vector2 plantWorldPos = _gardenGrid.GlobalPosition + _gardenGrid.GridToWorld(target.Key);
 
-		// Filter eligible insects by time of day
+		// Build set of all blooming plant types for attraction matching
+		var bloomingPlantTypes = _gardenGrid.GetCells()
+			.Where(kv => kv.Value.CurrentState == CellState.State.Blooming)
+			.Select(kv => kv.Value.PlantType)
+			.Where(pt => !string.IsNullOrEmpty(pt))
+			.ToHashSet();
+
+		// Filter eligible insects
 		var eligible = _testInsects
 			.Where(i => MatchesTimeOfDay(i.TimeOfDay))
+			.Where(i => i.Zone == GameManager.Instance.CurrentZone || i.Zone == ZoneType.Starter)
+			.Where(i => MeetsPlantRequirements(i, bloomingPlantTypes))
 			.ToList();
 
 		if (eligible.Count == 0) return;
 
 		// Weighted random selection
 		var selected = WeightedRandomSelect(eligible);
-		SpawnInsect(selected, plantWorldPos, target.Key);
+		SpawnInsect(selected, plantWorldPos, target.Key, target.Value);
 	}
 
-	private void SpawnInsect(InsectData data, Vector2 plantWorldPos, Vector2I cellPos)
+	private void SpawnInsect(InsectData data, Vector2 plantWorldPos, Vector2I cellPos, CellState cell)
 	{
 		var insect = _insectScene.Instantiate<Insect>();
 
@@ -79,12 +89,15 @@ public partial class SpawnSystem : Node
 		insect.Initialize(data, plantWorldPos, entryPos, cellPos);
 		_insectContainer.AddChild(insect);
 
-		GD.Print($"Spawned {data.DisplayName} ({data.MovementPattern}) at cell {cellPos}");
+		// Register slot occupancy and auto-vacate on departure
+		cell.OccupySlot(insect);
+		insect.TreeExiting += () => cell.VacateSlot(insect);
+
+		GD.Print($"Spawned {data.DisplayName} ({data.MovementPattern}) at cell {cellPos} [{cell.OccupiedSlotCount}/{cell.MaxInsectSlots}]");
 	}
 
 	private Vector2 GetRandomEntryPosition(Vector2 targetPos)
 	{
-		// Pick a random direction and place the entry 400px away
 		float angle = _rng.RandfRange(0f, Mathf.Tau);
 		return targetPos + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * 400f;
 	}
@@ -94,6 +107,12 @@ public partial class SpawnSystem : Node
 		if (insectTimeOfDay == "both") return true;
 		bool isDaytime = TimeManager.Instance.IsDaytime();
 		return insectTimeOfDay == "day" ? isDaytime : !isDaytime;
+	}
+
+	private bool MeetsPlantRequirements(InsectData insect, HashSet<string> bloomingTypes)
+	{
+		if (insect.RequiredPlants == null || insect.RequiredPlants.Length == 0) return true;
+		return insect.RequiredPlants.All(req => bloomingTypes.Contains(req));
 	}
 
 	private InsectData WeightedRandomSelect(List<InsectData> candidates)
@@ -132,7 +151,7 @@ public partial class SpawnSystem : Node
 		string timeOfDay, float spawnWeight,
 		float visitMin, float visitMax, float speed)
 	{
-		var data = new InsectData
+		return new InsectData
 		{
 			Id = id,
 			DisplayName = name,
@@ -147,6 +166,5 @@ public partial class SpawnSystem : Node
 			PauseFrequency = 0.4f,
 			PauseDuration = 2.0f,
 		};
-		return data;
 	}
 }

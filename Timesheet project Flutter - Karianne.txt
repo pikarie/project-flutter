@@ -33,7 +33,7 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 		- Add sprint 1 technical blueprint reference document
 	}
 }
-2026-02-09 19h22
+2026-02-09 1.5
 {
 	-Begin "Sprint 2"
 	-Voici comment je découperais le Sprint 2 en commits incrémentaux :
@@ -55,7 +55,28 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 		- Replace HUD _Process polling with NectarChangedEvent
 		- GardenGrid now publishes PlantPlanted/Blooming/Harvested/Removed events
 	}
-	-
+	-Commit: 
+	{
+		feat(insects): add insect scene, movement behaviors and spawn system
+
+		- Add Insect.cs with enum FSM (Arriving/Visiting/Departing/Freed)
+		- Add placeholder visuals per movement type (colored shapes)
+		- Add 4 movement behaviors: Hover, Flutter, Crawl, Erratic
+		- Add IMovementBehavior interface + MovementBehaviorFactory
+		- Add MovementPattern enum, update InsectData to use it
+		- Add SpawnSystem with timer-based spawning on blooming plants
+		- Add InsectContainer and SpawnSystem nodes to Garden.tscn
+		- Insects depart only when their host plant is removed
+	}
+	-Commit:
+	{
+		feat(insects): add plant slots, attraction matching and update GDD
+
+		- Add insect slot tracking to CellState (max 2 per plant, auto-vacate via TreeExiting)
+		- SpawnSystem filters by available slots, zone, time of day and required plants
+		- Clear slots when plant is removed in GardenGrid
+		- Update GDD: fix code examples (enums, single DisplayName), document EventBus and insect architecture
+	}
 }
 
 

@@ -310,14 +310,21 @@ project-flutter/
 │   │   ├── GameManager.cs         # Global state, save/load
 │   │   ├── TimeManager.cs         # Day/night cycle, speed control
 │   │   ├── JournalManager.cs      # Discovery tracking, completion %
-│   │   └── EventBus.cs            # Centralized signal bus
+│   │   ├── EventBus.cs            # Pure static C# event bus (Subscribe/Publish/Unsubscribe)
+│   │   └── Events.cs             # All event record types
 │   ├── data/
 │   │   ├── PlantData.cs           # Plant Resource class
 │   │   ├── InsectData.cs          # Insect Resource class
 │   │   ├── ZoneType.cs            # Zone enum (Starter, Meadow, Pond)
-│   │   └── CellState.cs           # Per-cell garden state
+│   │   ├── MovementPattern.cs     # Movement enum (Hover, Flutter, Crawl, Erratic)
+│   │   └── CellState.cs           # Per-cell garden state + insect slot tracking
 │   └── systems/
 │       ├── SpawnSystem.cs         # Insect spawn logic, slot management
+│       ├── IMovementBehavior.cs   # Movement interface + factory
+│       ├── HoverBehavior.cs       # Noise-based hovering (bee)
+│       ├── FlutterBehavior.cs     # Sine-wave path (butterfly)
+│       ├── CrawlBehavior.cs       # Elliptical crawl (ladybug)
+│       ├── ErraticBehavior.cs     # Random with tether (moth)
 │       ├── NectarEconomy.cs       # Currency management
 │       └── PhotoSystem.cs         # Photo quality calculation
 ├── art/
@@ -337,10 +344,13 @@ project-flutter/
 
 ### 7.2 Architecture: 3-Layer Pattern
 - **TileMapLayer** for visual rendering (ground tiles, soil, water)
-- **Dictionary<Vector2I, CellState>** for per-cell game state (what's planted, growth stage, watered)
+- **Dictionary<Vector2I, CellState>** for per-cell game state (what's planted, growth stage, watered, insect slots)
 - **Scene instances** (Plant.tscn, Insect.tscn) for entities with their own logic
 - **CanvasModulate** for day/night visual tinting (UI on separate CanvasLayer)
 - **`_UnhandledInput()`** for all game-world clicks (prevents UI click-through)
+- **Pure C# EventBus** for decoupled cross-system communication (not Godot signals)
+- **Strategy pattern** for insect movement (IMovementBehavior interface + factory)
+- **Enum FSM** for insect lifecycle (Arriving → Visiting → Departing → Freed)
 
 ### 7.3 Key Data-Driven Design
 - **All plant and insect data defined in Resource files (.tres)** — no hardcoding
@@ -353,9 +363,8 @@ project-flutter/
 public partial class PlantData : Resource
 {
     [Export] public string Id { get; set; }                    // "lavender"
-    [Export] public string DisplayNameEn { get; set; }         // "Lavender"
-    [Export] public string DisplayNameFr { get; set; }         // "Lavande"
-    [Export] public string Zone { get; set; }                  // "starter"
+    [Export] public string DisplayName { get; set; }           // "Lavender"
+    [Export] public ZoneType Zone { get; set; }                // ZoneType.Starter
     [Export] public string Rarity { get; set; }                // "common"
     [Export] public int SeedCost { get; set; }                 // 5
     [Export] public int NectarYield { get; set; }              // 3
@@ -373,27 +382,24 @@ public partial class PlantData : Resource
 public partial class InsectData : Resource
 {
     [Export] public string Id { get; set; }                    // "monarch_butterfly"
-    [Export] public string DisplayNameEn { get; set; }         // "Monarch Butterfly"
-    [Export] public string DisplayNameFr { get; set; }         // "Papillon Monarque"
-    [Export] public string Zone { get; set; }                  // "meadow"
+    [Export] public string DisplayName { get; set; }           // "Monarch Butterfly"
+    [Export] public ZoneType Zone { get; set; }                // ZoneType.Meadow
     [Export] public string Rarity { get; set; }                // "uncommon"
     [Export] public string TimeOfDay { get; set; }             // "day" / "night" / "both"
     [Export] public string[] RequiredPlants { get; set; }      // ["milkweed"]
     [Export] public float SpawnWeight { get; set; }            // 0.3 (lower = rarer)
-    [Export] public float VisitDurationMin { get; set; }       // 60.0 (seconds real-time)
+    [Export] public float VisitDurationMin { get; set; }       // 60.0 (game-time seconds)
     [Export] public float VisitDurationMax { get; set; }       // 180.0
     [Export] public string PhotoDifficulty { get; set; }       // "medium"
-    [Export] public string MovementPattern { get; set; }       // "flutter" / "hover" / "crawl" / "erratic"
+    [Export] public MovementPattern MovementPattern { get; set; } // MovementPattern.Flutter
     [Export] public float MovementSpeed { get; set; }          // 30.0 (pixels/sec)
     [Export] public float PauseFrequency { get; set; }         // 0.4 (chance to pause each cycle)
     [Export] public float PauseDuration { get; set; }          // 2.0 (seconds)
     [Export] public SpriteFrames GardenSprite { get; set; }    // Animated sprite for garden
     [Export] public Texture2D JournalIllustration { get; set; } // Large detailed art
     [Export] public Texture2D JournalSilhouette { get; set; }   // Grey silhouette
-    [Export] public string JournalTextEn { get; set; }         // Fun fact text
-    [Export] public string JournalTextFr { get; set; }
-    [Export] public string HintTextEn { get; set; }            // Discovery hint
-    [Export] public string HintTextFr { get; set; }
+    [Export] public string JournalText { get; set; }           // Fun fact text
+    [Export] public string HintText { get; set; }              // Discovery hint
     [Export] public AudioStream AmbientSound { get; set; }     // Bee buzz, cricket chirp, etc.
 }
 ```
@@ -518,9 +524,10 @@ public const float DayCycleDuration = 300.0f;    // seconds per full cycle (5 mi
 //               noon (10-14h), golden_hour (14-17h), dusk (17-19.5h), night (>19.5h)
 
 // SpawnSystem.cs
-public const float SpawnCheckInterval = 5.0f;     // seconds between spawn attempts
+public const float SpawnCheckInterval = 5.0f;     // game-time seconds between spawn attempts
 public const int MaxInsectsPerZone = 10;           // population cap
-public const float DespawnCheckInterval = 10.0f;   // seconds between departure checks
+public const int MaxInsectSlotsPerPlant = 2;       // default insect slots per blooming plant
+// 40% quiet ticks (no spawn) for anticipation pacing
 
 // NectarEconomy.cs
 public const int HarvestNectarBase = 3;            // nectar per common plant harvest

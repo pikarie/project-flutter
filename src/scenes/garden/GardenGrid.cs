@@ -205,6 +205,7 @@ public partial class GardenGrid : Node2D
 			cell.IsWatered = false;
 			cell.PlantNode?.QueueFree();
 			cell.PlantNode = null;
+			cell.ClearSlots();
 			EventBus.Publish(new PlantRemovedEvent(pos));
 			GD.Print($"Removed plant at {pos}");
 			QueueRedraw();
