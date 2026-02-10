@@ -1,9 +1,9 @@
 using Godot;
+using ProjectFlutter;
 
 public partial class TimeManager : Node
 {
-	[Signal] public delegate void HourPassedEventHandler(int hour);
-	[Signal] public delegate void TimeOfDayChangedEventHandler(string period);
+	public static TimeManager Instance { get; private set; }
 
 	public const float DayCycleDuration = 300.0f;
 
@@ -18,6 +18,7 @@ public partial class TimeManager : Node
 
 	public override void _Ready()
 	{
+		Instance = this;
 		_secondsPerGameMinute = DayCycleDuration / (24.0f * 60.0f);
 		CurrentPeriod = GetPeriod();
 	}
@@ -43,14 +44,15 @@ public partial class TimeManager : Node
 		if (currentHour != _lastHour)
 		{
 			_lastHour = currentHour;
-			EmitSignal(SignalName.HourPassed, currentHour);
+			EventBus.Publish(new HourPassedEvent(currentHour));
 		}
 
 		var period = GetPeriod();
 		if (period != CurrentPeriod)
 		{
+			var old = CurrentPeriod;
 			CurrentPeriod = period;
-			EmitSignal(SignalName.TimeOfDayChanged, CurrentPeriod);
+			EventBus.Publish(new TimeOfDayChangedEvent(old, CurrentPeriod));
 		}
 	}
 

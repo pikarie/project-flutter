@@ -1,5 +1,7 @@
+using System;
 using Godot;
 using System.Collections.Generic;
+using ProjectFlutter;
 
 public partial class DayNightVisuals : CanvasModulate
 {
@@ -14,20 +16,25 @@ public partial class DayNightVisuals : CanvasModulate
 	};
 
 	private Tween _currentTween;
+	private Action<TimeOfDayChangedEvent> _onPeriodChanged;
 
 	public override void _Ready()
 	{
-		var timeManager = GetNode<TimeManager>("/root/TimeManager");
-		timeManager.TimeOfDayChanged += OnPeriodChanged;
+		_onPeriodChanged = OnPeriodChanged;
+		EventBus.Subscribe(_onPeriodChanged);
 
-		// Set initial color
-		if (PeriodColors.TryGetValue(timeManager.CurrentPeriod, out var initial))
+		if (PeriodColors.TryGetValue(TimeManager.Instance.CurrentPeriod, out var initial))
 			Color = initial;
 	}
 
-	private void OnPeriodChanged(string period)
+	public override void _ExitTree()
 	{
-		if (!PeriodColors.TryGetValue(period, out var target))
+		EventBus.Unsubscribe(_onPeriodChanged);
+	}
+
+	private void OnPeriodChanged(TimeOfDayChangedEvent evt)
+	{
+		if (!PeriodColors.TryGetValue(evt.NewPeriod, out var target))
 			target = Colors.White;
 
 		_currentTween?.Kill();

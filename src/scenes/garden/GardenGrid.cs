@@ -1,5 +1,6 @@
 using Godot;
 using System.Collections.Generic;
+using ProjectFlutter;
 
 public partial class GardenGrid : Node2D
 {
@@ -156,9 +157,9 @@ public partial class GardenGrid : Node2D
 		switch (cell.CurrentState)
 		{
 			case CellState.State.Tilled:
-				// Plant a seed
 				cell.CurrentState = CellState.State.Planted;
 				cell.PlantType = "placeholder";
+				EventBus.Publish(new PlantPlantedEvent(cell.PlantType, pos));
 				GD.Print($"Planted seed at {pos}");
 				break;
 
@@ -166,28 +167,27 @@ public partial class GardenGrid : Node2D
 			case CellState.State.Growing:
 				if (!cell.IsWatered)
 				{
-					// Water the plant
 					cell.IsWatered = true;
 					GD.Print($"Watered at {pos}");
 				}
 				else
 				{
-					// Already watered, advance growth (for testing)
 					cell.IsWatered = false;
 					cell.CurrentState = cell.CurrentState == CellState.State.Planted
 						? CellState.State.Growing
 						: CellState.State.Blooming;
+					if (cell.CurrentState == CellState.State.Blooming)
+						EventBus.Publish(new PlantBloomingEvent(pos));
 					GD.Print($"Grew to {cell.CurrentState} at {pos}");
 				}
 				break;
 
 			case CellState.State.Blooming:
-				// Harvest nectar
-				var gameManager = GetNode<GameManager>("/root/GameManager");
-				gameManager.AddNectar(3);
+				GameManager.Instance.AddNectar(3);
 				cell.CurrentState = CellState.State.Growing;
 				cell.IsWatered = false;
-				GD.Print($"Harvested at {pos}, nectar: {gameManager.Nectar}");
+				EventBus.Publish(new PlantHarvestedEvent(cell.PlantType, pos));
+				GD.Print($"Harvested at {pos}, nectar: {GameManager.Instance.Nectar}");
 				break;
 		}
 		QueueRedraw();
@@ -198,12 +198,14 @@ public partial class GardenGrid : Node2D
 		var cell = _cells[pos];
 		if (cell.CurrentState != CellState.State.Tilled)
 		{
+			var plantType = cell.PlantType;
 			cell.CurrentState = CellState.State.Tilled;
 			cell.PlantType = "";
 			cell.GrowthStage = 0;
 			cell.IsWatered = false;
 			cell.PlantNode?.QueueFree();
 			cell.PlantNode = null;
+			EventBus.Publish(new PlantRemovedEvent(pos));
 			GD.Print($"Removed plant at {pos}");
 			QueueRedraw();
 		}
@@ -233,6 +235,8 @@ public partial class GardenGrid : Node2D
 			gridPos.Y * TileSize + TileSize / 2.0f
 		);
 	}
+
+	public Dictionary<Vector2I, CellState> GetCells() => _cells;
 
 	public CellState GetCell(Vector2I pos) => _cells.GetValueOrDefault(pos);
 }

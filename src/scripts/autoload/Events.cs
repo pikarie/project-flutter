@@ -1,0 +1,27 @@
+using Godot;
+
+namespace ProjectFlutter;
+
+// -- Time --
+public record HourPassedEvent(int Hour);
+public record TimeOfDayChangedEvent(string OldPeriod, string NewPeriod);
+
+// -- Game state --
+public record GameStateChangedEvent(GameManager.GameState NewState);
+public record NectarChangedEvent(int NewAmount);
+public record PauseToggledEvent(bool IsPaused);
+
+// -- Plants --
+public record PlantPlantedEvent(string PlantType, Vector2I GridPos);
+public record PlantHarvestedEvent(string PlantType, Vector2I GridPos);
+public record PlantBloomingEvent(Vector2I GridPos);
+public record PlantRemovedEvent(Vector2I GridPos);
+
+// -- Journal --
+public record SpeciesDiscoveredEvent(string InsectId);
+public record JournalUpdatedEvent(string InsectId, int StarRating);
+
+// -- Insects (Sprint 2) --
+public record InsectArrivedEvent(string InsectId, Vector2 Position);
+public record InsectDepartedEvent(string InsectId, Vector2 Position);
+public record InsectClickedEvent(string InsectId, Node2D Insect, Vector2 Position);

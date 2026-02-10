@@ -1,24 +1,26 @@
 using Godot;
 using System.Collections.Generic;
+using ProjectFlutter;
 
 public partial class JournalManager : Node
 {
-	[Signal] public delegate void SpeciesDiscoveredEventHandler(string insectId);
-	[Signal] public delegate void JournalUpdatedEventHandler(string insectId, int starRating);
+	public static JournalManager Instance { get; private set; }
 
 	private readonly Dictionary<string, int> _discoveredSpecies = new();
+
+	public override void _Ready() => Instance = this;
 
 	public void DiscoverSpecies(string insectId, int starRating)
 	{
 		if (!_discoveredSpecies.ContainsKey(insectId))
 		{
 			_discoveredSpecies[insectId] = starRating;
-			EmitSignal(SignalName.SpeciesDiscovered, insectId);
+			EventBus.Publish(new SpeciesDiscoveredEvent(insectId));
 		}
 		else if (starRating > _discoveredSpecies[insectId])
 		{
 			_discoveredSpecies[insectId] = starRating;
-			EmitSignal(SignalName.JournalUpdated, insectId, starRating);
+			EventBus.Publish(new JournalUpdatedEvent(insectId, starRating));
 		}
 	}
 

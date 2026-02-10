@@ -1,4 +1,6 @@
+using System;
 using Godot;
+using ProjectFlutter;
 
 public partial class HUD : Control
 {
@@ -9,6 +11,10 @@ public partial class HUD : Control
 	private readonly float[] _speeds = { 1.0f, 2.0f, 3.0f, 10.0f };
 	private readonly string[] _speedLabels = { "x1", "x2", "x3", "x10" };
 
+	private Action<HourPassedEvent> _onHourPassed;
+	private Action<TimeOfDayChangedEvent> _onPeriodChanged;
+	private Action<NectarChangedEvent> _onNectarChanged;
+
 	public override void _Ready()
 	{
 		_timeLabel = GetNode<Label>("TimeLabel");
@@ -17,45 +23,50 @@ public partial class HUD : Control
 
 		_speedButton.Pressed += OnSpeedButtonPressed;
 
-		var timeManager = GetNode<TimeManager>("/root/TimeManager");
-		timeManager.HourPassed += OnHourPassed;
-		timeManager.TimeOfDayChanged += OnPeriodChanged;
+		_onHourPassed = OnHourPassed;
+		_onPeriodChanged = OnPeriodChanged;
+		_onNectarChanged = OnNectarChanged;
+
+		EventBus.Subscribe(_onHourPassed);
+		EventBus.Subscribe(_onPeriodChanged);
+		EventBus.Subscribe(_onNectarChanged);
 
 		UpdateTimeDisplay();
+		UpdateNectarDisplay();
 		UpdateSpeedButton();
 	}
 
-	public override void _Process(double delta)
+	public override void _ExitTree()
 	{
-		var gameManager = GetNode<GameManager>("/root/GameManager");
-		_nectarLabel.Text = $"Nectar: {gameManager.Nectar}";
+		EventBus.Unsubscribe(_onHourPassed);
+		EventBus.Unsubscribe(_onPeriodChanged);
+		EventBus.Unsubscribe(_onNectarChanged);
 	}
 
 	private void OnSpeedButtonPressed()
 	{
 		_currentSpeedIndex = (_currentSpeedIndex + 1) % _speeds.Length;
-		var timeManager = GetNode<TimeManager>("/root/TimeManager");
-		timeManager.SetSpeed(_speeds[_currentSpeedIndex]);
+		TimeManager.Instance.SetSpeed(_speeds[_currentSpeedIndex]);
 		UpdateSpeedButton();
 	}
 
-	private void OnHourPassed(int hour)
-	{
-		UpdateTimeDisplay();
-	}
+	private void OnHourPassed(HourPassedEvent evt) => UpdateTimeDisplay();
 
-	private void OnPeriodChanged(string period)
-	{
-		UpdateTimeDisplay();
-	}
+	private void OnPeriodChanged(TimeOfDayChangedEvent evt) => UpdateTimeDisplay();
+
+	private void OnNectarChanged(NectarChangedEvent evt) => UpdateNectarDisplay();
 
 	private void UpdateTimeDisplay()
 	{
-		var timeManager = GetNode<TimeManager>("/root/TimeManager");
-		int hour = (int)(timeManager.CurrentTimeNormalized * 24.0f);
-		int minute = (int)((timeManager.CurrentTimeNormalized * 24.0f - hour) * 60.0f);
-		string period = timeManager.CurrentPeriod;
-		_timeLabel.Text = $"{hour:D2}:{minute:D2} ({period})";
+		var tm = TimeManager.Instance;
+		int hour = (int)(tm.CurrentTimeNormalized * 24.0f);
+		int minute = (int)((tm.CurrentTimeNormalized * 24.0f - hour) * 60.0f);
+		_timeLabel.Text = $"{hour:D2}:{minute:D2} ({tm.CurrentPeriod})";
+	}
+
+	private void UpdateNectarDisplay()
+	{
+		_nectarLabel.Text = $"Nectar: {GameManager.Instance.Nectar}";
 	}
 
 	private void UpdateSpeedButton()

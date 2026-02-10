@@ -13,7 +13,7 @@ config_version=5
 config/name="Project Flutter"
 config/description="Grow a hand-drawn garden to attract and photograph collectible insects in a cozy, no-pressure nature sim."
 run/main_scene="res://scenes/main/Main.tscn"
-config/features=PackedStringArray("4.5")
+config/features=PackedStringArray("4.5", "C#")
 config/icon="res://icon.svg"
 
 [autoload]
@@ -21,7 +21,6 @@ config/icon="res://icon.svg"
 GameManager="*res://scripts/autoload/GameManager.cs"
 TimeManager="*res://scripts/autoload/TimeManager.cs"
 JournalManager="*res://scripts/autoload/JournalManager.cs"
-EventBus="*res://scripts/autoload/EventBus.cs"
 
 [display]
 
@@ -65,5 +64,4 @@ camera_down={
 
 [rendering]
 
-textures/canvas_textures/default_texture_filter=1
 renderer/rendering_method="gl_compatibility"

@@ -4,6 +4,8 @@ Peux-tu générer un nom de commit pour les pending changes actuel?
 Regarde les penging changes et génère un message pour ceux ce qui n'est pas encore commit. Tu peux aussi mettre plusieurs ligne dans le commit pour énumérer au besoin.
 }
 
+TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme Plantera ou Kingdom: New Lands
+
 2026-02-08 2.25
 {
 	-1.25 + 1.0
@@ -13,7 +15,7 @@ Regarde les penging changes et génère un message pour ceux ce qui n'est pas en
 	-Create git repo
 	-Begin "Sprint 1"
 	-Finish "Sprint 1"
-	-Commmit
+	-Commmit:
 	{
 		feat(garden): implement Sprint 1 core gameplay loop
 
@@ -31,3 +33,29 @@ Regarde les penging changes et génère un message pour ceux ce qui n'est pas en
 		- Add sprint 1 technical blueprint reference document
 	}
 }
+2026-02-09 19h22
+{
+	-Begin "Sprint 2"
+	-Commit:
+	{
+		refactor(events): migrate EventBus from Godot signals to pure C#
+
+		- Replace Node-based EventBus autoload with static class (Subscribe/Publish/Unsubscribe)
+		- Add typed record events in Events.cs (Sprint 1 + Sprint 2 ready)
+		- Add static Instance to TimeManager, GameManager, JournalManager
+		- Remove EventBus from project.godot autoloads
+		- Update all subscribers to use EventBus.Subscribe/Unsubscribe in _Ready/_ExitTree
+		- Replace HUD _Process polling with NectarChangedEvent
+		- GardenGrid now publishes PlantPlanted/Blooming/Harvested/Removed events
+	}
+}
+
+
+
+
+
+
+
+
+
+

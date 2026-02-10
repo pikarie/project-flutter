@@ -1,4 +1,6 @@
+using System;
 using Godot;
+using ProjectFlutter;
 
 public partial class Plant : Node2D
 {
@@ -13,6 +15,7 @@ public partial class Plant : Node2D
 	private float[] _stageThresholds;
 	private Sprite2D _sprite;
 	private AnimationPlayer _animPlayer;
+	private Action<HourPassedEvent> _onHourPassed;
 
 	public override void _Ready()
 	{
@@ -22,14 +25,17 @@ public partial class Plant : Node2D
 		ComputeThresholds();
 		UpdateVisuals();
 
-		var timeManager = GetNode<TimeManager>("/root/TimeManager");
-		timeManager.HourPassed += OnHourPassed;
+		_onHourPassed = OnHourPassed;
+		EventBus.Subscribe(_onHourPassed);
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Unsubscribe(_onHourPassed);
 	}
 
 	private void ComputeThresholds()
 	{
-		// Each stage takes GrowthCycles hours to complete
-		// Seed→Sprout, Sprout→Growing, Growing→Blooming
 		float hoursPerStage = PlantData.GrowthCycles;
 		_stageThresholds = new float[]
 		{
@@ -39,7 +45,7 @@ public partial class Plant : Node2D
 		};
 	}
 
-	private void OnHourPassed(int hour)
+	private void OnHourPassed(HourPassedEvent evt)
 	{
 		if (CurrentStage == GrowthStage.Blooming) return;
 		if (!IsWatered) return;
@@ -60,7 +66,7 @@ public partial class Plant : Node2D
 					CurrentStage = newStage;
 					UpdateVisuals();
 					if (CurrentStage == GrowthStage.Blooming)
-						EventBus.Instance.EmitPlantBlooming(this);
+						EventBus.Publish(new PlantBloomingEvent(Vector2I.Zero));
 				}
 				break;
 			}
@@ -88,7 +94,7 @@ public partial class Plant : Node2D
 
 		int nectar = PlantData.NectarYield;
 		CurrentStage = GrowthStage.Growing;
-		GrowthProgressHours = _stageThresholds[1]; // Reset to start of Growing
+		GrowthProgressHours = _stageThresholds[1];
 		IsWatered = false;
 		UpdateVisuals();
 		return nectar;
