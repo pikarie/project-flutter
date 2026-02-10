@@ -36,6 +36,13 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 2026-02-09 19h22
 {
 	-Begin "Sprint 2"
+	-Voici comment je découperais le Sprint 2 en commits incrémentaux :
+		1.Migrate EventBus to pure C# — refactor EventBus + adapter Sprint 1
+		2.Add insect scene + movement behaviors — Insect.cs, IMovementBehavior, 4 patterns
+		3.Add SpawnSystem — timer-based spawn sur plantes en bloom
+		4.Add plant slots + insect lifecycle — arrivée/visite/départ, slots sur Plant.cs
+		5.Add attraction matching — filtrage par zone, time of day, plantes requises
+		6.Update GDD — mettre à jour les sections qui ne reflètent plus le code
 	-Commit:
 	{
 		refactor(events): migrate EventBus from Godot signals to pure C#
@@ -48,6 +55,7 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 		- Replace HUD _Process polling with NectarChangedEvent
 		- GardenGrid now publishes PlantPlanted/Blooming/Harvested/Removed events
 	}
+	-
 }
 
 
