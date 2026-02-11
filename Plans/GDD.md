@@ -1,6 +1,6 @@
 # Project Flutter — Game Design Document
-**Version:** 1.0
-**Date:** 2026-02-08
+**Version:** 1.1
+**Date:** 2026-02-10
 **Engine:** Godot 4.x (C# / .NET 8)
 **Developer:** Karianne (solo)
 **Target platforms:** Windows (Steam), potential Linux/Mac
@@ -294,13 +294,17 @@ project-flutter/
 │   │   ├── Insect.tscn            # Base insect scene
 │   │   └── Insect.cs              # Movement, behavior patterns, slot system
 │   ├── photography/
-│   │   ├── PhotoMode.tscn         # Photo circle overlay
-│   │   └── PhotoMode.cs           # Focus mechanic, quality calculation
+│   │   ├── PhotoFocusController.cs # Focus circle mechanic, quality calculation
+│   │   ├── ScreenFlash.cs         # White flash on photo taken
+│   │   └── StarRatingPopup.cs     # Floating star rating display
+│   ├── journal/
+│   │   ├── JournalUI.cs           # Field journal (programmatic UI, grid + detail)
+│   │   └── DiscoveryNotification.cs # Toast notifications for discoveries
 │   └── ui/
-│       ├── Journal.tscn           # Field journal interface
-│       ├── SeedShop.tscn          # Seed purchasing UI
 │       ├── HUD.tscn               # Nectar counter, time display, zone selector
-│       └── MainMenu.tscn          # Title screen, settings, load game
+│       ├── HUD.cs                 # HUD logic, keyboard shortcuts (C/J/Esc)
+│       ├── SeedShop.tscn          # Seed purchasing UI (TODO)
+│       └── MainMenu.tscn          # Title screen, settings, load game (TODO)
 ├── resources/
 │   ├── plant_data/                # .tres Resource files for each plant
 │   ├── insect_data/               # .tres Resource files for each insect
@@ -315,6 +319,7 @@ project-flutter/
 │   ├── data/
 │   │   ├── PlantData.cs           # Plant Resource class
 │   │   ├── InsectData.cs          # Insect Resource class
+│   │   ├── InsectRegistry.cs      # Static shared species data (used by SpawnSystem + JournalUI)
 │   │   ├── ZoneType.cs            # Zone enum (Starter, Meadow, Pond)
 │   │   ├── MovementPattern.cs     # Movement enum (Hover, Flutter, Crawl, Erratic)
 │   │   └── CellState.cs           # Per-cell garden state + insect slot tracking
@@ -353,9 +358,12 @@ project-flutter/
 - **Enum FSM** for insect lifecycle (Arriving → Visiting → Departing → Freed)
 
 ### 7.3 Key Data-Driven Design
-- **All plant and insect data defined in Resource files (.tres)** — no hardcoding
-- Adding a new plant or insect = create a new .tres file + add art assets
-- This makes post-launch content additions trivial
+- **Plant and insect data** — currently in static C# classes (InsectRegistry, PlantData) during prototyping; will migrate to Resource files (.tres) in Sprint 5
+- Adding a new insect = add entry in InsectRegistry + art assets
+- **Placeholder art** — all visuals use `_Draw()` programmatic rendering until final art is integrated
+- **UILayer** (CanvasLayer, layer 10) keeps all UI above CanvasModulate day/night tinting
+- **Keyboard shortcuts** centralized in HUD._UnhandledInput: C (photo), J (journal), Escape (back to playing)
+- **GameState enum** manages modes: Playing, Paused, PhotoMode, Journal
 
 ### 7.3 PlantData Resource Example
 ```csharp
@@ -416,34 +424,34 @@ public partial class InsectData : Resource
 
 **Based on ~20h/week (1-2h weeknights + 10-15h weekends)**
 
-### Sprint 1 — Core Grid & Planting (Week 1-2, ~40h)
-- [ ] Godot project setup, folder structure, autoloads
-- [ ] Garden grid system (4x4 TileMap or Node2D grid)
-- [ ] Tile interaction (click to select, plant, remove)
-- [ ] Plant scene with 4 growth stages (use placeholder art)
-- [ ] Watering mechanic (click blooming plant → advance stage)
-- [ ] Basic day/night cycle (visual tint change + time variable)
-- [ ] Fast-forward button (x1, x2, x3)
+### Sprint 1 — Core Grid & Planting (Week 1-2, ~40h) ✓
+- [x] Godot project setup, folder structure, autoloads
+- [x] Garden grid system (4x4 TileMap or Node2D grid)
+- [x] Tile interaction (click to select, plant, remove)
+- [x] Plant scene with 4 growth stages (use placeholder art)
+- [x] Watering mechanic (click blooming plant → advance stage)
+- [x] Basic day/night cycle (visual tint change + time variable)
+- [x] Fast-forward button (x1, x2, x3)
 - **Deliverable:** Can place plants, watch them grow, see day/night change
 
-### Sprint 2 — Insects & Spawning (Week 3-4, ~40h)
-- [ ] Insect base scene with movement patterns (flutter, hover, crawl)
-- [ ] Spawn system: check blooming plants → roll for insects → spawn in slots
-- [ ] Insect departure after visit duration
-- [ ] Population cap per zone
-- [ ] 3-4 test insects with different movement behaviors
-- [ ] Basic insect-plant attraction matching from data resources
+### Sprint 2 — Insects & Spawning (Week 3-4, ~40h) ✓
+- [x] Insect base scene with movement patterns (flutter, hover, crawl)
+- [x] Spawn system: check blooming plants → roll for insects → spawn in slots
+- [x] Insect departure after visit duration
+- [x] Population cap per zone
+- [x] 3-4 test insects with different movement behaviors
+- [x] Basic insect-plant attraction matching from data resources
 - **Deliverable:** Insects arrive and leave based on what's planted
 
 ### Sprint 3 — Photography & Journal (Week 5-6, ~40h)
-- [ ] Photo mode toggle
-- [ ] Concentric circle focus mechanic (click & hold)
-- [ ] Quality rating calculation (distance from center)
-- [ ] Shutter sound + flash effect
-- [ ] Journal UI (grid of entries, silhouettes, discovered entries)
-- [ ] Journal entry detail view (illustration, name, fun fact, stars)
-- [ ] Discovery tracking (JournalManager autoload)
-- [ ] New discovery notification/fanfare
+- [x] Photo mode toggle (C key, or Photo button in HUD)
+- [x] Concentric circle focus mechanic (click & hold, zoom-aware distance)
+- [x] Quality rating calculation (distance from center, miss if too far)
+- [x] Shutter sound + flash effect (ScreenFlash white overlay + StarRatingPopup)
+- [x] Journal UI (grid of entries, silhouettes, discovered entries — programmatic UI)
+- [x] Journal entry detail view (portrait, name, fun fact, stars, hint)
+- [x] Discovery tracking (JournalManager autoload)
+- [x] New discovery notification/fanfare (DiscoveryNotification toast with FIFO queue)
 - **Deliverable:** Full photograph → journal → collection loop working
 
 ### Sprint 4 — Economy & Zones (Week 7-8, ~40h)

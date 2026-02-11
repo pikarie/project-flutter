@@ -5,8 +5,7 @@ using ProjectFlutter;
 public partial class PhotoFocusController : Control
 {
 	public const float FocusDuration = 1.5f;
-	public const float InitialRadius = 80f;
-	public const float FinalRadius = 20f;
+	public const float WorldRadius = 80f;
 	public const float ThreeStarPct = 0.15f;
 	public const float TwoStarPct = 0.40f;
 
@@ -75,34 +74,58 @@ public partial class PhotoFocusController : Control
 
 		Vector2 cursor = GetViewport().GetMousePosition();
 		float progress = Mathf.Clamp(_focusElapsed / FocusDuration, 0f, 1f);
-		float radius = Mathf.Lerp(InitialRadius, FinalRadius, progress);
+		var camera = GetViewport().GetCamera2D();
+		float zoom = camera?.Zoom.X ?? 1f;
 
-		// Outer ring fades out
-		var outerColor = new Color(1f, 1f, 1f, 0.3f * (1f - progress));
-		DrawArc(cursor, radius + 10f, 0f, Mathf.Tau, 64, outerColor, 2f, true);
+		// All radii in screen space, derived from fixed world radius
+		float frameScreenRadius = WorldRadius * zoom;
+		float threeStarScreenRadius = WorldRadius * ThreeStarPct * zoom;
+		float twoStarScreenRadius = WorldRadius * TwoStarPct * zoom;
 
-		// Main ring
-		var mainColor = new Color(0.8f, 0.95f, 0.8f, 0.6f + 0.4f * progress);
-		DrawArc(cursor, radius, 0f, Mathf.Tau, 64, mainColor, 3f, true);
+		// Current distance cursor↔insect in world space for live feedback
+		var cursorWorld = camera.GetGlobalMousePosition();
+		float currentDistance = cursorWorld.DistanceTo(_targetInsect.GlobalPosition);
+		float normalizedDistance = currentDistance / WorldRadius;
 
-		// Inner ring appears after 30%
-		if (progress > 0.3f)
-		{
-			float innerAlpha = (progress - 0.3f) / 0.7f;
-			DrawArc(cursor, radius * 0.6f, 0f, Mathf.Tau, 64,
-				new Color(0.5f, 1f, 0.5f, innerAlpha * 0.8f), 2f, true);
-		}
+		// Live quality color: green (3★) → orange (2★) → red (1★) → grey (miss)
+		Color qualityColor;
+		if (normalizedDistance <= ThreeStarPct)
+			qualityColor = new Color(0.2f, 1f, 0.3f); // green
+		else if (normalizedDistance <= TwoStarPct)
+			qualityColor = new Color(1f, 0.7f, 0.1f); // orange
+		else if (normalizedDistance <= 1f)
+			qualityColor = new Color(1f, 0.25f, 0.2f); // red
+		else
+			qualityColor = new Color(0.5f, 0.5f, 0.5f); // grey — miss
+
+		// 3-star zone — subtle green disc
+		DrawCircle(cursor, threeStarScreenRadius, new Color(0.3f, 1f, 0.3f, 0.08f));
+		DrawArc(cursor, threeStarScreenRadius, 0f, Mathf.Tau, 64,
+			new Color(0.3f, 1f, 0.3f, 0.3f), 1f, true);
+
+		// 2-star zone — subtle orange ring
+		DrawArc(cursor, twoStarScreenRadius, 0f, Mathf.Tau, 64,
+			new Color(1f, 0.7f, 0.1f, 0.25f), 1f, true);
+
+		// Frame boundary — uses live quality color
+		DrawArc(cursor, frameScreenRadius, 0f, Mathf.Tau, 64,
+			new Color(qualityColor.R, qualityColor.G, qualityColor.B, 0.4f), 2f, true);
+
+		// Focus progress arc — uses live quality color, bright
+		float progressAngle = Mathf.Tau * progress;
+		DrawArc(cursor, frameScreenRadius, -Mathf.Pi / 2f, -Mathf.Pi / 2f + progressAngle, 64,
+			new Color(qualityColor.R, qualityColor.G, qualityColor.B, 0.8f), 3.5f, true);
 
 		// Crosshairs
-		float crosshairLength = radius * 0.3f;
+		float crosshairLength = frameScreenRadius * 0.3f;
 		var crossColor = new Color(1f, 1f, 1f, 0.5f);
 		DrawLine(cursor + new Vector2(-crosshairLength, 0), cursor + new Vector2(crosshairLength, 0), crossColor, 1f);
 		DrawLine(cursor + new Vector2(0, -crosshairLength), cursor + new Vector2(0, crosshairLength), crossColor, 1f);
 
-		// Corner brackets
-		float bracketSize = radius * 0.4f;
-		float bracketOffset = radius * 0.7f;
-		var bracketColor = new Color(1f, 1f, 1f, 0.7f);
+		// Corner brackets — uses live quality color
+		float bracketSize = frameScreenRadius * 0.4f;
+		float bracketOffset = frameScreenRadius * 0.7f;
+		var bracketColor = new Color(qualityColor.R, qualityColor.G, qualityColor.B, 0.7f);
 		DrawCornerBracket(cursor + new Vector2(-bracketOffset, -bracketOffset), bracketSize, bracketColor, false, false);
 		DrawCornerBracket(cursor + new Vector2(bracketOffset, -bracketOffset), bracketSize, bracketColor, true, false);
 		DrawCornerBracket(cursor + new Vector2(-bracketOffset, bracketOffset), bracketSize, bracketColor, false, true);
@@ -123,7 +146,7 @@ public partial class PhotoFocusController : Control
 		var camera = GetViewport().GetCamera2D();
 		var worldPosition = camera.GetGlobalMousePosition();
 		Insect best = null;
-		float bestDistance = InitialRadius / camera.Zoom.X; // screen radius → world distance
+		float bestDistance = WorldRadius; // fixed world-space search radius
 
 		var insectContainer = GetTree().GetFirstNodeInGroup("insect_container");
 		if (insectContainer == null)
@@ -168,11 +191,10 @@ public partial class PhotoFocusController : Control
 		// Calculate quality based on cursor-to-insect distance
 		var camera = GetViewport().GetCamera2D();
 		var cursorWorld = camera.GetGlobalMousePosition();
-		float worldRadius = InitialRadius / camera.Zoom.X;
 		float distance = cursorWorld.DistanceTo(_targetInsect.GlobalPosition);
 
-		// Miss if insect is outside the photo frame
-		if (distance > worldRadius)
+		// Miss if insect is outside the frame (fixed world radius)
+		if (distance > WorldRadius)
 		{
 			EventBus.Publish(new PhotoMissedEvent(cursorWorld));
 			_targetInsect = null;
@@ -180,7 +202,8 @@ public partial class PhotoFocusController : Control
 			return;
 		}
 
-		float normalized = distance / worldRadius;
+		// Star rating based on fixed world radius
+		float normalized = distance / WorldRadius;
 		int stars = normalized <= ThreeStarPct ? 3 : normalized <= TwoStarPct ? 2 : 1;
 
 		// Freeze the insect

@@ -8,6 +8,7 @@ public partial class HUD : Control
 	private Label _nectarLabel;
 	private Button _speedButton;
 	private Button _photoButton;
+	private Button _journalButton;
 	private Label _photoModeLabel;
 	private int _currentSpeedIndex;
 	private readonly float[] _speeds = { 1.0f, 2.0f, 3.0f, 10.0f };
@@ -24,10 +25,12 @@ public partial class HUD : Control
 		_nectarLabel = GetNode<Label>("NectarLabel");
 		_speedButton = GetNode<Button>("SpeedButton");
 		_photoButton = GetNode<Button>("PhotoButton");
+		_journalButton = GetNode<Button>("JournalButton");
 		_photoModeLabel = GetNode<Label>("PhotoModeLabel");
 
 		_speedButton.Pressed += OnSpeedButtonPressed;
 		_photoButton.Pressed += OnPhotoButtonPressed;
+		_journalButton.Pressed += OnJournalButtonPressed;
 
 		_onHourPassed = OnHourPassed;
 		_onPeriodChanged = OnPeriodChanged;
@@ -55,23 +58,50 @@ public partial class HUD : Control
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
-		if (@event is InputEventKey { Pressed: true, Keycode: Key.C })
+		if (@event is InputEventKey { Pressed: true } keyEvent)
 		{
-			TogglePhotoMode();
-			GetViewport().SetInputAsHandled();
+			switch (keyEvent.Keycode)
+			{
+				case Key.C:
+					TogglePhotoMode();
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.J:
+					ToggleJournal();
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.Escape:
+					if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+					{
+						GameManager.Instance.ChangeState(GameManager.GameState.Playing);
+						GetViewport().SetInputAsHandled();
+					}
+					break;
+			}
 		}
 	}
 
 	private void TogglePhotoMode()
 	{
 		var gameManager = GameManager.Instance;
-		if (gameManager.CurrentState == GameManager.GameState.Playing)
-			gameManager.ChangeState(GameManager.GameState.PhotoMode);
-		else if (gameManager.CurrentState == GameManager.GameState.PhotoMode)
+		if (gameManager.CurrentState == GameManager.GameState.PhotoMode)
 			gameManager.ChangeState(GameManager.GameState.Playing);
+		else
+			gameManager.ChangeState(GameManager.GameState.PhotoMode);
+	}
+
+	private void ToggleJournal()
+	{
+		var gameManager = GameManager.Instance;
+		if (gameManager.CurrentState == GameManager.GameState.Journal)
+			gameManager.ChangeState(GameManager.GameState.Playing);
+		else
+			gameManager.ChangeState(GameManager.GameState.Journal);
 	}
 
 	private void OnPhotoButtonPressed() => TogglePhotoMode();
+
+	private void OnJournalButtonPressed() => ToggleJournal();
 
 	private void OnStateChanged(GameStateChangedEvent evt) => UpdatePhotoModeUI();
 

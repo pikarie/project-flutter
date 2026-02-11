@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3]
+[gd_scene load_steps=9 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/garden/Garden.tscn" id="1"]
 [ext_resource type="Script" path="res://scenes/garden/GardenCamera.cs" id="2"]
@@ -6,6 +6,8 @@
 [ext_resource type="Script" path="res://scenes/photography/PhotoFocusController.cs" id="4"]
 [ext_resource type="Script" path="res://scenes/photography/ScreenFlash.cs" id="5"]
 [ext_resource type="Script" path="res://scenes/photography/StarRatingPopup.cs" id="6"]
+[ext_resource type="Script" path="res://scenes/journal/JournalUI.cs" id="7"]
+[ext_resource type="Script" path="res://scenes/journal/DiscoveryNotification.cs" id="8"]
 
 [node name="Main" type="Node2D"]
 
@@ -40,3 +42,17 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("6")
+
+[node name="JournalUI" type="Control" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("7")
+
+[node name="DiscoveryNotification" type="Control" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("8")

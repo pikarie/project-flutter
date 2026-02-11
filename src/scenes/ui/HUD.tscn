@@ -53,6 +53,17 @@ offset_right = -10.0
 offset_bottom = 120.0
 text = "Photo"
 
+[node name="JournalButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -80.0
+offset_top = 130.0
+offset_right = -10.0
+offset_bottom = 160.0
+text = "Journal"
+
 [node name="PhotoModeLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5

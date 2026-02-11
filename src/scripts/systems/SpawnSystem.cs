@@ -14,7 +14,6 @@ public partial class SpawnSystem : Node
 	private PackedScene _insectScene;
 	private RandomNumberGenerator _rng = new();
 	private float _spawnTimer;
-	private List<InsectData> _testInsects;
 
 	public override void _Ready()
 	{
@@ -23,7 +22,6 @@ public partial class SpawnSystem : Node
 		_insectContainer = GetParent().GetNode<Node2D>("InsectContainer");
 		_insectScene = GD.Load<PackedScene>("res://scenes/insects/Insect.tscn");
 
-		_testInsects = CreateTestInsects();
 		_spawnTimer = SpawnCheckInterval;
 	}
 
@@ -66,7 +64,7 @@ public partial class SpawnSystem : Node
 			.ToHashSet();
 
 		// Filter eligible insects
-		var eligible = _testInsects
+		var eligible = InsectRegistry.AllSpecies
 			.Where(i => MatchesTimeOfDay(i.TimeOfDay))
 			.Where(i => i.Zone == GameManager.Instance.CurrentZone || i.Zone == ZoneType.Starter)
 			.Where(i => MeetsPlantRequirements(i, bloomingPlantTypes))
@@ -128,43 +126,4 @@ public partial class SpawnSystem : Node
 		return candidates[^1];
 	}
 
-	private static List<InsectData> CreateTestInsects()
-	{
-		return new List<InsectData>
-		{
-			CreateInsect("honeybee", "Honeybee", MovementPattern.Hover,
-				"day", 1.0f, 90f, 240f, 30f),
-
-			CreateInsect("cabbage_white", "Cabbage White", MovementPattern.Flutter,
-				"day", 0.8f, 60f, 180f, 40f),
-
-			CreateInsect("ladybug", "Ladybug", MovementPattern.Crawl,
-				"day", 0.7f, 120f, 300f, 15f),
-
-			CreateInsect("sphinx_moth", "Sphinx Moth", MovementPattern.Erratic,
-				"night", 0.5f, 45f, 120f, 50f),
-		};
-	}
-
-	private static InsectData CreateInsect(
-		string id, string name, MovementPattern pattern,
-		string timeOfDay, float spawnWeight,
-		float visitMin, float visitMax, float speed)
-	{
-		return new InsectData
-		{
-			Id = id,
-			DisplayName = name,
-			Zone = ZoneType.Starter,
-			Rarity = "common",
-			TimeOfDay = timeOfDay,
-			SpawnWeight = spawnWeight,
-			VisitDurationMin = visitMin,
-			VisitDurationMax = visitMax,
-			MovementPattern = pattern,
-			MovementSpeed = speed,
-			PauseFrequency = 0.4f,
-			PauseDuration = 2.0f,
-		};
-	}
 }
