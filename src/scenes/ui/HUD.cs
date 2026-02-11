@@ -7,6 +7,8 @@ public partial class HUD : Control
 	private Label _timeLabel;
 	private Label _nectarLabel;
 	private Button _speedButton;
+	private Button _photoButton;
+	private Label _photoModeLabel;
 	private int _currentSpeedIndex;
 	private readonly float[] _speeds = { 1.0f, 2.0f, 3.0f, 10.0f };
 	private readonly string[] _speedLabels = { "x1", "x2", "x3", "x10" };
@@ -14,26 +16,33 @@ public partial class HUD : Control
 	private Action<HourPassedEvent> _onHourPassed;
 	private Action<TimeOfDayChangedEvent> _onPeriodChanged;
 	private Action<NectarChangedEvent> _onNectarChanged;
+	private Action<GameStateChangedEvent> _onStateChanged;
 
 	public override void _Ready()
 	{
 		_timeLabel = GetNode<Label>("TimeLabel");
 		_nectarLabel = GetNode<Label>("NectarLabel");
 		_speedButton = GetNode<Button>("SpeedButton");
+		_photoButton = GetNode<Button>("PhotoButton");
+		_photoModeLabel = GetNode<Label>("PhotoModeLabel");
 
 		_speedButton.Pressed += OnSpeedButtonPressed;
+		_photoButton.Pressed += OnPhotoButtonPressed;
 
 		_onHourPassed = OnHourPassed;
 		_onPeriodChanged = OnPeriodChanged;
 		_onNectarChanged = OnNectarChanged;
+		_onStateChanged = OnStateChanged;
 
 		EventBus.Subscribe(_onHourPassed);
 		EventBus.Subscribe(_onPeriodChanged);
 		EventBus.Subscribe(_onNectarChanged);
+		EventBus.Subscribe(_onStateChanged);
 
 		UpdateTimeDisplay();
 		UpdateNectarDisplay();
 		UpdateSpeedButton();
+		UpdatePhotoModeUI();
 	}
 
 	public override void _ExitTree()
@@ -41,6 +50,36 @@ public partial class HUD : Control
 		EventBus.Unsubscribe(_onHourPassed);
 		EventBus.Unsubscribe(_onPeriodChanged);
 		EventBus.Unsubscribe(_onNectarChanged);
+		EventBus.Unsubscribe(_onStateChanged);
+	}
+
+	public override void _UnhandledInput(InputEvent @event)
+	{
+		if (@event is InputEventKey { Pressed: true, Keycode: Key.C })
+		{
+			TogglePhotoMode();
+			GetViewport().SetInputAsHandled();
+		}
+	}
+
+	private void TogglePhotoMode()
+	{
+		var gameManager = GameManager.Instance;
+		if (gameManager.CurrentState == GameManager.GameState.Playing)
+			gameManager.ChangeState(GameManager.GameState.PhotoMode);
+		else if (gameManager.CurrentState == GameManager.GameState.PhotoMode)
+			gameManager.ChangeState(GameManager.GameState.Playing);
+	}
+
+	private void OnPhotoButtonPressed() => TogglePhotoMode();
+
+	private void OnStateChanged(GameStateChangedEvent evt) => UpdatePhotoModeUI();
+
+	private void UpdatePhotoModeUI()
+	{
+		bool isPhoto = GameManager.Instance.CurrentState == GameManager.GameState.PhotoMode;
+		_photoModeLabel.Visible = isPhoto;
+		_photoButton.Text = isPhoto ? "Exit Photo" : "Photo";
 	}
 
 	private void OnSpeedButtonPressed()
@@ -58,10 +97,10 @@ public partial class HUD : Control
 
 	private void UpdateTimeDisplay()
 	{
-		var tm = TimeManager.Instance;
-		int hour = (int)(tm.CurrentTimeNormalized * 24.0f);
-		int minute = (int)((tm.CurrentTimeNormalized * 24.0f - hour) * 60.0f);
-		_timeLabel.Text = $"{hour:D2}:{minute:D2} ({tm.CurrentPeriod})";
+		var timeManager = TimeManager.Instance;
+		int hour = (int)(timeManager.CurrentTimeNormalized * 24.0f);
+		int minute = (int)((timeManager.CurrentTimeNormalized * 24.0f - hour) * 60.0f);
+		_timeLabel.Text = $"{hour:D2}:{minute:D2} ({timeManager.CurrentPeriod})";
 	}
 
 	private void UpdateNectarDisplay()

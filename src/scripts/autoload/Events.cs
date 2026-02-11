@@ -21,7 +21,12 @@ public record PlantRemovedEvent(Vector2I GridPos);
 public record SpeciesDiscoveredEvent(string InsectId);
 public record JournalUpdatedEvent(string InsectId, int StarRating);
 
-// -- Insects (Sprint 2) --
+// -- Insects --
 public record InsectArrivedEvent(string InsectId, Vector2 Position);
+public record InsectDepartingEvent(string InsectId, Node2D Insect);
 public record InsectDepartedEvent(string InsectId, Vector2 Position);
 public record InsectClickedEvent(string InsectId, Node2D Insect, Vector2 Position);
+
+// -- Photography --
+public record PhotoTakenEvent(string InsectId, string DisplayName, int StarRating, Vector2 WorldPosition);
+public record PhotoMissedEvent(Vector2 WorldPosition);

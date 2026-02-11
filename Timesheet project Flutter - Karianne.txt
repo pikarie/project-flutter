@@ -4,38 +4,33 @@ Peux-tu générer un nom de commit pour les pending changes actuel?
 Regarde les penging changes et génère un message pour ceux ce qui n'est pas encore commit. Tu peux aussi mettre plusieurs ligne dans le commit pour énumérer au besoin.
 }
 
-TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme Plantera ou Kingdom: New Lands
+TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme "Plantera", "Kingdom: New Lands" ou "Milki Delivery"
+	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
+TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-2026-02-08 2.25
+2026-02-10 19h
 {
-	-1.25 + 1.0
-	-Search for micro game concepts that can be start and completed in only a few weeks. 
-	-I want to do the full Steam release of a game loop.
-	-Brainstorm with Claude deep search and creation of GDD.md
-	-Create git repo
-	-Begin "Sprint 1"
-	-Finish "Sprint 1"
-	-Commmit:
+	-Continue "Sprint 3"
+	-Commit: "chore: rename sprint blueprint files and add variable naming convention"
+	-Commit:
 	{
-		feat(garden): implement Sprint 1 core gameplay loop
+		feat(photography): add photo mode with focus circle, star rating and shutter effects
 
-		- Add GardenGrid with 4x4 tiled grid and placeholder visuals (_Draw)
-		- Add planting, watering, growth and harvest cycle (left/right click)
-		- Add GardenCamera with WASD pan and mouse wheel zoom
-		- Add DayNightVisuals with CanvasModulate and tween transitions
-		- Add EventBus autoload for centralized signals
-		- Add CellState data class for per-cell garden state
-		- Add HUD with time display, nectar counter and speed controls (x1-x10)
-		- Add Plant scene with growth stages tied to TimeManager
-		- Update TimeManager: granular periods, string-based (C# pattern compat)
-		- Update GDD with 3-layer architecture and sprint 1 details
-		- Update project.godot: input actions, window override, autoloads
-		- Add sprint 1 technical blueprint reference document
+		- Add PhotoFocusController: concentric circle focus mechanic (1.5s hold)
+		- Add ScreenFlash: white flash on successful photo
+		- Add StarRatingPopup: floating star display at insect position
+		- Add photo mode toggle via C key and HUD button
+		- Add Insect.Freeze() and IsPhotographable for photo targeting
+		- Add zoom-aware distance check: miss if cursor too far from insect
+		- Add InsectDepartingEvent, PhotoTakenEvent, PhotoMissedEvent
+		- Add GameState.Journal to GameManager enum
+		- Block garden input while in photo mode
 	}
 }
-2026-02-09 1.5
+2026-02-09 2.0
 {
-	-Begin "Sprint 2"
+	-1.5 + 0.5
+	-Begin "Sprint 2 - Insects & Spawning"
 	-Voici comment je découperais le Sprint 2 en commits incrémentaux :
 		1.Migrate EventBus to pure C# — refactor EventBus + adapter Sprint 1
 		2.Add insect scene + movement behaviors — Insect.cs, IMovementBehavior, 4 patterns
@@ -76,6 +71,37 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 		- SpawnSystem filters by available slots, zone, time of day and required plants
 		- Clear slots when plant is removed in GardenGrid
 		- Update GDD: fix code examples (enums, single DisplayName), document EventBus and insect architecture
+	}
+	-Finish "Sprint 2"
+	-Begin "Sprint 3 - Photography & Journal"
+		-Deep search for sprint 3
+	
+}
+2026-02-08 2.25
+{
+	-1.25 + 1.0
+	-Search for micro game concepts that can be start and completed in only a few weeks. 
+	-I want to do the full Steam release of a game loop.
+	-Brainstorm with Claude deep search and creation of GDD.md
+	-Create git repo
+	-Begin "Sprint 1 - Core Grid & Planting"
+	-Finish "Sprint 1"
+	-Commmit:
+	{
+		feat(garden): implement Sprint 1 core gameplay loop
+
+		- Add GardenGrid with 4x4 tiled grid and placeholder visuals (_Draw)
+		- Add planting, watering, growth and harvest cycle (left/right click)
+		- Add GardenCamera with WASD pan and mouse wheel zoom
+		- Add DayNightVisuals with CanvasModulate and tween transitions
+		- Add EventBus autoload for centralized signals
+		- Add CellState data class for per-cell garden state
+		- Add HUD with time display, nectar counter and speed controls (x1-x10)
+		- Add Plant scene with growth stages tied to TimeManager
+		- Update TimeManager: granular periods, string-based (C# pattern compat)
+		- Update GDD with 3-layer architecture and sprint 1 details
+		- Update project.godot: input actions, window override, autoloads
+		- Add sprint 1 technical blueprint reference document
 	}
 }
 

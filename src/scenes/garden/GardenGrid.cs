@@ -133,6 +133,8 @@ public partial class GardenGrid : Node2D
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
+		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
+
 		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed)
 		{
 			var gridPos = MouseToGrid();

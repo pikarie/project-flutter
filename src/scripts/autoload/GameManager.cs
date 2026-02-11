@@ -5,7 +5,7 @@ public partial class GameManager : Node
 {
 	public static GameManager Instance { get; private set; }
 
-	public enum GameState { Playing, Paused, PhotoMode }
+	public enum GameState { Playing, Paused, PhotoMode, Journal }
 
 	public GameState CurrentState { get; private set; } = GameState.Playing;
 	public ZoneType CurrentZone { get; set; } = ZoneType.Starter;

@@ -20,8 +20,13 @@ public partial class Insect : Area2D
 	private Color _bodyColor = Colors.White;
 	private float _bodyRadius = 6f;
 
+	// Freeze state (photography)
+	private bool _isFrozen;
+	private double _freezeTimer;
+
 	public InsectData Data => _data;
 	public InsectState CurrentState => _state;
+	public bool IsPhotographable => _state == InsectState.Visiting && !_isFrozen && IsInsideTree();
 
 	private Action<TimeOfDayChangedEvent> _onTimeChanged;
 	private Action<PlantRemovedEvent> _onPlantRemoved;
@@ -71,6 +76,14 @@ public partial class Insect : Area2D
 
 	public override void _Process(double delta)
 	{
+		if (_isFrozen)
+		{
+			_freezeTimer -= delta;
+			if (_freezeTimer <= 0) _isFrozen = false;
+			QueueRedraw();
+			return;
+		}
+
 		float dt = (float)delta * TimeManager.Instance.SpeedMultiplier;
 		_time += dt;
 
@@ -112,6 +125,17 @@ public partial class Insect : Area2D
 				DrawCircle(new Vector2(2f, 1f), 1.5f, Colors.Black);
 				break;
 		}
+	}
+
+	public void Freeze(float duration = 0.5f)
+	{
+		if (_state != InsectState.Visiting) return;
+		_isFrozen = true;
+		_freezeTimer = duration;
+		Modulate = new Color(1.3f, 1.3f, 1.3f, 1f);
+		CreateTween().TweenProperty(this, "modulate",
+			new Color(1f, 1f, 1f, 1f), duration * 0.8f)
+			.SetTrans(Tween.TransitionType.Sine);
 	}
 
 	private void StartArrival()
@@ -156,6 +180,8 @@ public partial class Insect : Area2D
 	private void StartDeparture()
 	{
 		if (_state == InsectState.Departing || _state == InsectState.Freed) return;
+
+		EventBus.Publish(new InsectDepartingEvent(_data.Id, this));
 		_state = InsectState.Departing;
 
 		// Fly off to a random screen edge
