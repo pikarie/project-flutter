@@ -23,6 +23,7 @@
 ## Code
 - Utiliser **C#** (dernière version supportée par Godot, soit C# 12 / .NET 8).
 - Ne JAMAIS utiliser GDScript.
+- **Noms de variables complets** : écrire les noms au long (`camera` au lieu de `cam`, `distance` au lieu de `dist`, `gameManager` au lieu de `gm`). Pas d'abréviations sauf conventions universelles (`i`/`j` pour boucles, `x`/`y` pour coordonnées).
 
 ## Langue
 - Communiquer en français.
