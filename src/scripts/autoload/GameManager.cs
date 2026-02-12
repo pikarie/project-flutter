@@ -9,9 +9,14 @@ public partial class GameManager : Node
 
 	public GameState CurrentState { get; private set; } = GameState.Playing;
 	public ZoneType CurrentZone { get; set; } = ZoneType.Starter;
+	public const int StartingNectar = 25;
 	public int Nectar { get; private set; }
 
-	public override void _Ready() => Instance = this;
+	public override void _Ready()
+	{
+		Instance = this;
+		Nectar = StartingNectar;
+	}
 
 	public void ChangeState(GameState newState)
 	{

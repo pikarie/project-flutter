@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using System.Collections.Generic;
 using ProjectFlutter;
@@ -10,8 +11,8 @@ public partial class GardenGrid : Node2D
 	private TileMapLayer _groundLayer;
 	private Dictionary<Vector2I, CellState> _cells = new();
 	private Vector2I? _hoveredCell;
+	private string _selectedPlantId;
 
-	private static readonly Color SoilColor = new(0.55f, 0.35f, 0.15f);
 	private static readonly Color SoilTilledColor = new(0.45f, 0.28f, 0.12f);
 	private static readonly Color SoilWateredColor = new(0.35f, 0.22f, 0.10f);
 	private static readonly Color HoverValidColor = new(0.5f, 1f, 0.5f, 0.3f);
@@ -23,8 +24,9 @@ public partial class GardenGrid : Node2D
 	private static readonly Color SeedColor = new(0.6f, 0.45f, 0.2f);
 	private static readonly Color SproutColor = new(0.4f, 0.7f, 0.3f);
 	private static readonly Color GrowingColor = new(0.2f, 0.65f, 0.15f);
-	private static readonly Color BloomingColor = new(0.9f, 0.4f, 0.6f);
 	private static readonly Color WaterDropColor = new(0.3f, 0.6f, 0.9f);
+
+	private Action<SeedSelectedEvent> _onSeedSelected;
 
 	public override void _Ready()
 	{
@@ -44,6 +46,20 @@ public partial class GardenGrid : Node2D
 				_cells[pos] = new CellState { CurrentState = CellState.State.Tilled };
 			}
 		}
+
+		_onSeedSelected = OnSeedSelected;
+		EventBus.Subscribe(_onSeedSelected);
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Unsubscribe(_onSeedSelected);
+	}
+
+	private void OnSeedSelected(SeedSelectedEvent seedEvent)
+	{
+		_selectedPlantId = seedEvent.PlantId;
+		QueueRedraw();
 	}
 
 	public override void _Process(double delta)
@@ -90,9 +106,34 @@ public partial class GardenGrid : Node2D
 		{
 			var hoverRect = new Rect2(hovered.X * TileSize, hovered.Y * TileSize, TileSize, TileSize);
 			var cell = _cells.GetValueOrDefault(hovered);
-			var hoverColor = cell != null && cell.CanPlant() ? HoverValidColor : HoverInvalidColor;
-			DrawRect(hoverRect, hoverColor);
+			bool canAct = CanActOnCell(cell);
+			DrawRect(hoverRect, canAct ? HoverValidColor : HoverInvalidColor);
+
+			// Seed preview on tilled cells when seed is selected
+			if (canAct && cell.CurrentState == CellState.State.Tilled && _selectedPlantId != null)
+			{
+				var plantData = PlantRegistry.GetById(_selectedPlantId);
+				if (plantData != null)
+				{
+					float cx = hovered.X * TileSize + TileSize / 2.0f;
+					float cy = hovered.Y * TileSize + TileSize / 2.0f;
+					var previewColor = plantData.DrawColor with { A = 0.4f };
+					DrawCircle(new Vector2(cx, cy), 10, previewColor);
+				}
+			}
 		}
+	}
+
+	private bool CanActOnCell(CellState cell)
+	{
+		if (cell == null) return false;
+		return cell.CurrentState switch
+		{
+			CellState.State.Tilled => _selectedPlantId != null,
+			CellState.State.Planted or CellState.State.Growing => true,
+			CellState.State.Blooming => true,
+			_ => false
+		};
 	}
 
 	private void DrawPlantPlaceholder(int x, int y, CellState cell)
@@ -100,11 +141,20 @@ public partial class GardenGrid : Node2D
 		float cx = x * TileSize + TileSize / 2.0f;
 		float cy = y * TileSize + TileSize / 2.0f;
 
+		// Look up plant-specific color for bloom
+		var plantData = !string.IsNullOrEmpty(cell.PlantType)
+			? PlantRegistry.GetById(cell.PlantType)
+			: null;
+		Color bloomColor = plantData?.DrawColor ?? new Color(0.9f, 0.4f, 0.6f);
+
 		switch (cell.CurrentState)
 		{
 			case CellState.State.Planted:
-				// Seed: small brown circle
-				DrawCircle(new Vector2(cx, cy + 8), 6, SeedColor);
+				// Seed: small circle tinted by plant color
+				var seedTint = plantData != null
+					? bloomColor.Darkened(0.4f)
+					: SeedColor;
+				DrawCircle(new Vector2(cx, cy + 8), 6, seedTint);
 				break;
 
 			case CellState.State.Growing:
@@ -115,12 +165,12 @@ public partial class GardenGrid : Node2D
 				break;
 
 			case CellState.State.Blooming:
-				// Bloom: stem + flower
+				// Bloom: stem + flower with plant-specific color
 				DrawLine(new Vector2(cx, cy + 14), new Vector2(cx, cy - 10), GrowingColor, 3);
 				DrawCircle(new Vector2(cx - 8, cy), 5, GrowingColor);
 				DrawCircle(new Vector2(cx + 8, cy), 5, GrowingColor);
-				DrawCircle(new Vector2(cx, cy - 14), 10, BloomingColor);
-				DrawCircle(new Vector2(cx, cy - 14), 5, new Color(1f, 0.85f, 0.3f));
+				DrawCircle(new Vector2(cx, cy - 14), 10, bloomColor);
+				DrawCircle(new Vector2(cx, cy - 14), 5, bloomColor.Lightened(0.4f));
 				break;
 		}
 
@@ -159,10 +209,23 @@ public partial class GardenGrid : Node2D
 		switch (cell.CurrentState)
 		{
 			case CellState.State.Tilled:
+				if (_selectedPlantId == null)
+				{
+					GD.Print("Select a seed from the toolbar first (keys 1-9)");
+					return;
+				}
+				var plantData = PlantRegistry.GetById(_selectedPlantId);
+				if (plantData == null) return;
+				if (!GameManager.Instance.SpendNectar(plantData.SeedCost))
+				{
+					GD.Print($"Not enough nectar! Need {plantData.SeedCost}, have {GameManager.Instance.Nectar}");
+					return;
+				}
 				cell.CurrentState = CellState.State.Planted;
-				cell.PlantType = "placeholder";
+				cell.PlantType = plantData.Id;
+				cell.MaxInsectSlots = plantData.InsectSlots;
 				EventBus.Publish(new PlantPlantedEvent(cell.PlantType, pos));
-				GD.Print($"Planted seed at {pos}");
+				GD.Print($"Planted {plantData.DisplayName} at {pos} (cost {plantData.SeedCost} nectar)");
 				break;
 
 			case CellState.State.Planted:
@@ -185,11 +248,13 @@ public partial class GardenGrid : Node2D
 				break;
 
 			case CellState.State.Blooming:
-				GameManager.Instance.AddNectar(3);
+				var harvestedPlant = PlantRegistry.GetById(cell.PlantType);
+				int nectarYield = harvestedPlant?.NectarYield ?? 3;
+				GameManager.Instance.AddNectar(nectarYield);
 				cell.CurrentState = CellState.State.Growing;
 				cell.IsWatered = false;
 				EventBus.Publish(new PlantHarvestedEvent(cell.PlantType, pos));
-				GD.Print($"Harvested at {pos}, nectar: {GameManager.Instance.Nectar}");
+				GD.Print($"Harvested {harvestedPlant?.DisplayName ?? cell.PlantType} at {pos}, +{nectarYield} nectar (total: {GameManager.Instance.Nectar})");
 				break;
 		}
 		QueueRedraw();
@@ -200,11 +265,11 @@ public partial class GardenGrid : Node2D
 		var cell = _cells[pos];
 		if (cell.CurrentState != CellState.State.Tilled)
 		{
-			var plantType = cell.PlantType;
 			cell.CurrentState = CellState.State.Tilled;
 			cell.PlantType = "";
 			cell.GrowthStage = 0;
 			cell.IsWatered = false;
+			cell.MaxInsectSlots = 2;
 			cell.PlantNode?.QueueFree();
 			cell.PlantNode = null;
 			cell.ClearSlots();

@@ -14,4 +14,5 @@ public partial class PlantData : Resource
 	[Export] public bool NightBlooming { get; set; }
 	[Export] public Texture2D[] GrowthSprites { get; set; }
 	[Export] public string[] AttractedInsects { get; set; }
+	[Export] public Color DrawColor { get; set; } = new Color(0.9f, 0.4f, 0.6f);
 }

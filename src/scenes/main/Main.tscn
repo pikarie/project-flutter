@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=10 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/garden/Garden.tscn" id="1"]
 [ext_resource type="Script" path="res://scenes/garden/GardenCamera.cs" id="2"]
@@ -8,6 +8,7 @@
 [ext_resource type="Script" path="res://scenes/photography/StarRatingPopup.cs" id="6"]
 [ext_resource type="Script" path="res://scenes/journal/JournalUI.cs" id="7"]
 [ext_resource type="Script" path="res://scenes/journal/DiscoveryNotification.cs" id="8"]
+[ext_resource type="Script" path="res://scenes/ui/SeedToolbar.cs" id="9"]
 
 [node name="Main" type="Node2D"]
 
@@ -20,6 +21,13 @@ script = ExtResource("2")
 layer = 10
 
 [node name="HUD" parent="UILayer" instance=ExtResource("3")]
+
+[node name="SeedToolbar" type="Control" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("9")
 
 [node name="PhotoFocusController" type="Control" parent="UILayer"]
 anchors_preset = 15

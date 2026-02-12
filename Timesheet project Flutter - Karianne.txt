@@ -8,9 +8,26 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-2026-02-10 19h
+2026-02-11 20h30-
 {
-	-Continue "Sprint 3"
+	-Begin "Sprint 4 - Economy & Zones"
+	-Commit:
+	{
+		feat(economy): add plant registry, seed toolbar and nectar economy
+
+		- Add PlantRegistry with all 20 plant species (costs, yields, colors)
+		- Add SeedToolbar hotbar with keyboard shortcuts (1-9, Escape)
+		- Require seed selection and nectar cost to plant
+		- Color-code blooming plants by species
+		- Variable nectar yield per plant on harvest
+		- Start game with 25 nectar
+		- Add Sprint 4 planning documents
+	}
+}
+2026-02-10 2.75
+{
+	-2.25 + 0.5
+	-Begin "Sprint 3 - Photography & Journal"
 	-Commit: "chore: rename sprint blueprint files and add variable naming convention"
 	-Commit:
 	{
@@ -26,6 +43,36 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- Add GameState.Journal to GameManager enum
 		- Block garden input while in photo mode
 	}
+	-Problématique:
+		Ça fonctionne bien! voir: "D:\Users\karia\Source\Repos\project-flutter\Steps\2026-02-10_20h19_16 insect journal.png"
+		J'ai remarqué quelque chose. Parfois, je prends une photo, puis je veut tout de suite voir le journal, alors je clique sur journal, mais je ne me rends pas compte que je suis encore en mode photo. Je doit cliquer pour sortir dumode photo, sinon le raccourci "J" ou le bouton "Journal" ne fonctionne pas. 'ai l'impression que ça fait de la friction, mais je ne suis aps sur si c'est mieux d'enlever le mode photo suite à une photo prise. La personne va alors avoir le problème inverse et va devoir recliquer sur photo pour retourner en mode photo. As-tu des suggestion pour ce flow dans le jeu?
+	-Solution
+		permettre les transitions directes entre tous les modes. Concrètement :
+		
+		Depuis		C			J			Escape
+		------------------------------------------
+		Playing		→ PhotoMode	→ Journal	—
+		PhotoMode	→ Playing	→ Journal	→ Playing
+		Journal		→ PhotoMode	→ Playing	→ Playing
+	-Problématique:
+		Par contre j'ai essayer de jouer et trouver quelque chose de rigolo. Si je suis zoomed in au maximum, c'est super difficile de prendre une photo 3 étoiles d'un papillon car leur path sont ératique. Alors que si je zoom out au maximum, je réussi toujours a prendre des photos 3 étoiles, car je suis tellement loin, que c'est sur que l'insecte est centré.
+	-Solution
+		Plusieurs itération de refactor.
+		Au final, utilisation de "WorldRadius" pour que la distance soti la même peut importe le zoom
+	-Commit: 
+	{
+		feat(journal): add field journal, discovery notifications and photo polish
+
+		- Add JournalUI with grid view (4 columns) and detail view (programmatic UI)
+		- Add InsectRegistry as shared species data for SpawnSystem and JournalUI
+		- Add DiscoveryNotification toast system (new species / star upgrade, FIFO queue)
+		- Add Journal button + J shortcut, allow direct navigation between all game states
+		- Polish photo system: unified fixed WorldRadius, zoom-scaled visuals
+		- Add live quality feedback (green/orange/red/grey) based on cursor-insect distance
+		- Update GDD with Sprint 3 completion and current project structure
+	}
+	-Finish "Sprint 3"
+	-Begin Deep search for sprint 4
 }
 2026-02-09 2.0
 {
@@ -73,9 +120,7 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- Update GDD: fix code examples (enums, single DisplayName), document EventBus and insect architecture
 	}
 	-Finish "Sprint 2"
-	-Begin "Sprint 3 - Photography & Journal"
-		-Deep search for sprint 3
-	
+	-Begin Deep search for sprint 3
 }
 2026-02-08 2.25
 {
@@ -102,36 +147,7 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- Update GDD with 3-layer architecture and sprint 1 details
 		- Update project.godot: input actions, window override, autoloads
 		- Add sprint 1 technical blueprint reference document
-	}
-	-Problématique:
-		Ça fonctionne bien! voir: "D:\Users\karia\Source\Repos\project-flutter\Steps\2026-02-10_20h19_16 insect journal.png"
-		J'ai remarqué quelque chose. Parfois, je prends une photo, puis je veut tout de suite voir le journal, alors je clique sur journal, mais je ne me rends pas compte que je suis encore en mode photo. Je doit cliquer pour sortir dumode photo, sinon le raccourci "J" ou le bouton "Journal" ne fonctionne pas. 'ai l'impression que ça fait de la friction, mais je ne suis aps sur si c'est mieux d'enlever le mode photo suite à une photo prise. La personne va alors avoir le problème inverse et va devoir recliquer sur photo pour retourner en mode photo. As-tu des suggestion pour ce flow dans le jeu?
-	-Solution
-		permettre les transitions directes entre tous les modes. Concrètement :
-		
-		Depuis		C			J			Escape
-		------------------------------------------
-		Playing		→ PhotoMode	→ Journal	—
-		PhotoMode	→ Playing	→ Journal	→ Playing
-		Journal		→ PhotoMode	→ Playing	→ Playing
-	-Problématique:
-		Par contre j'ai essayer de jouer et trouver quelque chose de rigolo. Si je suis zoomed in au maximum, c'est super difficile de prendre une photo 3 étoiles d'un papillon car leur path sont ératique. Alors que si je zoom out au maximum, je réussi toujours a prendre des photos 3 étoiles, car je suis tellement loin, que c'est sur que l'insecte est centré.
-	-Solution
-		Plusieurs itération de refactor.
-		Au final, utilisation de "WorldRadius" pour que la distance soti la même peut importe le zoom
-	-Commit: 
-	{
-		feat(journal): add field journal, discovery notifications and photo polish
-
-		- Add JournalUI with grid view (4 columns) and detail view (programmatic UI)
-		- Add InsectRegistry as shared species data for SpawnSystem and JournalUI
-		- Add DiscoveryNotification toast system (new species / star upgrade, FIFO queue)
-		- Add Journal button + J shortcut, allow direct navigation between all game states
-		- Refactor photo system: unified fixed WorldRadius for search, quality and visuals
-		- Add live quality feedback (green/orange/red/grey) based on cursor-insect distance
-		- Update GDD with Sprint 3 completion and current project structure
-	}
-		
+	}	
 }
 
 

@@ -30,3 +30,6 @@ public record InsectClickedEvent(string InsectId, Node2D Insect, Vector2 Positio
 // -- Photography --
 public record PhotoTakenEvent(string InsectId, string DisplayName, int StarRating, Vector2 WorldPosition);
 public record PhotoMissedEvent(Vector2 WorldPosition);
+
+// -- Seeds --
+public record SeedSelectedEvent(string PlantId);
