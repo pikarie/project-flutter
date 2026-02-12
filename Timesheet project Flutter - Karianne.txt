@@ -10,7 +10,7 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-2026-02-11 20h30-
+2026-02-11 2.75
 {
 	-Begin "Sprint 4 - Economy & Zones"
 	-Commit:
@@ -59,7 +59,7 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- Enrich PlantHarvestedEvent with NectarYield and WorldPosition
 		- Register HarvestPopup node in Main.tscn UILayer
 	}
-	-Commit
+	-Commit:
 	{
 		feat(pond): add water tiles infrastructure and F1 debug shortcut
 
@@ -72,6 +72,17 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- Add F1 debug key to unlock all zones instantly
 		- Add debug hint label in HUD bottom-left corner
 	}
+	-Commit:
+	{
+		docs: complete Sprint 4, update GDD and add Sprint 5 context
+
+		- Mark Sprint 3 and Sprint 4 as complete (✓) in GDD
+		- Update GDD project structure (ZoneManager, HarvestPopup, SeedToolbar, ZoneSelector)
+		- Add water tiles, F1 debug, RequiredWaterTiles to GDD technical sections
+		- Add sprint5-context-for-deep-search.md for next sprint planning
+	}
+	-Begin Deep Search for "cozy game feedback". How to handle nectar gathering in games like "Stardew Valley", "Plantera" and others.
+	-Begin Deep search for sprint 5
 }
 2026-02-10 2.75
 {

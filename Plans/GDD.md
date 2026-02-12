@@ -297,13 +297,16 @@ project-flutter/
 │   │   ├── PhotoFocusController.cs # Focus circle mechanic, quality calculation
 │   │   ├── ScreenFlash.cs         # White flash on photo taken
 │   │   └── StarRatingPopup.cs     # Floating star rating display
+│   ├── garden/
+│   │   └── HarvestPopup.cs        # Floating "+N nectar" golden popup
 │   ├── journal/
 │   │   ├── JournalUI.cs           # Field journal (programmatic UI, grid + detail)
 │   │   └── DiscoveryNotification.cs # Toast notifications for discoveries
 │   └── ui/
-│       ├── HUD.tscn               # Nectar counter, time display, zone selector
-│       ├── HUD.cs                 # HUD logic, keyboard shortcuts (C/J/Esc)
-│       ├── SeedShop.tscn          # Seed purchasing UI (TODO)
+│       ├── HUD.tscn               # Nectar counter, time display, debug hint
+│       ├── HUD.cs                 # HUD logic, keyboard shortcuts (C/J/F1/Esc)
+│       ├── SeedToolbar.cs         # Seed purchasing toolbar (keys 1-9)
+│       ├── ZoneSelector.cs        # Zone tab navigation + unlock panel
 │       └── MainMenu.tscn          # Title screen, settings, load game (TODO)
 ├── resources/
 │   ├── plant_data/                # .tres Resource files for each plant
@@ -311,9 +314,10 @@ project-flutter/
 │   └── zone_data/                 # .tres Resource files for zone configs
 ├── scripts/
 │   ├── autoload/
-│   │   ├── GameManager.cs         # Global state, save/load
+│   │   ├── GameManager.cs         # Global state, nectar economy, save/load
 │   │   ├── TimeManager.cs         # Day/night cycle, speed control
 │   │   ├── JournalManager.cs      # Discovery tracking, completion %
+│   │   ├── ZoneManager.cs         # Zone unlock/switching, F1 debug unlock
 │   │   ├── EventBus.cs            # Pure static C# event bus (Subscribe/Publish/Unsubscribe)
 │   │   └── Events.cs             # All event record types
 │   ├── data/
@@ -322,7 +326,7 @@ project-flutter/
 │   │   ├── InsectRegistry.cs      # Static shared species data (used by SpawnSystem + JournalUI)
 │   │   ├── ZoneType.cs            # Zone enum (Starter, Meadow, Pond)
 │   │   ├── MovementPattern.cs     # Movement enum (Hover, Flutter, Crawl, Erratic)
-│   │   └── CellState.cs           # Per-cell garden state + insect slot tracking
+│   │   └── CellState.cs           # Per-cell garden state + insect slot tracking + IsWater flag
 │   └── systems/
 │       ├── SpawnSystem.cs         # Insect spawn logic, slot management
 │       ├── IMovementBehavior.cs   # Movement interface + factory
@@ -362,8 +366,9 @@ project-flutter/
 - Adding a new insect = add entry in InsectRegistry + art assets
 - **Placeholder art** — all visuals use `_Draw()` programmatic rendering until final art is integrated
 - **UILayer** (CanvasLayer, layer 10) keeps all UI above CanvasModulate day/night tinting
-- **Keyboard shortcuts** centralized in HUD._UnhandledInput: C (photo), J (journal), Escape (back to playing)
+- **Keyboard shortcuts** centralized in HUD._UnhandledInput: C (photo), J (journal), F1 (debug unlock all zones), Escape (back to playing)
 - **GameState enum** manages modes: Playing, Paused, PhotoMode, Journal
+- **Water tiles** pre-placed via `int[] WaterTileData` (x,y pairs as PackedInt32Array in .tscn); blocks planting, enables water-dependent insect spawning
 
 ### 7.3 PlantData Resource Example
 ```csharp
@@ -396,6 +401,7 @@ public partial class InsectData : Resource
     [Export] public string TimeOfDay { get; set; }             // "day" / "night" / "both"
     [Export] public string[] RequiredPlants { get; set; }      // ["milkweed"]
     [Export] public float SpawnWeight { get; set; }            // 0.3 (lower = rarer)
+    [Export] public int RequiredWaterTiles { get; set; }       // 0 (water_strider=1, emperor_dragonfly=2)
     [Export] public float VisitDurationMin { get; set; }       // 60.0 (game-time seconds)
     [Export] public float VisitDurationMax { get; set; }       // 180.0
     [Export] public string PhotoDifficulty { get; set; }       // "medium"
@@ -443,7 +449,7 @@ public partial class InsectData : Resource
 - [x] Basic insect-plant attraction matching from data resources
 - **Deliverable:** Insects arrive and leave based on what's planted
 
-### Sprint 3 — Photography & Journal (Week 5-6, ~40h)
+### Sprint 3 — Photography & Journal (Week 5-6, ~40h) ✓
 - [x] Photo mode toggle (C key, or Photo button in HUD)
 - [x] Concentric circle focus mechanic (click & hold, zoom-aware distance)
 - [x] Quality rating calculation (distance from center, miss if too far)
@@ -454,13 +460,13 @@ public partial class InsectData : Resource
 - [x] New discovery notification/fanfare (DiscoveryNotification toast with FIFO queue)
 - **Deliverable:** Full photograph → journal → collection loop working
 
-### Sprint 4 — Economy & Zones (Week 7-8, ~40h)
-- [ ] Nectar currency system (harvest flowers, earn nectar)
-- [ ] Seed shop UI (buy seeds with nectar)
-- [ ] Zone unlock system (nectar cost + journal entry requirements)
-- [ ] Build all 3 zones with proper backgrounds
-- [ ] Zone switching UI/navigation
-- [ ] Pond zone water tiles (special infrastructure)
+### Sprint 4 — Economy & Zones (Week 7-8, ~40h) ✓
+- [x] Nectar currency system (harvest flowers, earn nectar, floating "+N" popup)
+- [x] Seed toolbar UI (buy seeds with nectar, keys 1-9)
+- [x] Zone unlock system (nectar cost + journal entry requirements)
+- [x] Build all 3 zones (Starter 4x4, Meadow 6x6, Pond 5x5)
+- [x] Zone switching UI/navigation (ZoneSelector tabs + unlock panel)
+- [x] Pond zone water tiles (pre-placed infrastructure, spawn requirements)
 - **Deliverable:** Full progression loop from starter to all zones
 
 ### Sprint 5 — Content & Art (Week 9-10, ~40h)
