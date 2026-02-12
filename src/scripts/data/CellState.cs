@@ -9,6 +9,7 @@ public class CellState
 	public string PlantType { get; set; } = "";
 	public int GrowthStage { get; set; }
 	public bool IsWatered { get; set; }
+	public bool IsWater { get; set; }
 	public Node2D PlantNode { get; set; }
 
 	// Insect slot tracking

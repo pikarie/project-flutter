@@ -56,4 +56,17 @@ public partial class ZoneManager : Node
 		EventBus.Publish(new ZoneUnlockedEvent(zone));
 		return true;
 	}
+
+	public void DebugUnlockAll()
+	{
+		foreach (var zone in ZoneConfig.Keys)
+		{
+			if (!_unlockedZones[zone])
+			{
+				_unlockedZones[zone] = true;
+				EventBus.Publish(new ZoneUnlockedEvent(zone));
+			}
+		}
+		GD.Print("DEBUG: All zones unlocked");
+	}
 }

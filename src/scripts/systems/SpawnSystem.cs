@@ -64,10 +64,12 @@ public partial class SpawnSystem : Node
 			.ToHashSet();
 
 		// Filter eligible insects
+		int waterTileCount = _gardenGrid.CountWaterTiles();
 		var eligible = InsectRegistry.AllSpecies
 			.Where(i => MatchesTimeOfDay(i.TimeOfDay))
 			.Where(i => i.Zone == GameManager.Instance.CurrentZone || i.Zone == ZoneType.Starter)
 			.Where(i => MeetsPlantRequirements(i, bloomingPlantTypes))
+			.Where(i => MeetsWaterRequirements(i, waterTileCount))
 			.ToList();
 
 		if (eligible.Count == 0) return;
@@ -111,6 +113,11 @@ public partial class SpawnSystem : Node
 	{
 		if (insect.RequiredPlants == null || insect.RequiredPlants.Length == 0) return true;
 		return insect.RequiredPlants.All(req => bloomingTypes.Contains(req));
+	}
+
+	private static bool MeetsWaterRequirements(InsectData insect, int waterTileCount)
+	{
+		return insect.RequiredWaterTiles <= 0 || waterTileCount >= insect.RequiredWaterTiles;
 	}
 
 	private InsectData WeightedRandomSelect(List<InsectData> candidates)

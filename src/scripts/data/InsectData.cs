@@ -11,6 +11,7 @@ public partial class InsectData : Resource
 	[Export] public string TimeOfDay { get; set; }
 	[Export] public string[] RequiredPlants { get; set; }
 	[Export] public float SpawnWeight { get; set; } = 1.0f;
+	[Export] public int RequiredWaterTiles { get; set; }
 	[Export] public float VisitDurationMin { get; set; } = 60.0f;
 	[Export] public float VisitDurationMax { get; set; } = 180.0f;
 	[Export] public string PhotoDifficulty { get; set; }

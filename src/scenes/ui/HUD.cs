@@ -70,6 +70,10 @@ public partial class HUD : Control
 					ToggleJournal();
 					GetViewport().SetInputAsHandled();
 					break;
+				case Key.F1:
+					ZoneManager.Instance.DebugUnlockAll();
+					GetViewport().SetInputAsHandled();
+					break;
 				case Key.Escape:
 					if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
 					{

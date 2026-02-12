@@ -7,6 +7,7 @@ public partial class GardenGrid : Node2D
 {
 	[Export] public Vector2I GridSize { get; set; } = new(4, 4);
 	[Export] public int TileSize { get; set; } = 128;
+	[Export] public int[] WaterTileData { get; set; } = System.Array.Empty<int>();
 
 	private TileMapLayer _groundLayer;
 	private Dictionary<Vector2I, CellState> _cells = new();
@@ -19,6 +20,8 @@ public partial class GardenGrid : Node2D
 	private static readonly Color HoverInvalidColor = new(1f, 0.5f, 0.5f, 0.3f);
 	private static readonly Color GridLineColor = new(0.3f, 0.2f, 0.1f, 0.4f);
 	private static readonly Color GrassColor = new(0.35f, 0.55f, 0.2f);
+	private static readonly Color WaterTileColor = new(0.2f, 0.45f, 0.7f);
+	private static readonly Color WaterTileDeepColor = new(0.15f, 0.35f, 0.6f);
 
 	// Plant stage placeholder colors
 	private static readonly Color SeedColor = new(0.6f, 0.45f, 0.2f);
@@ -44,6 +47,16 @@ public partial class GardenGrid : Node2D
 			{
 				var pos = new Vector2I(x, y);
 				_cells[pos] = new CellState { CurrentState = CellState.State.Tilled };
+			}
+		}
+
+		for (int i = 0; i + 1 < WaterTileData.Length; i += 2)
+		{
+			var waterPos = new Vector2I(WaterTileData[i], WaterTileData[i + 1]);
+			if (_cells.TryGetValue(waterPos, out var waterCell))
+			{
+				waterCell.IsWater = true;
+				waterCell.CurrentState = CellState.State.Empty;
 			}
 		}
 
@@ -101,13 +114,22 @@ public partial class GardenGrid : Node2D
 				var rect = new Rect2(x * TileSize, y * TileSize, TileSize, TileSize);
 				var cell = _cells[new Vector2I(x, y)];
 
-				// Soil color based on state
-				Color soilColor = cell.IsWatered ? SoilWateredColor : SoilTilledColor;
-				DrawRect(rect, soilColor);
+				if (cell.IsWater)
+				{
+					DrawRect(rect, WaterTileColor);
+					// Simple wave accent in center
+					float cx = x * TileSize + TileSize / 2.0f;
+					float cy = y * TileSize + TileSize / 2.0f;
+					DrawLine(new Vector2(cx - 16, cy), new Vector2(cx + 16, cy), WaterTileDeepColor, 2);
+					DrawLine(new Vector2(cx - 10, cy + 10), new Vector2(cx + 10, cy + 10), WaterTileDeepColor, 1.5f);
+				}
+				else
+				{
+					Color soilColor = cell.IsWatered ? SoilWateredColor : SoilTilledColor;
+					DrawRect(rect, soilColor);
+					DrawPlantPlaceholder(x, y, cell);
+				}
 				DrawRect(rect, GridLineColor, false, 1.0f);
-
-				// Draw plant placeholder based on growth stage
-				DrawPlantPlaceholder(x, y, cell);
 			}
 		}
 
@@ -136,7 +158,7 @@ public partial class GardenGrid : Node2D
 
 	private bool CanActOnCell(CellState cell)
 	{
-		if (cell == null) return false;
+		if (cell == null || cell.IsWater) return false;
 		return cell.CurrentState switch
 		{
 			CellState.State.Tilled => _selectedPlantId != null,
@@ -274,6 +296,7 @@ public partial class GardenGrid : Node2D
 	private void HandleSecondaryAction(Vector2I pos)
 	{
 		var cell = _cells[pos];
+		if (cell.IsWater) return;
 		if (cell.CurrentState != CellState.State.Tilled)
 		{
 			cell.CurrentState = CellState.State.Tilled;
@@ -318,4 +341,12 @@ public partial class GardenGrid : Node2D
 	public Dictionary<Vector2I, CellState> GetCells() => _cells;
 
 	public CellState GetCell(Vector2I pos) => _cells.GetValueOrDefault(pos);
+
+	public int CountWaterTiles()
+	{
+		int count = 0;
+		foreach (var cell in _cells.Values)
+			if (cell.IsWater) count++;
+		return count;
+	}
 }

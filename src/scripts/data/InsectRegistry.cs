@@ -143,12 +143,13 @@ public static class InsectRegistry
 			MovementPattern.Crawl, "day", 0.7f, 80f, 220f, 20f,
 			"Uses surface tension to walk on water, sensing vibrations from trapped insects.",
 			"Skates near cattails along the water's edge.",
-			requiredPlants: new[] { "cattail" }),
+			requiredPlants: new[] { "cattail" }, requiredWaterTiles: 1),
 
 		CreateInsect("pond_skater", "Pond Skater", ZoneType.Pond, "common",
 			MovementPattern.Crawl, "both", 0.8f, 100f, 260f, 18f,
 			"A nimble water surface dweller that hunts day and night.",
-			"Always present near the pond edge."),
+			"Always present near the pond edge.",
+			requiredWaterTiles: 1),
 
 		CreateInsect("gulf_fritillary", "Gulf Fritillary", ZoneType.Pond, "rare",
 			MovementPattern.Flutter, "day", 0.2f, 30f, 100f, 46f,
@@ -160,7 +161,7 @@ public static class InsectRegistry
 			MovementPattern.Hover, "day", 0.2f, 25f, 80f, 60f,
 			"The largest dragonfly species, a powerful blue-green hunter of the skies.",
 			"Hunts over lotus ponds.",
-			requiredPlants: new[] { "lotus" }),
+			requiredPlants: new[] { "lotus" }, requiredWaterTiles: 2),
 
 		// ── Pond Zone — Night ───────────────────────────────────────
 
@@ -182,7 +183,7 @@ public static class InsectRegistry
 		MovementPattern pattern, string timeOfDay, float spawnWeight,
 		float visitMin, float visitMax, float speed,
 		string journalText, string hintText,
-		string[] requiredPlants = null)
+		string[] requiredPlants = null, int requiredWaterTiles = 0)
 	{
 		return new InsectData
 		{
@@ -192,6 +193,7 @@ public static class InsectRegistry
 			Rarity = rarity,
 			TimeOfDay = timeOfDay,
 			RequiredPlants = requiredPlants,
+			RequiredWaterTiles = requiredWaterTiles,
 			SpawnWeight = spawnWeight,
 			VisitDurationMin = visitMin,
 			VisitDurationMax = visitMax,

@@ -1,8 +1,10 @@
 Claude prompts
 {
-Peux-tu générer un nom de commit pour les pending changes actuel?
-Regarde les penging changes et génère un message pour ceux ce qui n'est pas encore commit. Tu peux aussi mettre plusieurs ligne dans le commit pour énumérer au besoin.
+	Regarde les penging changes et génère un message pour ceux ce qui n'est pas encore commit. Tu peux mettre plusieurs lignes dans le commit pour énumérer au besoin
 }
+
+Idea: changer le placement par case (grille) pour dequoi de fluide comme "Tiny Glade" ou "Cheeky Chooks"
+Idea: brainstorm sur les currency. "Rusty's Retirement" à 2 currency. Est-ce que comme "Pokemon" on voudrait faire qu'on doit 'acheter' du film photo pour la caméra? Au lieu d'avoir illimiter de photos?
 
 TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme "Plantera", "Kingdom: New Lands" ou "Milki Delivery"
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
@@ -22,6 +24,53 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- Variable nectar yield per plant on harvest
 		- Start game with 25 nectar
 		- Add Sprint 4 planning documents
+	}
+	-Commit:
+	{
+		feat(zones): add multi-zone system with unlock progression
+
+		- Add ZoneManager autoload with zone switching and unlock logic
+		- Create GameWorld to manage zone visibility and ProcessMode toggling
+		- Add ZoneSelector UI with tab navigation and unlock panel
+		- Restructure Main.tscn with 3 Garden instances (Starter 4x4, Meadow 6x6, Pond 5x5)
+		- Move DayNightVisuals from Garden to Main level (shared across zones)
+		- Update SeedToolbar to rebuild slots on zone change
+		- Update GardenCamera to recenter on zone switch
+		- Fix PhotoFocusController to find InsectContainer in active zone
+		- Add CanProcess() guards on Insect EventBus handlers
+	}
+	-Commit:
+	{
+		feat(insects): populate all 25 species and polish input handling
+
+		- Expand InsectRegistry from 4 to 25 species across Starter/Meadow/Pond
+		- Add zone, rarity and required plants per species
+		- Add middle mouse drag for camera panning
+		- Block camera and grid hover input during journal/pause states
+		- Cancel photo mode when purchasing a zone unlock
+		- Restore GDD journal requirements (5 Meadow, 12 Pond)
+		- Add unique hash-based colors per insect and journal species colors
+	}
+	-Commit:
+	{
+		feat(ui): add floating harvest popup with nectar yield feedback
+
+		- Add HarvestPopup.cs with golden "+N" popup that drifts up and fades out
+		- Enrich PlantHarvestedEvent with NectarYield and WorldPosition
+		- Register HarvestPopup node in Main.tscn UILayer
+	}
+	-Commit
+	{
+		feat(pond): add water tiles infrastructure and F1 debug shortcut
+
+		- Add pre-placed water tiles to Pond zone (5 tiles in corner pattern)
+		- Render water tiles in blue with wave accents in GardenGrid
+		- Block planting and removal on water tiles
+		- Add IsWater flag to CellState and WaterTileData export to GardenGrid
+		- Add RequiredWaterTiles to InsectData (water_strider: 1, pond_skater: 1, emperor_dragonfly: 2)
+		- Filter spawn eligibility by water tile count in SpawnSystem
+		- Add F1 debug key to unlock all zones instantly
+		- Add debug hint label in HUD bottom-left corner
 	}
 }
 2026-02-10 2.75

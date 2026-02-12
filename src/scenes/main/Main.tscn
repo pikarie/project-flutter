@@ -37,6 +37,7 @@ process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/PondZone"]
 GridSize = Vector2i(5, 5)
+WaterTileData = PackedInt32Array(4, 1, 3, 2, 4, 2, 3, 3, 4, 3)
 
 [node name="GardenCamera" type="Camera2D" parent="."]
 script = ExtResource("2")
