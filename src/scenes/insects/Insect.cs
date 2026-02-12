@@ -45,15 +45,12 @@ public partial class Insect : Area2D
 
 		_visitTimeRemaining = _rng.RandfRange(data.VisitDurationMin, data.VisitDurationMax);
 
-		// Placeholder colors per movement pattern
-		_bodyColor = data.MovementPattern switch
-		{
-			MovementPattern.Hover   => new Color(1.0f, 0.85f, 0.2f),  // yellow (bee)
-			MovementPattern.Flutter => new Color(0.85f, 0.4f, 0.8f),  // pink (butterfly)
-			MovementPattern.Crawl   => new Color(0.9f, 0.2f, 0.15f),  // red (ladybug)
-			MovementPattern.Erratic => new Color(0.6f, 0.55f, 0.45f), // brown (moth)
-			_ => Colors.White,
-		};
+		// Unique color per species derived from ID hash
+		uint hash = 0;
+		foreach (char character in data.Id)
+			hash = hash * 31 + character;
+		float hue = (hash % 360) / 360f;
+		_bodyColor = Color.FromHsv(hue, 0.7f, 0.9f);
 
 		GlobalPosition = entryPosition;
 	}

@@ -64,6 +64,16 @@ public partial class GardenGrid : Node2D
 
 	public override void _Process(double delta)
 	{
+		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+		{
+			if (_hoveredCell != null)
+			{
+				_hoveredCell = null;
+				QueueRedraw();
+			}
+			return;
+		}
+
 		var newHover = MouseToGrid();
 		if (newHover != _hoveredCell)
 		{

@@ -170,6 +170,8 @@ public partial class ZoneSelector : Control
 		if (ZoneManager.Instance.TryUnlock(_pendingUnlockZone))
 		{
 			_unlockPanel.Visible = false;
+			if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+				GameManager.Instance.ChangeState(GameManager.GameState.Playing);
 			ZoneManager.Instance.SwitchToZone(_pendingUnlockZone);
 		}
 	}

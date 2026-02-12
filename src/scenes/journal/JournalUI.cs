@@ -246,10 +246,34 @@ public partial class JournalUI : Control
 	{
 		return speciesId switch
 		{
+			// Starter
 			"honeybee" => new Color(1.0f, 0.85f, 0.2f),
+			"bumblebee" => new Color(0.95f, 0.75f, 0.1f),
 			"cabbage_white" => new Color(0.85f, 0.4f, 0.8f),
 			"ladybug" => new Color(0.9f, 0.2f, 0.15f),
+			"garden_spider" => new Color(0.45f, 0.35f, 0.25f),
 			"sphinx_moth" => new Color(0.6f, 0.55f, 0.45f),
+			"owl_moth" => new Color(0.55f, 0.45f, 0.35f),
+			// Meadow
+			"monarch_butterfly" => new Color(0.95f, 0.55f, 0.1f),
+			"swallowtail" => new Color(0.95f, 0.9f, 0.3f),
+			"hoverfly" => new Color(0.8f, 0.7f, 0.2f),
+			"grasshopper" => new Color(0.4f, 0.7f, 0.2f),
+			"painted_lady" => new Color(0.9f, 0.5f, 0.3f),
+			"praying_mantis" => new Color(0.3f, 0.65f, 0.25f),
+			"jewel_beetle" => new Color(0.2f, 0.7f, 0.6f),
+			"luna_moth" => new Color(0.5f, 0.9f, 0.6f),
+			"atlas_moth" => new Color(0.7f, 0.4f, 0.2f),
+			"monarch_migration" => new Color(1.0f, 0.6f, 0.15f),
+			// Pond
+			"dragonfly" => new Color(0.3f, 0.6f, 0.9f),
+			"damselfly" => new Color(0.4f, 0.7f, 0.85f),
+			"water_strider" => new Color(0.35f, 0.45f, 0.55f),
+			"pond_skater" => new Color(0.4f, 0.5f, 0.6f),
+			"gulf_fritillary" => new Color(0.95f, 0.45f, 0.15f),
+			"emperor_dragonfly" => new Color(0.2f, 0.5f, 0.8f),
+			"firefly" => new Color(0.9f, 0.95f, 0.3f),
+			"cricket" => new Color(0.5f, 0.4f, 0.25f),
 			_ => Colors.Gray,
 		};
 	}

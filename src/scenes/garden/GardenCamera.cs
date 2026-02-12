@@ -10,6 +10,8 @@ public partial class GardenCamera : Camera2D
 	[Export] public float MaxZoom { get; set; } = 3.0f;
 
 	private Action<ZoneChangedEvent> _onZoneChanged;
+	private bool _isDragging;
+	private Vector2 _lastDragPosition;
 
 	public override void _Ready()
 	{
@@ -30,8 +32,13 @@ public partial class GardenCamera : Camera2D
 		Position = Vector2.Zero;
 	}
 
+	private bool IsInteractiveState =>
+		GameManager.Instance.CurrentState is GameManager.GameState.Playing or GameManager.GameState.PhotoMode;
+
 	public override void _Process(double delta)
 	{
+		if (!IsInteractiveState) return;
+
 		var dir = Vector2.Zero;
 		if (Input.IsActionPressed("camera_left")) dir.X -= 1;
 		if (Input.IsActionPressed("camera_right")) dir.X += 1;
@@ -44,8 +51,18 @@ public partial class GardenCamera : Camera2D
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
+		if (!IsInteractiveState) return;
+
 		if (@event is InputEventMouseButton mouseBtn)
 		{
+			if (mouseBtn.ButtonIndex == MouseButton.Middle)
+			{
+				_isDragging = mouseBtn.Pressed;
+				_lastDragPosition = mouseBtn.GlobalPosition;
+				GetViewport().SetInputAsHandled();
+				return;
+			}
+
 			float zoomDelta = mouseBtn.ButtonIndex switch
 			{
 				MouseButton.WheelUp => ZoomSpeed,
@@ -58,6 +75,14 @@ public partial class GardenCamera : Camera2D
 				float newZoom = Mathf.Clamp(Zoom.X + zoomDelta, MinZoom, MaxZoom);
 				Zoom = new Vector2(newZoom, newZoom);
 			}
+		}
+
+		if (@event is InputEventMouseMotion mouseMotion && _isDragging)
+		{
+			Vector2 delta = mouseMotion.GlobalPosition - _lastDragPosition;
+			Position -= delta / Zoom;
+			_lastDragPosition = mouseMotion.GlobalPosition;
+			GetViewport().SetInputAsHandled();
 		}
 	}
 }

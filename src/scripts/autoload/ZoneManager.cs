@@ -17,8 +17,8 @@ public partial class ZoneManager : Node
 	public static readonly Dictionary<ZoneType, (string Name, int Width, int Height, int NectarCost, int JournalRequired)> ZoneConfig = new()
 	{
 		{ ZoneType.Starter, ("Starter Garden", 4, 4, 0, 0) },
-		{ ZoneType.Meadow, ("Meadow", 6, 6, 100, 3) },
-		{ ZoneType.Pond, ("Pond Edge", 5, 5, 150, 6) },
+		{ ZoneType.Meadow, ("Meadow", 6, 6, 100, 5) },
+		{ ZoneType.Pond, ("Pond Edge", 5, 5, 150, 12) },
 	};
 
 	public ZoneType ActiveZone => _activeZone;
