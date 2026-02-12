@@ -1,4 +1,4 @@
-[gd_scene load_steps=10 format=3]
+[gd_scene load_steps=13 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/garden/Garden.tscn" id="1"]
 [ext_resource type="Script" path="res://scenes/garden/GardenCamera.cs" id="2"]
@@ -9,10 +9,33 @@
 [ext_resource type="Script" path="res://scenes/journal/JournalUI.cs" id="7"]
 [ext_resource type="Script" path="res://scenes/journal/DiscoveryNotification.cs" id="8"]
 [ext_resource type="Script" path="res://scenes/ui/SeedToolbar.cs" id="9"]
+[ext_resource type="Script" path="res://scenes/garden/DayNightVisuals.cs" id="10"]
+[ext_resource type="Script" path="res://scenes/main/GameWorld.cs" id="11"]
+[ext_resource type="Script" path="res://scenes/ui/ZoneSelector.cs" id="12"]
 
 [node name="Main" type="Node2D"]
 
-[node name="Garden" parent="." instance=ExtResource("1")]
+[node name="DayNightVisuals" type="CanvasModulate" parent="."]
+script = ExtResource("10")
+
+[node name="GameWorld" type="Node2D" parent="."]
+script = ExtResource("11")
+
+[node name="StarterZone" parent="GameWorld" instance=ExtResource("1")]
+
+[node name="MeadowZone" parent="GameWorld" instance=ExtResource("1")]
+visible = false
+process_mode = 4
+
+[node name="GardenGrid" parent="GameWorld/MeadowZone"]
+GridSize = Vector2i(6, 6)
+
+[node name="PondZone" parent="GameWorld" instance=ExtResource("1")]
+visible = false
+process_mode = 4
+
+[node name="GardenGrid" parent="GameWorld/PondZone"]
+GridSize = Vector2i(5, 5)
 
 [node name="GardenCamera" type="Camera2D" parent="."]
 script = ExtResource("2")
@@ -21,6 +44,13 @@ script = ExtResource("2")
 layer = 10
 
 [node name="HUD" parent="UILayer" instance=ExtResource("3")]
+
+[node name="ZoneSelector" type="Control" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("12")
 
 [node name="SeedToolbar" type="Control" parent="UILayer"]
 anchors_preset = 15

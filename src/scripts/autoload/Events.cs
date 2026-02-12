@@ -33,3 +33,7 @@ public record PhotoMissedEvent(Vector2 WorldPosition);
 
 // -- Seeds --
 public record SeedSelectedEvent(string PlantId);
+
+// -- Zones --
+public record ZoneChangedEvent(ZoneType From, ZoneType To);
+public record ZoneUnlockedEvent(ZoneType Zone);

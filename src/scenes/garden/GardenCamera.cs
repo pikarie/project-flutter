@@ -1,4 +1,6 @@
+using System;
 using Godot;
+using ProjectFlutter;
 
 public partial class GardenCamera : Camera2D
 {
@@ -7,10 +9,25 @@ public partial class GardenCamera : Camera2D
 	[Export] public float MinZoom { get; set; } = 0.5f;
 	[Export] public float MaxZoom { get; set; } = 3.0f;
 
+	private Action<ZoneChangedEvent> _onZoneChanged;
+
 	public override void _Ready()
 	{
 		PositionSmoothingEnabled = true;
 		PositionSmoothingSpeed = 8.0f;
+
+		_onZoneChanged = OnZoneChanged;
+		EventBus.Subscribe(_onZoneChanged);
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Unsubscribe(_onZoneChanged);
+	}
+
+	private void OnZoneChanged(ZoneChangedEvent zoneEvent)
+	{
+		Position = Vector2.Zero;
 	}
 
 	public override void _Process(double delta)

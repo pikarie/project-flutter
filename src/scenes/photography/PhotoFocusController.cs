@@ -148,12 +148,19 @@ public partial class PhotoFocusController : Control
 		Insect best = null;
 		float bestDistance = WorldRadius; // fixed world-space search radius
 
-		var insectContainer = GetTree().GetFirstNodeInGroup("insect_container");
-		if (insectContainer == null)
+		// Find InsectContainer in the active (visible) zone
+		Node insectContainer = null;
+		var gameWorld = GetTree().Root.GetNodeOrNull("Main/GameWorld");
+		if (gameWorld != null)
 		{
-			// Fallback: find InsectContainer by path
-			var garden = GetTree().Root.GetNodeOrNull("Main/Garden");
-			insectContainer = garden?.GetNodeOrNull("InsectContainer");
+			foreach (var child in gameWorld.GetChildren())
+			{
+				if (child is Node2D zoneNode && zoneNode.Visible)
+				{
+					insectContainer = zoneNode.GetNodeOrNull("InsectContainer");
+					break;
+				}
+			}
 		}
 		if (insectContainer == null) return;
 

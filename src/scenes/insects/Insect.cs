@@ -207,7 +207,7 @@ public partial class Insect : Area2D
 
 	private void OnTimeOfDayChanged(TimeOfDayChangedEvent evt)
 	{
-		if (_data == null) return;
+		if (_data == null || !CanProcess()) return;
 		// Day insects leave at night, night insects leave at day
 		bool shouldLeave = _data.TimeOfDay switch
 		{
@@ -220,6 +220,7 @@ public partial class Insect : Area2D
 
 	private void OnPlantRemoved(PlantRemovedEvent evt)
 	{
+		if (!CanProcess()) return;
 		if (evt.GridPos == _hostCellPos)
 			StartDeparture();
 	}
