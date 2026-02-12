@@ -1,4 +1,4 @@
-[gd_scene load_steps=13 format=3]
+[gd_scene load_steps=14 format=3]
 
 [ext_resource type="PackedScene" path="res://scenes/garden/Garden.tscn" id="1"]
 [ext_resource type="Script" path="res://scenes/garden/GardenCamera.cs" id="2"]
@@ -12,6 +12,7 @@
 [ext_resource type="Script" path="res://scenes/garden/DayNightVisuals.cs" id="10"]
 [ext_resource type="Script" path="res://scenes/main/GameWorld.cs" id="11"]
 [ext_resource type="Script" path="res://scenes/ui/ZoneSelector.cs" id="12"]
+[ext_resource type="Script" path="res://scenes/garden/HarvestPopup.cs" id="13"]
 
 [node name="Main" type="Node2D"]
 
@@ -87,6 +88,13 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 mouse_filter = 2
 script = ExtResource("7")
+
+[node name="HarvestPopup" type="Control" parent="UILayer"]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+mouse_filter = 2
+script = ExtResource("13")
 
 [node name="DiscoveryNotification" type="Control" parent="UILayer"]
 anchors_preset = 15

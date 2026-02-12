@@ -13,7 +13,7 @@ public record PauseToggledEvent(bool IsPaused);
 
 // -- Plants --
 public record PlantPlantedEvent(string PlantType, Vector2I GridPos);
-public record PlantHarvestedEvent(string PlantType, Vector2I GridPos);
+public record PlantHarvestedEvent(string PlantType, Vector2I GridPos, int NectarYield, Vector2 WorldPosition);
 public record PlantBloomingEvent(Vector2I GridPos);
 public record PlantRemovedEvent(Vector2I GridPos);
 

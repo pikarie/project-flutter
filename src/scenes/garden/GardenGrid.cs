@@ -263,7 +263,8 @@ public partial class GardenGrid : Node2D
 				GameManager.Instance.AddNectar(nectarYield);
 				cell.CurrentState = CellState.State.Growing;
 				cell.IsWatered = false;
-				EventBus.Publish(new PlantHarvestedEvent(cell.PlantType, pos));
+				var worldPosition = ToGlobal(GridToWorld(pos));
+				EventBus.Publish(new PlantHarvestedEvent(cell.PlantType, pos, nectarYield, worldPosition));
 				GD.Print($"Harvested {harvestedPlant?.DisplayName ?? cell.PlantType} at {pos}, +{nectarYield} nectar (total: {GameManager.Instance.Nectar})");
 				break;
 		}
