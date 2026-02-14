@@ -5,12 +5,288 @@ Claude prompts
 
 Idea: changer le placement par case (grille) pour dequoi de fluide comme "Tiny Glade" ou "Cheeky Chooks"
 Idea: brainstorm sur les currency. "Rusty's Retirement" à 2 currency. Est-ce que comme "Pokemon" on voudrait faire qu'on doit 'acheter' du film photo pour la caméra? Au lieu d'avoir illimiter de photos?
+Idea: Dans le journal, avoir différents bullet point ex:
+	-Photo de l'insecte
+	-Nom de l'insecte
+	-Nombre d'étoile
+	-Description
+	-Where to find //Ajouter des icones? Du genre, soleil ou lone, quel zone, quel type de plante ça prends?
+		-Est-ce qu'on voudrait faire que les indices apparaissent après certaines conditions? Si l'insecte à spawner, mais qu'on ne la pas capturer?
+Idea: "Kabuto Park" et "Rusty's Retirement" on tout les deux 42 éléments à découvrrir (insecte et l'autre crops).
+	-"Fields of Mistria" contient 68 insectes: https://fieldsofmistria.wiki.gg/wiki/Bugs. Utilise le pattern [adjectif fantaisiste] + [vrai type d'insecte].
+	{
+		Le jeu a 68 insectes Steam Community, et ils utilisent un mélange très intéressant. Les insectes communs portent des vrais noms (Ant, Bumblebee, Grasshopper, Praying Mantis, Rhinoceros Beetle, Cricket, Firefly, Cicada, Snail), mais les espèces rares et spéciales utilisent des noms fantaisistes basés sur des vrais insectes : Lightning Dragonfly, Windleaf Butterfly, Mote Firefly, Dragon Horn Beetle, Singing Katydid dans les Deep Woods Sportskeeda, et dans les mines, Copper Nugget Beetle, Lantern Moth, Coral Mantis, Sea Scarab, Crystal Wing Moth, Gem Shard Caterpillar, Fire Wasp, Cooktop Beetle, Lava Snail, Smoke Moth, Diamond Beetle Sportskeeda. Il y a aussi des Legendary comme la Fairy Bee et le Speedy Snail The Escapist.
+		
+		Le pattern est clair : [adjectif fantaisiste] + [vrai type d'insecte]. Tu reconnais immédiatement que c'est un papillon ou un scarabée, mais le préfixe le rend unique au monde du jeu.
+	}
+	-Je pense donc que pour mon jeu, 25 insectes est trop petit. Peut-être que close plus proche du 50?
+	
+Idea: pour la mini jeu de caméra, avoir plusieurs click à faire? ou si c'est bizarre? a essayer peut-être.
 
 TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme "Plantera", "Kingdom: New Lands" ou "Milki Delivery"
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-2026-02-11 2.75
+
+2026-02-14 0.25 + 1.75 + 18h30
+{
+	-#TODO: Read species_registry_v3_FINAL.md
+	-Brainstorm sur d'autres idées encore.
+		{
+			J'aime le nouveau GDD.
+			Quelques points à discutter.
+
+			"
+			* Les insectes arrivent graduellement et partent après une durée définie :
+			   * Common : 8–15s (plus de temps pour photographier)
+			   * Uncommon : 6–10s
+			   * Rare : 4–7s
+			   * Very Rare : 3–5s
+			   * Legendary : 2–4s (fenêtre très courte!)
+			"
+
+			J'ai l'impression que c'est vraiment trop court et peut-être pas la bonne approche?
+
+			Je viens d'acheter et etster Kabuto park. Tu peux aller dans une zone, puis tu as un nombre de loop (que tu peux upgrader au magasin). Tu commences avec 2 loupes. Donc tu peux chercher 2 insectes sur max 5 spots. Quand tu cliques, ça démarre un mini jeu avec un curseur et des bandes rouge, bleu, vert. Si tu touche le tocuhe c'est raté tu n'a pas capturé l'insecte. Si tu touche le plus, c'est comme si tu te rapproche de l'insecte et le jeu continue, si tu touche le vert, tu captures l'insecte.
+
+			Ce mini jeu est le core loop game de leur jeu. C'est assez diversifier par insecte (différent nombre de banques, largeurs différentes).
+
+			En ce moment dans le jeu de mon projet, on peut photographeir plusieurs fois le même insecte. Puis dans le GDD, on mentionne que les insectes ne reste pas longtemps, hors, j'ai l'impression que ça cause plus de stress qu'autre chose de limiter autant le nombre de secondes qu'il restent. C'est sensé être un jeu cozy. Peut-petre qu'on voudrait augmenter le temps pour tout les insectes lorsqu'il reste? Ou simplement faire qu'ils restent toujours, sauf au changement de la journée où il s'en vont s'il ne sont pas nocturne?
+
+			Je pense que le mini jeu présentement pour prendre des photos est fonctionnel, m ais peut-être pas assez accrocheur.
+
+			J'ai besoin que la core loop, le hook, soit 1000% satisfaisant!
+
+			Je vois aussi que kabuto parc on tout est layer de plus de complexité avec les stats et les attaques des insectes pour gagner des combats. Je ne souhaite pas mettre ça dans mon jeu, mais je cherche d'autres idées qui pourrait être bien dans mon jeu.
+
+			Je trouve qu'il n'y a pas assez de "sink" dans mon jeu. Dans Kabuto park, il faut acheter dans la boutique des "bottes" pour accéder au prochaine zone. Je trouve ça une bonne idées au lieu de juste un bouton sur le UI, mais ça reste à voir. Je pense que j'aimerais peut-être ça acheter des obejets d'une certaine facon? Est-ce que ce serait avec un montant de nectar? Est-ce que chaque plante crée la même couleur de nectar ou il y aurait plusieurs sortes différentes dépendant de la rareter de la plantes?
+
+			Et si comme dans rusty retirement on ajoutais un systeme automatique d'arosage qu'on peu acheter et upgrader?
+
+			Et si on aurait un système de level up dans les plantes basé sur le nombre de récolte de cette plantes? Plus tu la récoltes, plus elle donne du nectar. Certaine plante unlock des habitlitéde plus comme augmenter les chances de rare ou legendary si tu les plantes dans un rayon de case autour (cercle ou rond)
+
+			Le scope du jeu grandit, mais on dirait que tant qu'a faire un jeu, j'aimerais qu'il soit satisfaisant à jouer autant qu'à faire. Je ne suis pas trop inquiète pour l'art, si tu fais une recherche, tu vas voir que les graphique de Kabuto park son très primaire. Pratiquement comme unsketch plutot que quelque chose de polish. Les background sont statique en plus.
+		}
+		-Read "deep-search-making-the-game-cozy-and-hooky-after-GDD-v2.md"
+		-Brainstorm
+		{
+			Je ne suis pas sur de vouloir mettre le "four-behavior-tier system per insect species" dans le jeu. Ça ajoute pas mal de changement (plusieurs pose par insecte) et conexte. Mais j'aime l'idée d'avoir un but si on photographie plusieurs fois le même insecte. Ça reste a discuter. Par cotnre j'aime cette section "The juice stack is where addiction lives. Layer feedback proportionally to photo significance:"
+
+			Pour les sinks, je ne suis pas sur de ce que fais l'upgrade de caméra. Est-ce que tu penses que ce serait une bonne idées d'acheter du "film" pour la caméra et avoir un vieux style de caméra? Donc tu ne peux pas prendre plein de photo, tu dois acheter du film en échange de nectar? Ou si c'est trop intense et c'est plus relaxe de juste avoir caméra illimité?
+
+			Qu'est-ce que tu veux dire par UV filter revealing hidden wing patterns? Est-ce que c'est quelque chose du genre, tu dois avoir la lampe UV pour prendre des photos des insectes de nuit, sinon tu les vois mais il fait trop noir pour les capturer? Mais si ont fait ça, le cycle de nuit est pas super utile au début si la personne n'a pas l'.quipement encore pour prendre des photos de nuit hmm.
+
+			Oui, auto-watering sprinkler, je pense que ça serait un belle outil a mettre sur une des cause, puis à arrose tout autour. Je ne suis pas sur pour les autres options. On dirait que j'irais juste avec manuel ou différent level de sprinklers.
+
+			J'aime le tier 3 de sink, surtout les custom photo border. Prends pas trop de temps a dessiner, peux faire plusieurs style, customize le jeu du joueur. Par contre pour les décorations dans le jeu:gnome, birht bath, je ne pense pas que je veux en mettre pour le moment. Trop de nouveau contenue, sort du but du jeu, trop de nouvel art  a faire.
+
+			tier 4, avoir une légère histoire, une raison de devoir remplir le journal sans avoir 150 lignes de dialogue, je pense que ça serait l'idée. Brainstormer différentes "raison" et en choisir une pour donner le ton au jeu. Potentiellement aider à la conservsation ou autre. si c'est le cas, quand on atteind un certains seuil exemple 75% du journal de compléter, on pourrait avoir l'option de la Tropical Greenhouse qui se débarre. Pas visible et pas débarrable avant ça. Peut-être même un cadeau de progression. Potentiellement payer en nectar pour l'agrandir? Pas sur.
+
+			J'aime tes idées de level pour les plants. Je changement le level 4 pour 2 tiles radius et 5 pour 3 tiles radius. Par contre, j'hésite entre garder les plantes et elles level up avec le temps ou comme dans harvest moon, récolter les crops et utiliser un item pour transfert en seed et avoir une chance d'avoir des seeds de plus haut niveau. Sinon, est-ce que tu penses que la quantité serait une bonne idée? quand on récolte 10 plantes, on level up cette plante a tout jamais? Quand elle est dans sa dernière phase (fleuraison), son rayon de reward sera alors selon son niveau? Ou si on garde que chaque plante part a un niveau un.
+
+			Oui, jaime les bonus passif, un peu comme fallout lorsque tu tout 50 enemies, tu as unbonus contre eux!
+
+			J'aime la section des buffs.
+
+			Pour le rythm des sessions, je ne suis pas sur des moments de la journée. Mon jeu contient déja une horloge interne, donc pas de pression sur le joueur de le faire revenir. Je ne veux pas non plus des streaks comme dans A little to the left. Je trouve que c'est pushy, pas cozy, même si ca ramene le joueur dans le jeu.
+
+			J'aime le "rarity tier sparckle indicator" de Kabuto park!
+
+			Est-ce que l'on devrais avoir une ou deux pages de journal juste pour traquer le levels des plantes?
+
+			Est-ce que les options du jeux pourraient etre dans le journal aussi ou on le garde a aprt en UI par dessus le jeu?
+		}
+		-Réponse:
+		{
+		}
+		-Brainstorm:
+		{
+			J'adore l'idée de 3 niveaux de photo! esquisse, a moitié coloré, full image coloré vibrante! Ça reste simple, mais les complétionnistes veulent atteindre les 3 étoiles pour chaque espèce.
+
+			Bon point, garder la caméra illimité. Pas d'achat de film.
+
+			Pour la nuit, donc le maximum d'étoile serait 2 sur 3 ? Je dirais que c'est parfait pour les papillons. Les exeptions serait les insectes qui font déja leur propre lumière comme les firefly! C'est le seul que l'ont peut prendre en 3 étoiles si ont prends la photo pendant qu'il est allumé. Sinon c'est 2 étoiles et il faut potentiellement aussi "fermer" la lumière si on l'a acheter pour cette espece uniquement. Qu'est-ce que tu en penses? Tous les autres insecte de nuit reste a 2 étoiles, et lorsque l'on achete la lanterne de jardin, on peux les avoir en 3 étoiles?
+
+			Pour les sprinkler, j'avais en tête un pattern de tuile. Donc a la maisn, une case à la fois, 1er sprinkler, toutes les tuiles autour donc 8 cases autour (3x3), level 2 un rayon de case carré de plus qui fait 5x5, et dernier niveau 7x7 (toujours avec le sprinkler au milieu).
+
+			Pour la raison, j'aime bien la société de conservation et c'est une réelle entité qui donne des récompense par jalon accomplis + la greenhouse a 75%, semble bon! Oh, tu fais un bon point pour le coté émotionnel, bon la je ne suis pas sur de quel prendre.
+
+			Parfait, gardon les levels globaux et non par plantes. bonne idée pour le cadre doré par espèce! Potentiellement 5 couleurs, une par niveau.
+
+			Parfait pour le menu dans le journal. si jeme souviens Monstrer Train a un journal aussi avec différent signet/onglet qu'on peu changer de page.
+		}
+		-Réponse:
+		{
+		}
+		-Brainstorm:
+		{
+			Les sprinkles arrose automatiquement, parce contre si les plantes pousse par temps réel au lieu de par cycle, je ne suis pas sur "quand" le sprinkler s'active? Est-ce qu'on le mets a une heure précise comme 8h am?
+
+			Allons-y pour les deux pour le moments alors et si je vois que je pense plus pour juste grand-mère ou juste conservation, nous pourrons corriger le tir avant que je crée du contenue sur le sujet. Peut-être remplacer la grand-mère par une mère décédé?
+
+			Les couleurs me vont! Un petit simbole de feuille est super!
+
+			Oui, je pense qu'après mon dernier reply (celui que je suis en train d'écrire), lorsque toutes les questions sont résolue, il faudrait faire une GDD v3. Qu'est-ce que tu en penses?
+
+			Qu'est-ce que tu penses des nouvells idées et du projet en générale? 
+
+			Le scope grandit, mais la loop et ma satisfaction d'un projet bien balancé est au rendez vous.
+
+			J'ai l'impression que mon but de faire un joue pour voir la loop complète est rendu en 2e plan. Je souhaite en 1er plan faire un jeu le fun et satisfaisant, cozy, soothing.
+		}
+		-Réponse:
+		{
+		}
+		-Brainstorm:
+		{
+			Comme on a déjà mentionner dans une autre conversion/document, exatce, pour rester cozy, les plantes ne meurt jamais. Je pense que les plantes peuvent arrêter de pousser si elle ne sont pas arrosé. 
+
+			Allons y avec seulement l'agence de conservation alors, pas de mère ni de grand-mère. 
+			
+			Non pu de questions! Merci de ton avis!
+		}
+	
+	-Begin "Sprint 4 (GDD v2) - TODO"
+}
+2026-02-13 3.0 
+{
+	-2.25 + 0.75
+	-Brainstorm
+		-passer de 25 insectes à 50 insectes.
+		-passer de 3 zones à 5 zones.
+		-remanier le sprint 5 et 6 sans commencer la partie art encore, on reste dans le prototyping
+	-#TODO: Read deep-search-109-insects-for-game-variety.md
+	{
+		-Zones préférées dans l'ordre de progression que je verrais
+			-Starter Garden
+			-Meadow
+			-Forest
+			-Deep Wood (log pile)
+			-Rock Garden
+			-Pond
+			-Tropical Greenhouse
+		-Rareté
+			-Common 40%
+			-Uncommon 30%
+			-Rare 15%
+			-Very rare 10%
+			-Legendary 5%
+		-Insectes favoris:
+			-Butterflies
+				-Cabbage White
+				-Clouded Sulphur
+				-Common Blue
+				-Orange Tip
+				-Monarch
+				-Eastern Tiger Swallowtail
+				-Red Admiral
+				-Black Swallowtail
+				-Gulf Fritillary
+				-Question Mark
+				-Comma
+				-Zebra Longwing
+				-Old World Swallowtail
+				-Glasswing
+				-Ulysses Butterfly
+				-Queen Alexandra's Birdwing
+			-Moths
+				-Rosy Maple Moth
+				-Garden Tiger Moth
+				-Peppered Moth
+				-Cinnabar Moth
+				-Luna Moth
+				-Polyphemus Moth
+				-Elephant Hawk-Moth
+				-Cecropia Moth
+				-Atlas Moth
+				-Death's-head Hawkmoth
+				-Comet Moth
+				-Madagascan Sunset Moth
+			-Bees
+				-Western Honeybee
+				-Carpenter Bee
+				-Mason Bee
+				-Leafcutter Bee	
+				-Orchid Bee
+				-Teddy Bear Bee
+				-Blue-Banded Bee
+				-Wool Carder Bee
+				-Long-Horned Bee
+			-Beetles
+				-Seven-Spot Ladybug
+				-15 spot ladybug
+				-22 spot ladybug
+				-Firefly
+				-Stag Beetle
+				-Rhinoceros Beetle
+				-Sacred Scarab
+				-Golden Tortoise Beetle
+				-Rose Chafer
+				-Japanese Beetle
+				-Colorado Potato Beetle
+				-Hercules Beetle
+				-Six-Spotted Tiger Beetle
+				-weevil - Myllocerus undecimpustulatus
+				-black weevil - Baris
+			-Dragonflies and damselflies
+				-Blue Dasher
+				-Flame Skimmer
+				-Halloween Pennant
+				-Ebony Jewelwing
+				-Azure Damselfly
+				-Emperor Dragonfly
+				-Wandering Glider
+				-Twelve-Spotted Skimmer
+				-Red-Veined Darter
+			-Grasshoppers
+				-Meadow Grasshopper
+				-Band-Winged Grasshopper
+				-Cone-Headed Grasshopper
+			-Hoverflies and other flies
+				-Marmalade Hoverfly
+				-Bee Fly
+			-Other
+				-European Mantis
+				-Orchid Mantis
+				-Walking Stick
+				-Leaf Insect
+				-Green Lacewing
+				-Annual Cicada
+				-Spotted Lanternfly
+				-Water Strider	
+	}
+	-TODO: Read species_registry_v3_FINAL.md
+	-#TODO: Read GDD-v2.md
+	-Nouveau "GDD-v2", refactor des sprints et de presque toutes els sections pour adapter avec les derniers brainstorm.
+}
+2026-02-12 1.75
+{
+	-1.25 + 0.5
+	-#TODO: Read sprint5-implementation-blueprint-economy.md
+	-#TODO: Read deep-search-game-feedback-for-gathering-nectar.md
+	-TODO: Read deep-search-109-insects-for-game-variety.md
+	-#TODO: Read deep-search-hand-drawn-sprite-art.md
+	-Discussion avec Adam du p'tit jeu.
+	-Utiliser les vrais nom ou des nom fantaisique pour les insectes?
+	{
+		Pour Project Flutter, je recommanderais les vrais noms
+		
+		Voici pourquoi, et c'est lié à la nature même du jeu. Fields of Mistria est un farming sim avec un monde fantaisiste (magie, ruines, mines avec lave) — les insectes inventés s'intègrent naturellement dans cet univers. Project Flutter, par contre, est un jeu de photographie nature et journal de terrain. Le journal, la découverte, l'observation — tout ça pointe vers un ton plus naturaliste, un peu comme un vrai guide d'entomologiste.
+		
+		Quelques arguments concrets en faveur des vrais noms :
+		
+		L'éducation douce est un atout, pas un fardeau. Des jeux comme APICO utilisent de vrais noms d'abeilles et les joueurs adorent apprendre quelque chose de vrai. Kabuto Park fait pareil avec de vrais insectes du monde entier. Quand un joueur découvre que le Luna Moth existe vraiment, ça crée un moment de connexion avec le monde réel que les noms inventés ne peuvent pas offrir.
+		
+		Le journal de terrain gagne en authenticité. Si le journal affiche "Monarque — migre sur des milliers de kilomètres chaque automne", c'est un vrai fait fascinant. Si c'est le "Papillon Soleil" inventé, tu dois inventer du lore fictif qui sera toujours moins intéressant que la réalité.
+		
+		La liberté artistique reste totale. Utiliser le vrai nom "Monarque" ne t'oblige pas à dessiner des couleurs exactes. Tu peux styliser, rendre plus rond, plus mignon, exagérer les couleurs — tant que la silhouette et les couleurs dominantes sont reconnaissables (orange+noir pour le Monarque), personne ne va sortir un guide d'entomologie pour vérifier. Hollow Knight utilise des silhouettes d'insectes réels avec un style ultra-stylisé et personne ne s'en plaint.
+		
+		La localisation EN/FR devient un bonus. "Monarch / Monarque", "Ladybug / Coccinelle", "Firefly / Luciole" — les vrais noms français sont charmants et ajoutent du caractère au jeu bilingue.
+		
+		Le seul cas où j'inventerais des noms, c'est si tu voulais des insectes avec des pouvoirs magiques ou un lore fantaisiste — mais ce n'est pas la direction de Project Flutter. Ton jeu célèbre la beauté de la nature telle qu'elle est, et les vrais noms renforcent ce message
+	}
+}
+2026-02-11 3.0
 {
 	-Begin "Sprint 4 - Economy & Zones"
 	-Commit:
