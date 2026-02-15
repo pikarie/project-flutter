@@ -91,16 +91,20 @@ public partial class Insect : Area2D
 			return;
 		}
 
-		float dt = (float)delta * TimeManager.Instance.SpeedMultiplier;
-		_time += dt;
+		// In photo mode: insects still move (real delta) but visit/departure timers are frozen
+		bool isPhotoMode = GameManager.Instance.CurrentState == GameManager.GameState.PhotoMode;
+		float movementDelta = isPhotoMode ? (float)delta : (float)delta * TimeManager.Instance.SpeedMultiplier;
+		float timerDelta = isPhotoMode ? 0f : (float)delta * TimeManager.Instance.SpeedMultiplier;
+
+		_time += movementDelta;
 
 		switch (_state)
 		{
 			case InsectState.Visiting:
-				ProcessVisiting(dt);
+				ProcessVisiting(movementDelta, timerDelta);
 				break;
 			case InsectState.PreDeparture:
-				ProcessPreDeparture(dt);
+				ProcessPreDeparture(movementDelta, timerDelta);
 				break;
 		}
 
@@ -154,13 +158,14 @@ public partial class Insect : Area2D
 		_state = InsectState.Arriving;
 		Modulate = new Color(1, 1, 1, 0);
 
+		float speed = Mathf.Max(TimeManager.Instance.SpeedMultiplier, 0.1f);
 		_currentTween?.Kill();
 		_currentTween = CreateTween();
-		_currentTween.TweenProperty(this, "global_position", _plantAnchor, 1.5f)
+		_currentTween.TweenProperty(this, "global_position", _plantAnchor, 1.5f / speed)
 			.SetTrans(Tween.TransitionType.Sine)
 			.SetEase(Tween.EaseType.Out);
 		_currentTween.Parallel()
-			.TweenProperty(this, "modulate:a", 1.0f, 0.5f).From(0.0f);
+			.TweenProperty(this, "modulate:a", 1.0f, 0.5f / speed).From(0.0f);
 		_currentTween.TweenCallback(Callable.From(() =>
 		{
 			_state = InsectState.Visiting;
@@ -168,16 +173,16 @@ public partial class Insect : Area2D
 		}));
 	}
 
-	private void ProcessVisiting(float dt)
+	private void ProcessVisiting(float movementDelta, float timerDelta)
 	{
-		_visitTimeRemaining -= dt;
+		_visitTimeRemaining -= timerDelta;
 		if (_visitTimeRemaining <= 0f)
 		{
 			StartPreDeparture();
 			return;
 		}
 
-		Vector2 target = _movement.CalculatePosition(dt);
+		Vector2 target = _movement.CalculatePosition(movementDelta);
 
 		// Soft clamp to max wander distance
 		Vector2 offset = target - _plantAnchor;
@@ -185,7 +190,7 @@ public partial class Insect : Area2D
 		if (offset.Length() > maxWander)
 			target = _plantAnchor + offset.Normalized() * maxWander;
 
-		GlobalPosition = GlobalPosition.Lerp(target, dt * 8f);
+		GlobalPosition = GlobalPosition.Lerp(target, movementDelta * 8f);
 	}
 
 	private void StartPreDeparture()
@@ -197,9 +202,9 @@ public partial class Insect : Area2D
 		_preDepartureAngle = _rng.RandfRange(0f, Mathf.Tau);
 	}
 
-	private void ProcessPreDeparture(float dt)
+	private void ProcessPreDeparture(float movementDelta, float timerDelta)
 	{
-		_preDepartureTimer -= dt;
+		_preDepartureTimer -= timerDelta;
 		if (_preDepartureTimer <= 0f)
 		{
 			StartDeparture();
@@ -207,14 +212,14 @@ public partial class Insect : Area2D
 		}
 
 		// Circle around the plant anchor with increasing radius
-		_preDepartureAngle += dt * PreDepartureCircleSpeed;
+		_preDepartureAngle += movementDelta * PreDepartureCircleSpeed;
 		float expandingRadius = PreDepartureCircleRadius * (1f + (1f - _preDepartureTimer / PreDepartureMaxDuration) * 0.5f);
 		Vector2 circleTarget = _plantAnchor + new Vector2(
 			Mathf.Cos(_preDepartureAngle) * expandingRadius,
 			Mathf.Sin(_preDepartureAngle) * expandingRadius
 		);
 
-		GlobalPosition = GlobalPosition.Lerp(circleTarget, dt * 5f);
+		GlobalPosition = GlobalPosition.Lerp(circleTarget, movementDelta * 5f);
 	}
 
 	private void StartDeparture()
@@ -230,13 +235,14 @@ public partial class Insect : Area2D
 			exitDir = Vector2.Right;
 		Vector2 exitPos = GlobalPosition + exitDir * 500f;
 
+		float speed = Mathf.Max(TimeManager.Instance.SpeedMultiplier, 0.1f);
 		_currentTween?.Kill();
 		_currentTween = CreateTween();
-		_currentTween.TweenProperty(this, "global_position", exitPos, 1.2f)
+		_currentTween.TweenProperty(this, "global_position", exitPos, 1.2f / speed)
 			.SetTrans(Tween.TransitionType.Sine)
 			.SetEase(Tween.EaseType.In);
 		_currentTween.Parallel()
-			.TweenProperty(this, "modulate:a", 0.0f, 0.8f);
+			.TweenProperty(this, "modulate:a", 0.0f, 0.8f / speed);
 		_currentTween.TweenCallback(Callable.From(() =>
 		{
 			_state = InsectState.Freed;

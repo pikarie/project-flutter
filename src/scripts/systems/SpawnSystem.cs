@@ -27,6 +27,7 @@ public partial class SpawnSystem : Node
 
 	public override void _Process(double delta)
 	{
+		if (TimeManager.Instance.Paused) return;
 		float dt = (float)delta * TimeManager.Instance.SpeedMultiplier;
 		_spawnTimer -= dt;
 		if (_spawnTimer <= 0f)

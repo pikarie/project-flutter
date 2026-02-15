@@ -272,7 +272,7 @@ Le Sprinkler III (7×7) couvre presque entièrement la Meadow (6×6) — moment 
 
 ### 4.9 Cycle jour/nuit
 
-**Durée du jour : 15 minutes réelles par cycle complet (×1).** Basé sur une recherche de 20+ jeux du genre — la médiane du farming/cozy est 15–20 min. Le design précédent de 5 min était 3× plus rapide que le jeu le plus rapide du genre (Graveyard Keeper à 7.5 min). Pour un jeu de photographie et d'observation, le temps doit permettre de *savourer* chaque période — golden hour, nuit aux lucioles, aube.
+**Durée du jour : 15 minutes réelles par cycle complet (×1).** Basé sur une recherche de 20+ jeux du genre — la médiane du farming/cozy est 15–20 min. Le design précédent de 5 min était 3× plus rapide que le jeu le plus rapide du genre (Graveyard Keeper à 7.5 min). Pour un jeu de photographie et d'observation, le temps doit permettre de *savourer* chaque période — crépuscule, nuit aux lucioles, aube.
 
 **Progression du temps :** Smooth minute-by-minute (pas d'incréments de 10 min style Stardew). Chaque seconde réelle ≈ 1.6 minutes en jeu. Transitions de lumière graduelles et naturelles.
 
@@ -290,7 +290,7 @@ La nuit représente ~42% du cycle — c'est une vraie phase de jeu, pas un inter
 
 **Horloge analogique HUD :**
 - Cadran circulaire avec **12 segments de 2h chacun**, colorés selon la période
-- **Bandes de couleur distinctes avec léger fondu** entre les transitions (pas de coupures franches, pas de gradient total)
+- **Bandes de couleur nettes avec séparateurs fins** entre chaque segment (testé : le léger fondu rendait l'horloge illisible à petite taille)
 - Une **aiguille unique** fait un tour complet en 24h de jeu (15 min réelles)
 - **Style visuel : bois patiné ou laiton antique** — à tester lors du Sprint 6 (art). Les deux collent à l'esthétique nature/journal de terrain
 - L'aiguille pourrait être une petite branche ou tige de plante
@@ -303,7 +303,7 @@ La nuit représente ~42% du cycle — c'est une vraie phase de jeu, pas un inter
 - ×1 → 15 min/jour (défaut)
 - ×2 → 7.5 min/jour (joueurs expérimentés, accélérer l'attente)
 - L'aiguille tourne visiblement plus vite/lent selon la vitesse
-- **Indicateur de vitesse au centre du cadran :** un triangle (▶) avec le multiplicateur écrit textuellement à l'intérieur — "0.5", "1", ou "2". Le triangle communique "play/vitesse", le chiffre donne la valeur exacte. Cliquable pour cycler.
+- **Indicateur de vitesse au centre du cadran :** chiffre blanc sur cercle brun — ".5", "1", ou "2". Cliquable pour cycler. (Testé : le triangle ▶ n'était pas assez lisible à cette taille, le chiffre seul est plus clair.)
 - **Les joueurs veulent majoritairement ralentir, pas accélérer** (données Coral Island, My Time at Sandrock, mods Stardew). Le ×0.5 est une option importante.
 
 **Système de pause du temps :**
@@ -529,7 +529,7 @@ Les certificats apparaissent dans la section Conservation du journal. Chaque jal
 | Fonds de zone (7) | 7 | Plein écran | Starter, Meadow, Forest, Deep Wood, Rock, Pond, Tropical |
 | Tile sprites (sol, herbe, eau, pierre, bois) | ~25 | 64×64 | Réutilisables selon zones |
 | Éléments UI (boutons, cadres, icônes, signets) | ~35 | Divers | Journal, shop, HUD, tabs zone |
-| Horloge analogique HUD | 1 | ~64×64 | Cadran bois/laiton, 12 segments colorés, aiguille branche/tige |
+| Horloge analogique HUD | 1 | ~128×128 | Cadran bois/laiton, 12 segments colorés nets, aiguille branche/tige |
 | Art de curseur (2 modes) | 2 | ~32×32 | Truelle, appareil photo |
 | Animation cercle photo | 1 | Programmatique | Cercle concentrique + flash |
 | **Total assets uniques** | **~577** | | |
@@ -631,8 +631,8 @@ project-flutter/
 - [x] Interaction tile (clic pour sélectionner, planter, retirer)
 - [x] Scène plante avec 4 stades de croissance (art placeholder `_Draw()`)
 - [x] Mécanique d'arrosage
-- [x] Cycle jour/nuit basique (CanvasModulate + variable temps) — *initialement 5 min, sera mis à jour à 15 min en Sprint 4*
-- [x] Bouton d'accélération (×1, ×2, ×3) — *sera remplacé par horloge analogique cliquable ×0.5/×1/×2 en Sprint 4*
+- [x] Cycle jour/nuit basique (CanvasModulate + variable temps) — *mis à jour à 15 min en Sprint 4*
+- [x] Bouton d'accélération — *remplacé par horloge analogique cliquable ×0.5/×1/×2 en Sprint 4*
 - **Livrable:** Peut placer des plantes, les voir pousser, voir le changement jour/nuit
 
 ### Sprint 2 — Insectes & Spawn (Semaines 3–4, ~40h) ✅ COMPLÉTÉ
@@ -672,11 +672,11 @@ project-flutter/
 - [ ] Sprinklers 3 niveaux (passifs, rayon 3×3 / 5×5 / 7×7)
 - [ ] Lanterne de jardin (achat unique, toggle on/off, affecte qualité photo nuit)
 - [ ] Système de leveling global des plantes (PlantLevelManager)
-- [ ] **Refonte cycle jour/nuit : 5 min → 15 min (DAY_CYCLE_DURATION = 900)**
-- [ ] **Horloge analogique HUD : cadran 12 segments colorés, aiguille, ▶ avec chiffre au centre**
-- [ ] **Speed control intégré à l'horloge : clic pour cycler ×0.5/×1/×2**
-- [ ] **Pause monde en mode photo (cycle gelé + timers gelés, insectes bougent)**
-- [ ] **Pause complète dans journal/shop/menus**
+- [x] **Refonte cycle jour/nuit : 5 min → 15 min (DAY_CYCLE_DURATION = 900)**
+- [x] **Horloge analogique HUD : cadran 12 segments colorés nets, aiguille, chiffre vitesse au centre**
+- [x] **Speed control intégré à l'horloge : clic pour cycler ×0.5/×1/×2**
+- [x] **Pause monde en mode photo (cycle gelé + timers gelés, insectes bougent)**
+- [x] **Pause complète dans journal/shop/menus**
 - **Livrable:** Boucle de progression complète du Starter à toutes les zones
 
 ### Sprint 5 — Registres de contenu & Babillard (Semaines 10–12, ~50h)
@@ -952,9 +952,10 @@ Ces fonctionnalités de debug sont utiles pendant le développement mais **doive
 
 | Item | Fichier | Description |
 |------|---------|-------------|
-| Vitesse ×10 | `HUD.cs` | Vitesse de debug non prévue au GDD (×0.5, ×1, ×2 seulement) |
 | F1 — Unlock all zones | `HUD.cs` + `ZoneManager.cs` | Débloque toutes les zones sans coût nectar ni prérequis journal |
 | F2 — Spawn debug bee | `HUD.cs` | Spawne une Honeybee statique au centre de la caméra pour tester la photo |
+| F3 — Toggle ×10 speed | `HUD.cs` + `TimeManager.cs` | Toggle vitesse ×10 debug, reclique restaure la vitesse précédente (×0.5, ×1 ou ×2) |
+| F4 — Toggle ×50 speed | `HUD.cs` + `TimeManager.cs` | Toggle vitesse ×50 debug, reclique restaure la vitesse précédente (×0.5, ×1 ou ×2) |
 | Debug hint label | `HUD.tscn` | Label raccourcis debug en bas à gauche (40% opacité) |
 
 ---
@@ -983,8 +984,8 @@ Ces fonctionnalités de debug sont utiles pendant le développement mais **doive
 | Scope rules | 10 règles | 12 règles (+pas de décorations, +caméra illimitée) | Filtres anti-scope-creep |
 | Sauvegarde | Basique | + niveaux plantes, bordures, jalons conservation, sprinklers, lanterne, babillard | Nouveaux systèmes à persister |
 | Cycle jour/nuit | 5 min par cycle | **15 min par cycle** (×1), ajustable ×0.5/×1/×2 | Recherche 20+ jeux : médiane genre = 15–20 min. 5 min était 3× plus rapide que Graveyard Keeper |
-| Vitesse de jeu | ×1, ×2, ×3 (bouton séparé) | **×0.5, ×1, ×2** (clic sur horloge, ▶ avec chiffre au centre) | Les joueurs veulent ralentir, pas accélérer (données Coral Island, Sandrock, mods Stardew) |
-| Affichage temps | Aucun affichage dédié | **Horloge analogique HUD** : 12 segments colorés par période, bandes avec léger fondu, style bois/laiton | Information utile + esthétique nature, pas de chiffre stressant |
+| Vitesse de jeu | ×1, ×2, ×3 (bouton séparé) | **×0.5, ×1, ×2** (clic sur horloge, chiffre blanc au centre) | Les joueurs veulent ralentir, pas accélérer (données Coral Island, Sandrock, mods Stardew) |
+| Affichage temps | Aucun affichage dédié | **Horloge analogique HUD** : 12 segments colorés nets par période, ~128px, style bois/laiton | Information utile + esthétique nature, pas de chiffre stressant |
 | Pause en photo | Non spécifié | **Cycle gelé + timers gelés, insectes bougent** | Ne jamais pénaliser l'activité principale ; skill de tracking préservé (modèle Pokémon Snap) |
 | Pause menus | Non spécifié | **Pause complète** (journal, shop, réglages) | Standard du genre, anti-stress |
 | Fuite photo | Non existant | **% de fuite par rareté** (15/25/40/60/75%) après essai non-3★. Aura plante level 3+ = -15%. | Empêcher le 3★ trivial ; inspiration poisson légendaire Stardew, fuite Pokémon |

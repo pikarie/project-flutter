@@ -5,6 +5,7 @@ namespace ProjectFlutter;
 // -- Time --
 public record HourPassedEvent(int Hour);
 public record TimeOfDayChangedEvent(string OldPeriod, string NewPeriod);
+public record SpeedChangedEvent(float NewMultiplier);
 
 // -- Game state --
 public record GameStateChangedEvent(GameManager.GameState NewState);

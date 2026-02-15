@@ -7,12 +7,11 @@ public partial class DayNightVisuals : CanvasModulate
 {
 	private static readonly Dictionary<string, Color> PeriodColors = new()
 	{
-		{ "dawn",        new Color(0.94f, 0.78f, 0.73f) },
-		{ "morning",     new Color(1.0f, 0.96f, 0.90f) },
-		{ "noon",        new Color(1.0f, 1.0f, 1.0f) },
-		{ "golden_hour", new Color(1.0f, 0.90f, 0.70f) },
-		{ "dusk",        new Color(0.85f, 0.65f, 0.70f) },
-		{ "night",       new Color(0.30f, 0.35f, 0.55f) },
+		{ "dawn",      new Color(0.94f, 0.78f, 0.73f) },
+		{ "morning",   new Color(1.0f, 0.96f, 0.90f) },
+		{ "afternoon", new Color(1.0f, 1.0f, 1.0f) },
+		{ "dusk",      new Color(0.85f, 0.65f, 0.70f) },
+		{ "night",     new Color(0.30f, 0.35f, 0.55f) },
 	};
 
 	private Tween _currentTween;

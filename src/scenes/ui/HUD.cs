@@ -4,54 +4,49 @@ using ProjectFlutter;
 
 public partial class HUD : Control
 {
-	private Label _timeLabel;
 	private Label _nectarLabel;
-	private Button _speedButton;
 	private Button _photoButton;
 	private Button _journalButton;
 	private Label _photoModeLabel;
-	private int _currentSpeedIndex;
-	private readonly float[] _speeds = { 1.0f, 2.0f, 3.0f, 10.0f };
-	private readonly string[] _speedLabels = { "x1", "x2", "x3", "x10" };
+	private AnalogClock _analogClock;
 
-	private Action<HourPassedEvent> _onHourPassed;
-	private Action<TimeOfDayChangedEvent> _onPeriodChanged;
 	private Action<NectarChangedEvent> _onNectarChanged;
 	private Action<GameStateChangedEvent> _onStateChanged;
 
 	public override void _Ready()
 	{
-		_timeLabel = GetNode<Label>("TimeLabel");
 		_nectarLabel = GetNode<Label>("NectarLabel");
-		_speedButton = GetNode<Button>("SpeedButton");
 		_photoButton = GetNode<Button>("PhotoButton");
 		_journalButton = GetNode<Button>("JournalButton");
 		_photoModeLabel = GetNode<Label>("PhotoModeLabel");
 
-		_speedButton.Pressed += OnSpeedButtonPressed;
+		// Create analog clock and anchor top-right
+		_analogClock = new AnalogClock();
+		_analogClock.LayoutMode = 1;
+		_analogClock.AnchorsPreset = (int)LayoutPreset.TopRight;
+		_analogClock.AnchorLeft = 1.0f;
+		_analogClock.AnchorRight = 1.0f;
+		_analogClock.OffsetLeft = -142f;
+		_analogClock.OffsetTop = 4f;
+		_analogClock.OffsetRight = -4f;
+		_analogClock.OffsetBottom = 140f;
+		AddChild(_analogClock);
+
 		_photoButton.Pressed += OnPhotoButtonPressed;
 		_journalButton.Pressed += OnJournalButtonPressed;
 
-		_onHourPassed = OnHourPassed;
-		_onPeriodChanged = OnPeriodChanged;
 		_onNectarChanged = OnNectarChanged;
 		_onStateChanged = OnStateChanged;
 
-		EventBus.Subscribe(_onHourPassed);
-		EventBus.Subscribe(_onPeriodChanged);
 		EventBus.Subscribe(_onNectarChanged);
 		EventBus.Subscribe(_onStateChanged);
 
-		UpdateTimeDisplay();
 		UpdateNectarDisplay();
-		UpdateSpeedButton();
 		UpdatePhotoModeUI();
 	}
 
 	public override void _ExitTree()
 	{
-		EventBus.Unsubscribe(_onHourPassed);
-		EventBus.Unsubscribe(_onPeriodChanged);
 		EventBus.Unsubscribe(_onNectarChanged);
 		EventBus.Unsubscribe(_onStateChanged);
 	}
@@ -76,6 +71,14 @@ public partial class HUD : Control
 					break;
 				case Key.F2:
 					DebugSpawnBee();
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.F3:
+					TimeManager.Instance.ToggleDebugSpeed(10.0f);
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.F4:
+					TimeManager.Instance.ToggleDebugSpeed(50.0f);
 					GetViewport().SetInputAsHandled();
 					break;
 				case Key.Escape:
@@ -120,35 +123,11 @@ public partial class HUD : Control
 		_photoButton.Text = isPhoto ? "Exit Photo" : "Photo";
 	}
 
-	private void OnSpeedButtonPressed()
-	{
-		_currentSpeedIndex = (_currentSpeedIndex + 1) % _speeds.Length;
-		TimeManager.Instance.SetSpeed(_speeds[_currentSpeedIndex]);
-		UpdateSpeedButton();
-	}
-
-	private void OnHourPassed(HourPassedEvent evt) => UpdateTimeDisplay();
-
-	private void OnPeriodChanged(TimeOfDayChangedEvent evt) => UpdateTimeDisplay();
-
 	private void OnNectarChanged(NectarChangedEvent evt) => UpdateNectarDisplay();
-
-	private void UpdateTimeDisplay()
-	{
-		var timeManager = TimeManager.Instance;
-		int hour = (int)(timeManager.CurrentTimeNormalized * 24.0f);
-		int minute = (int)((timeManager.CurrentTimeNormalized * 24.0f - hour) * 60.0f);
-		_timeLabel.Text = $"{hour:D2}:{minute:D2} ({timeManager.CurrentPeriod})";
-	}
 
 	private void UpdateNectarDisplay()
 	{
 		_nectarLabel.Text = $"Nectar: {GameManager.Instance.Nectar}";
-	}
-
-	private void UpdateSpeedButton()
-	{
-		_speedButton.Text = _speedLabels[_currentSpeedIndex];
 	}
 
 	private void DebugSpawnBee()

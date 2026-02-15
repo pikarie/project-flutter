@@ -28,7 +28,7 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
 
-2026-02-15 10h45-
+2026-02-15 0.75 + 12h20-
 {
 	-TODO: need to finish pending changes.
 	-Commit:
@@ -58,7 +58,51 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 	}
 	-Commit:
 	{
-		
+		docs: upgrade to GDD v3.2 with 15-min day cycle, analog clock and deep search research
+
+		GDD v3.2 major changes:
+		- Day cycle duration from 5 min to 15 min (900s) based on genre research
+		- Speed control reworked to x0.5/x1/x2 on analog clock HUD
+		- Five time periods (dawn/morning/afternoon/dusk/night) replace six
+		- Photo mode pauses day/night cycle and visit timers
+		- Photo flee mechanic with rarity-scaled escape chance
+		- Conservation bulletin board replaces simple zone unlock
+		- Sprint 4 scope expanded with time refactor, sprinklers, lantern, plant leveling
+
+		Deep search research:
+		- Competitive analysis of 20+ cozy nature games
+		- Day/night cycle timing research across farming/cozy genre
+
+		Update timesheet.
+
+	}
+	-Begin "Sprint 4 (GDD v3.2)"
+	-Commit:
+	{
+		feat(sprint4-p1p2): refactor time system and add analog clock HUD
+
+		Phase 1 — Time refactor + Pause system:
+		- TimeManager: 5-min cycle → 15-min (900s), 6 periods → 5
+		  (night/dawn/morning/afternoon/dusk), CycleSpeed() with ×0.5/×1/×2
+		- GameManager: add Shop state, wire PhotoMode/Journal/Shop/Paused
+		  to TimeManager.Paused, publish PauseToggledEvent
+		- Insect: dual-delta system (movementDelta/timerDelta) so insects
+		  still move in photo mode but visit timers freeze
+		- Insect: scale arrival/departure tween durations by SpeedMultiplier
+		- SpawnSystem: skip spawn ticks when time is paused
+		- DayNightVisuals: update color palette for 5 periods
+		- Events: add SpeedChangedEvent
+
+		Phase 2 — Analog clock HUD:
+		- Create AnalogClock control with _Draw(): 12 colored segments
+		  (flat, no blur), separator lines, hour hand, center speed display
+		- HUD: remove TimeLabel/SpeedButton, instantiate AnalogClock
+		  anchored top-right, click to cycle speed
+
+		Quality of life:
+		- F3/F4 debug speed toggles (×10/×50) with smart switching
+		- GardenCamera: add right-click drag panning alongside middle-click
+		- GDD v3.2: update debug section with F3/F4 entries
 	}
 }
 2026-02-14 5.0
