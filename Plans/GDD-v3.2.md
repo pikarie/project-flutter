@@ -659,9 +659,9 @@ project-flutter/
 - [ ] Système de monnaie nectar (récolter fleurs, gagner nectar)
 - [ ] UI Shop de graines (acheter graines avec nectar)
 - [ ] Système de déblocage de zones temporaire (coût nectar + seuil journal simple — sera remplacé par babillard au Sprint 5)
-- [ ] Construire les 7 zones avec grilles configurables
-- [ ] Navigation par onglets entre zones (signets horizontaux)
-- [ ] ZoneManager autoload avec transitions de visibilité
+- [x] **Construire les 7 zones avec grilles configurables**
+- [x] **Navigation par onglets entre zones (signets horizontaux, Tropical caché <54 journal)**
+- [x] **ZoneManager autoload avec transitions de visibilité**
 - [ ] Tuiles d'eau pour Pond (CellType.Water, animation sine-wave)
 - [ ] Bûches et compost pour Deep Wood (3 stades de décomposition)
 - [ ] Pierres chauffantes pour Rock Garden
@@ -680,8 +680,8 @@ project-flutter/
 - **Livrable:** Boucle de progression complète du Starter à toutes les zones
 
 ### Sprint 5 — Registres de contenu & Babillard (Semaines 10–12, ~50h)
-- [ ] PlantRegistry : ~30 plantes avec données complètes (coût, rendement, croissance, attractions, aura)
-- [ ] InsectRegistry : 72 espèces avec données complètes (spawn conditions, mouvement, rareté, durée révisée)
+- [x] **PlantRegistry : 33 plantes avec données complètes (coût, rendement, croissance, attractions)**
+- [x] **InsectRegistry : 72 espèces avec données complètes (spawn conditions, mouvement, rareté, durée, journal)**
 - [ ] 3 nouveaux patterns de mouvement (Dart, Skim, Pulse)
 - [ ] Conditions de spawn avancées (WaterRequired, MinInsectsPresent, MultiPlantCombo, DecomposingWood, etc.)
 - [ ] Spawn weights par rareté (45/25/12/4/1)
@@ -690,7 +690,7 @@ project-flutter/
 - [ ] Son de visiteur rare (chime doux)
 - [ ] Slot visiteur spécial pour rare/legendary
 - [ ] Texte journal EN + FR pour les 72 espèces
-- [ ] Indices de découverte pour toutes les espèces
+- [x] **Indices de découverte pour toutes les espèces (HintText 72/72)**
 - [ ] Système de localisation (CSV-based)
 - [ ] **Babillard de conservation : section Conservation du journal avec pages par zone**
 - [ ] **Slots spécifiques (silhouettes) + slots libres ("?") par zone**
