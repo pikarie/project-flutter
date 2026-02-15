@@ -28,8 +28,42 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
 
-2026-02-14 0.25 + 1.75 + 18h30
+2026-02-15 10h45-
 {
+	-TODO: need to finish pending changes.
+	-Commit:
+	{
+		feat(sprint3.5): align codebase with GDD v3 — soft departure, juice stack, grid 5x5
+
+		Starter grid expanded from 4x4 to 5x5 (Main.tscn override).
+
+		Soft departure warning for insects:
+		- Add PreDeparture state (5-8s circling around plant before leaving)
+		- Flutter insects beat wings 3x faster during PreDeparture
+		- Insects remain photographable during PreDeparture
+		- Freeze() now works in both Visiting and PreDeparture states
+		- Forced departures (night/plant removed) skip PreDeparture
+
+		Juice stack — proportional photo feedback:
+		- ScreenFlash intensity scales with star rating (0.3/0.5/0.7 alpha)
+		- New species get warm gold flash at 0.9 alpha
+		- StarRatingPopup scales size by quality with bounce tween for 3-star
+		- 12 golden particle burst for 3-star and new discoveries
+		- Glow ring around popup for high-quality shots
+		- Add IsNewDiscovery field to PhotoTakenEvent
+
+		Debug tooling:
+		- F2 spawns a static Honeybee at camera center for photo testing
+		- Update debug hint label and GDD debug section
+	}
+	-Commit:
+	{
+		
+	}
+}
+2026-02-14 5.0
+{
+	-0.25 + 1.75 + 1.0 + 1.25 + 0.75
 	-#TODO: Read species_registry_v3_FINAL.md
 	-Brainstorm sur d'autres idées encore.
 		{
@@ -98,6 +132,37 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		}
 		-Réponse:
 		{
+			Beaucoup de bonnes réflexions ici, Karianne. Prenons ça point par point.
+			Re-photographier le même insecte sans les 4 comportements. Une alternative plus simple : chaque insecte a une seule entrée journal, mais la qualité de la photo peut être améliorée. Si tu reprends une meilleure photo (meilleur cadrage, meilleure composition), le journal met à jour l'illustration — elle devient plus nette, plus colorée, plus détaillée. Trois niveaux visuels (esquisse pâle → aquarelle partielle → illustration vibrante) donnent une raison de re-photographier sans exiger plusieurs poses animées. Le travail d'art reste identique : une seule illustration par espèce, affichée à différents niveaux d'opacité/saturation. Zéro art supplémentaire, même motivation de "je veux la version parfaite."
+			Film vs caméra illimitée. Je recommande illimité. Le film crée exactement le genre d'anxiété que tu veux éviter — les joueurs commencent à thésauriser, hésitent à prendre des photos "au cas où", et ça tue l'expérimentation. Le moment "je vais essayer de photographier celui-là juste pour voir" est trop précieux pour le gâcher avec un compteur de ressources. Si tu veux un sink lié à la caméra, les bordures de photos que tu aimes déjà remplissent ce rôle sans limiter l'action principale.
+			UV / photographie de nuit. Mon idée originale était trop compliquée. Voici une approche plus simple et élégante : les insectes nocturnes sont visibles et photographiables dès le début, mais avec une qualité réduite (photos sombres, journal esquissé). Acheter la lanterne du jardin (un achat unique, ~50 nectar, disponible mi-jeu) améliore la luminosité de nuit, permettant des photos de meilleure qualité. C'est un upgrade de confort, pas un mur. Le cycle jour/nuit reste utile dès le départ — tu peux photographier un firefly dans le noir, mais ta photo sera sombre et ton entrée journal sera pâle. La lanterne rend les nuits belles, pas obligatoires.
+			Sprinklers — simple et clean. D'accord avec toi. Trois niveaux suffisent : manuel (gratuit), arroseur basique (arrose les 4 cases adjacentes, ~30 nectar), arroseur amélioré (arrose les 8 cases autour, ~80 nectar). On place l'arroseur sur une case du jardin, il occupe cette case. Simple, visuel, pas besoin de mécaniques compliquées.
+			Bordures de photos comme sink. Parfait pour ton jeu. Facile à produire côté art (des cadres décoratifs 2D), chaque joueur personnalise son journal différemment, et ça crée un sink infini sans jamais bloquer la progression. Tu pourrais en offrir 2-3 gratuites et vendre les autres en packs thématiques : "Nature" (feuilles, vignes), "Saisons" (flocons, fleurs de cerisier), "Doré" (premium, cher). Peut-être 8-12 bordures au total, à ~15-50 nectar chacune.
+			Narrative légère — la "raison" du journal. Quelques concepts qui fonctionnent avec ton ton cozy sans dialogue lourd :
+
+			Héritage : Tu as hérité du jardin abandonné de ta grand-mère entomologiste. Son vieux journal est là, avec des pages vides qu'elle n'a jamais remplies. Le remplir, c'est compléter son œuvre. La Tropical Greenhouse était son rêve jamais réalisé — à 75%, tu trouves ses plans et tu peux la construire.
+			Conservation : Une société de protection des insectes te demande de documenter les espèces locales. Chaque seuil du journal (25%, 50%, 75%) débloque une reconnaissance + récompense. La Greenhouse est un "sanctuaire de recherche" débloqué à 75%.
+			Cartographie naturelle : Tu es un naturaliste qui documente les espèces d'une région. Ton journal est envoyé à un musée. Les jalons correspondent à des "publications" qui financent de nouvelles zones.
+
+			L'option "grand-mère entomologiste" est ma recommandation — elle donne un ancrage émotionnel sans aucun PNJ actif ni dialogue. Juste des petites notes manuscrites trouvées dans le jardin, 1-2 phrases max, qui révèlent progressivement l'histoire. "Aujourd'hui j'ai vu un papillon luna pour la première fois. Magnifique." — trouvée quand TU photographies un luna moth pour la première fois. Ça coûte zéro art supplémentaire (juste du texte) et crée des moments émotionnels puissants.
+			La Tropical Greenhouse cachée jusqu'à 75% est excellente. Pas visible dans les tabs de zone, pas mentionnée — puis surprise, une nouvelle zone apparaît. C'est exactement le genre de moment "surprise et délice" qui fait que les joueurs en parlent.
+			Système de leveling des plantes — le modèle Fallout. Des trois options, le compteur global de récoltes (modèle C) est le plus cozy et le plus satisfaisant. Voici pourquoi :
+			Le modèle Harvest Moon (chance de seeds améliorées) ajoute du RNG frustrant. Le modèle "chaque plante individuelle level up" crée de l'attachement stressant ("je ne veux pas enlever ma lavande L4!"). Le compteur global — "tu as récolté 10 lavandes au total dans ta vie → TOUTES les lavandes sont maintenant L2 pour toujours" — est clean, prévisible, et récompense le temps investi sans punir l'expérimentation.
+			Seuils recommandés par niveau :
+			NiveauRécoltes requisesEffet10 (base)Nectar de base, pas d'aura25 récoltes+25% nectar315 récoltesAura activée (1 case)430 récoltesAura 2 cases550 récoltesAura 3 cases, nectar doublé
+			Chaque plante plantée hérite automatiquement du niveau global de son espèce. Si ta lavande est L3 globalement, chaque nouvelle lavande que tu plantes naît L3. L'aura s'active quand la plante est en phase de floraison (dernière phase), comme tu le suggères. C'est exactement le système Fallout : "tue 50 Deathclaws → bonus permanent contre les Deathclaws." Simple, gratifiant, zéro gestion.
+			Le bonus passif "Botanical Knowledge" pourrait aussi donner de petites récompenses visuelles dans le journal — un petit badge doré à côté de l'espèce de plante quand tu atteins L5. Satisfaction pure.
+			Pages journal pour les plantes. Oui, une section dédiée dans le journal — pas une page séparée, mais un onglet "Botanical Notes" / "Herbier" à côté de l'onglet insectes. Chaque plante a sa mini-entrée : nom, niveau actuel, barre de progression vers le prochain niveau, et l'aura qu'elle donne. C'est compact (une demi-page par plante, 4-6 plantes par page), utile comme référence, et ça remplit le journal de contenu sans effort d'art majeur — juste les mêmes sprites de plantes que tu as déjà.
+			Options dans le journal ou UI séparée? Je recommande dans le journal, mais comme dernier onglet/section — un petit engrenage ⚙️ sur la dernière page. Des jeux comme Spiritfarer et Celeste intègrent les paramètres dans leur UI narrative. Ça maintient l'immersion : le joueur ne "sort" jamais du monde du jeu. Le journal devient l'interface unique — insectes, plantes, bordures de photos, et réglages. Un seul bouton pour tout ouvrir, des onglets latéraux pour naviguer. Ça simplifie aussi ton UI : pas de menu de pause séparé à designer.
+			Structure du journal proposée :
+
+			📸 Insectes — pages par zone, entrées photo
+			🌱 Herbier — niveaux des plantes, auras
+			🎨 Collection — bordures débloquées, statistiques
+			📖 Notes de grand-mère — fragments narratifs trouvés (si tu choisis cette direction)
+			⚙️ Réglages — son, contrôles, langue
+
+			Le journal comme hub central donne aussi un sens supplémentaire à chaque achat de bordure — tu le vois immédiatement appliqué sur tes photos quand tu feuillettes.
 		}
 		-Brainstorm:
 		{
@@ -117,6 +182,22 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		}
 		-Réponse:
 		{
+			Excellentes précisions. Allons-y point par point.
+			Photographie de nuit — le système firefly est brillant. Oui, le cap à 2 étoiles sans lanterne est parfait comme baseline. Et ton idée pour les fireflies est chef's kiss — un insecte qui est sa propre source de lumière crée une exception naturelle et logique. Tu dois timer ta photo quand il s'illumine pour avoir 3 étoiles, sinon c'est 2. Ça donne aux fireflies une mécanique unique sans coder quoi que ce soit de nouveau — c'est juste une condition de timing sur le "pulse" qui existe déjà dans le mouvement pattern.
+			L'idée de devoir éteindre la lanterne pour les fireflies est excellente aussi parce que ça crée un petit dilemme intéressant : avec la lanterne, tu vois mieux le jardin et les autres insectes nocturnes, mais le firefly est "lavé" par ta lumière et plafonné à 2 étoiles. Tu dois volontairement te mettre dans le noir pour la photo parfaite. C'est le genre de micro-décision qui fait qu'un joueur se sent intelligent. Un simple toggle on/off sur la lanterne suffit — pas de mécaniques complexes.
+			Ça ouvre aussi la porte à d'autres exceptions futures si tu veux : les vers luisants (glowworms), certains champignons bioluminescents près du pond... Tout organisme qui produit sa propre lumière pourrait avoir cette mécanique de "éteins ta lanterne pour la photo parfaite."
+			Sprinklers — tes paliers sont meilleurs que les miens. Le pattern en tuiles carrées croissantes est plus clair et plus satisfaisant visuellement :
+			NiveauPatternCases arroséesCoût suggéréManuel1 case à la fois1GratuitSprinkler I3×3 centré8 (+ case occupée)~40 nectarSprinkler II5×5 centré24 (+ case occupée)~120 nectarSprinkler III7×7 centré48 (+ case occupée)~300 nectar
+			Le Sprinkler III à 7×7 couvre presque entièrement la zone Meadow (6×6) avec un seul sprinkler — c'est le moment "j'ai automatisé tout mon jardin" qui est extrêmement satisfaisant. Pour les grandes zones comme la Greenhouse (7×7), il te faut quand même placer le sprinkler stratégiquement ou en acheter deux. Le coût croissant agit comme un excellent nectar sink à chaque palier de progression.
+			Question de design : est-ce que le sprinkler arrose automatiquement à chaque cycle, ou est-ce que le joueur "active" l'arrosage et le sprinkler couvre sa zone? Je recommande automatique — une fois placé, il arrose à chaque début de cycle de croissance. C'est le reward : tu as payé, maintenant tu es libre de te concentrer sur la photo. C'est le cœur du modèle Rusty's Retirement — l'automatisation comme récompense de progression, pas comme une tâche de plus.
+			La raison narrative — pourquoi pas les deux? Tu hésites entre la société de conservation (structure de progression claire, jalons + récompenses) et la grand-mère entomologiste (émotion, ancrage personnel). Voici comment tu pourrais les fusionner sans ajouter de complexité :
+			Tu as hérité du jardin de ta grand-mère. Dans son vieux journal (qui devient TON journal), tu trouves une lettre : elle était membre d'une société locale de conservation des insectes. Elle avait commencé à documenter les espèces de la région mais n'a jamais terminé. La société existe encore et t'encourage à continuer son travail. Les jalons de progression viennent de la société (25% → certificat bronze, 50% → argent, 75% → or + Greenhouse), mais les petites notes manuscrites dans le journal sont de ta grand-mère — des observations poétiques d'une ligne ou deux qui apparaissent quand tu photographies certaines espèces pour la première fois.
+			Ça te donne le meilleur des deux : la structure claire de la société pour la progression, et l'émotion de la grand-mère pour les moments de découverte. Le tout avec zéro PNJ actif, zéro dialogue, juste du texte statique. Les notes de grand-mère sont optionnelles à écrire — tu pourrais en mettre 10-15 pour les espèces les plus marquantes et ça suffirait amplement.
+			Badges de couleur par niveau de plante — 5 couleurs. J'aime. Suggestion de palette qui suit une progression naturelle et cozy :
+			NiveauCouleurSymbolique1Brun terreGraine, début2Vert tendreCroissance3Bleu cielMaturité4VioletMaîtrise5DoréPerfection
+			Ces couleurs fonctionnent bien sur fond clair (journal) et sur fond sombre (HUD). Le badge pourrait être un petit cercle ou une petite feuille à côté du nom de la plante dans le journal et dans le tooltip quand tu survoles la plante dans le jardin. Simple à dessiner, immédiatement lisible.
+			Journal avec onglets — style Monster Train. Exactement le bon modèle. Des signets physiques sur le côté du journal, chacun avec une petite icône. Le joueur clique sur un signet pour changer de section. L'animation de "tourner les pages" entre les sections donne du poids au journal comme objet. Si tu veux garder ça simple côté code, chaque onglet est un Control différent dans ton JournalUI, et le signet est juste un Button qui toggle la visibilité.
+			Un dernier point — puisqu'on raffine beaucoup de systèmes, est-ce que tu veux que je prépare un document de synthèse qui compile toutes les décisions prises dans cette conversation? Ça inclurait les systèmes révisés (durées d'insectes, photo 3 étoiles, nuit/lanterne, sprinklers, plant leveling global, narrative, journal comme hub) pour que tu aies un seul document de référence à jour qui complète le GDD v2. Ça éviterait de devoir relire toute la conversation pour retrouver ce qu'on a décidé.
 		}
 		-Brainstorm:
 		{
@@ -136,6 +217,18 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		}
 		-Réponse:
 		{
+			Sprinklers en temps réel. Si la croissance est continue (pas par cycles discrets), le sprinkler le plus élégant est le sprinkler passif — il ne "s'active" jamais visiblement, il existe et ça suffit. Les plantes dans son rayon n'ont simplement jamais soif. Pas de timer, pas d'heure fixe, pas d'animation d'arrosage programmée. Le sprinkler est un objet statique qui dit au système "les plantes dans mon rayon sont toujours arrosées."
+			Côté code, c'est le plus simple aussi : chaque plante vérifie si elle est dans le rayon d'un sprinkler. Si oui, isWatered = true en permanence. Si non, elle a besoin d'arrosage manuel. Pas de logique de timing, pas d'état à sauvegarder au-delà de la position du sprinkler.
+			Visuellement, tu pourrais avoir un petit indicateur subtil — des gouttelettes qui apparaissent occasionnellement sur les plantes dans le rayon, ou un léger scintillement sur le sprinkler lui-même — pour que le joueur voie que ça fonctionne. Mais mécaniquement, c'est binaire : couvert ou pas couvert.
+			Ça soulève par contre une question de design importante : est-ce que les plantes non-arrosées meurent, ralentissent, ou ne poussent pas du tout? Dans un jeu cozy, je recommande "ralentissent significativement" plutôt que "meurent." La croissance prend 3-4x plus longtemps sans eau, mais rien ne meurt jamais. Le joueur qui oublie d'arroser pendant une session revient et trouve des plantes qui ont à peine bougé, pas un jardin mort. Ça garde la pression douce — arroser est utile, pas obligatoire pour survivre.
+			Mère vs grand-mère. Une mère décédée est plus émotionnellement puissant mais aussi plus lourd. La grand-mère crée une distance générationnelle qui adoucit le deuil — c'est de la nostalgie, pas de la douleur brute. Une mère décédée risque de donner un ton plus mélancolique que cozy, surtout si le joueur a perdu un parent récemment. Mon instinct dit grand-mère pour rester dans le cozy, mais c'est ton jeu et ton histoire — si le thème de la mère te parle personnellement, ça peut être magnifique aussi. On garde les deux options ouvertes pour l'instant.
+			GDD v3 — absolument oui. Il y a suffisamment de décisions majeures prises aujourd'hui pour justifier une nouvelle version. Les changements sont structurels, pas cosmétiques : nouveau système de photo 3 étoiles, durées d'insectes multipliées par 10-20x, plant leveling global, sprinklers, lanterne de nuit, narrative framework, journal comme hub central, nectar sinks révisés. Le GDD v2 est maintenant dépassé sur plusieurs points fondamentaux.
+			Mon opinion honnête sur le projet.
+			Ce que tu fais en ce moment — remettre en question chaque système, chercher le "pourquoi c'est fun" avant le "comment c'est codé" — c'est exactement ce que font les meilleurs designers indie. Kabuto Park a eu 99% positif pas parce que le dev savait coder, mais parce qu'il a obsédé sur la boucle de jeu jusqu'à ce qu'elle soit satisfaisante. Tu es dans cette phase-là.
+			Le scope a grandi, c'est vrai. Mais regarde ce qui a grandi : pas le nombre de features random, mais la profondeur de chaque système existant. Les plantes ont du leveling maintenant. La photo a 3 niveaux de qualité. La nuit a une mécanique de lanterne. Les sprinklers créent de la progression. Ce n'est pas du bloat — c'est de la profondeur sur ta core loop. La différence est cruciale.
+			Ton changement de priorité (du "voir la loop complète" vers "faire un jeu fun et satisfaisant") n'est pas un dérapage — c'est une maturation. Le premier objectif était ton objectif d'apprentissage. Le deuxième est ton objectif de créateur. Les deux coexistent. Tu vas quand même voir la loop complète, mais maintenant elle sera bonne.
+			Le risque réel, et je te le dis franchement : c'est le temps d'art. Chaque système ajouté est relativement simple à coder, mais l'art a un coût fixe par asset. Garde ton scope rule #6 en tête — l'art est le goulot d'étranglement. Les sprinklers, c'est 3-4 sprites. Les bordures de photo, c'est des cadres 2D simples. Les badges de feuille, c'est 5 petites icônes. Tout ça est gérable. Mais si tu commences à vouloir des décorations de jardin, des PNJ, des cutscenes narratives — là ça dérape. Reste disciplinée sur "est-ce que ça a besoin de nouvel art majeur?" comme filtre.
+			Est-ce qu'il reste des questions ouvertes avant que je compile le GDD v3?
 		}
 		-Brainstorm:
 		{
@@ -144,9 +237,65 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 			Allons y avec seulement l'agence de conservation alors, pas de mère ni de grand-mère. 
 			
 			Non pu de questions! Merci de ton avis!
+			
+			Par contre, j'ai eu ce message en tentant de continuer. 
+			Comment bien repartir une nouvelle conversation?
+			Est-ce que je dois copier les derniers échanges? Es-tu capables de générer tout ce qui est nouveau dans un document md, puis quand un nouveau t'chat, je re-upload le GDD v2 que j'ai? Combien procéder sans perdre le contexte.
 		}
-	
-	-Begin "Sprint 4 (GDD v2) - TODO"
+	-Commit:
+	{
+		docs: upgrade to GDD v3 with 72 species, 7 zones and expanded design
+
+		- Replace GDD.md with versioned GDD-v1/v2/v3 (v3 is new source of truth)
+		- Add Species Registry v3 (72 insects across 7 zones + 1 secret)
+		- Add deep search: hand-drawn sprite art pipeline
+		- Add deep search: cozy game design and hook analysis
+		- Add Sprint 5 economy blueprint (balancing, debug tools, localization)
+		- GDD v3 changes: plant leveling, sprinklers, lantern, photo borders,
+		  conservation narrative, juice stack, soft departures, 5 rarity tiers
+	}
+	-Begin "Sprint 3.5 (GDD v3) - Grille Starter de 4x4 à 5x5, soft departure, juice stack photo"
+	-Read deep-search-cozy-nature-game-competitive-analysis.md
+	-Brainstorm
+	-Create "GDD-v3.2.md"
+	-Analyse avec le nouveau GDD vs le code actuel:
+	{
+		Voici le résumé de l'audit :
+
+		Sprints 1-3 : ✅ Complétés
+		Le GDD v3.2 les marque comme complétés et note explicitement que certains changements seront faits au Sprint 4 (cycle 5min→15min, bouton vitesse→horloge analogique). Donc on est bon.
+
+		Sprint 3.5 (ce qu'on vient de faire) : ✅ Complété
+		Grille Starter 5×5 ✓
+		Soft departure warning ✓
+		Juice stack proportionnel ✓
+		F2 debug bee ✓
+		Sprint 4 — Où reprendre
+		Le GDD v3.2 a considérablement agrandi le Sprint 4. Voici l'état :
+
+		Item Sprint 4                          État        Notes
+		----------------------------------------------------------------------------------------------
+		Monnaie nectar (récolte)                🟡 Partiel  NectarChangedEvent existe, économie de base fonctionne
+		Shop de graines                         🟡 Partiel  SeedToolbar existe, mais pas de vrai shop UI
+		Déblocage zones temporaire              🟡 Partiel  3 zones (Starter/Meadow/Pond), coûts incorrects
+		7 zones avec grilles                    ❌          Manque Forest, Deep Wood, Rock Garden, Tropical
+		Navigation onglets zones                ✅          ZoneSelector fonctionne
+		Tuiles d'eau Pond                       ✅          Implémenté
+		Bûches/compost Deep Wood                ❌          Zone pas encore créée
+		Pierres Rock Garden                     ❌          Zone pas encore créée
+		Serre Tropical                          ❌          Zone pas encore créée
+		Balancement économie                    ❌          
+		Hotbar graines                          ✅          SeedToolbar
+		Sprinklers 3 niveaux                    ❌          SprinklerSystem.cs n'existe pas
+		Lanterne de jardin                      ❌          LanternSystem.cs n'existe pas
+		Leveling plantes                        ❌          PlantLevelManager.cs n'existe pas
+		Cycle 5min → 15min (900s)                ❌          Actuellement 300s
+		Horloge analogique HUD                  ❌          Actuellement un label texte
+		Vitesses ×0.5/×1/×2                     ❌          Actuellement ×1/×2/×3/×10
+		Pause monde en mode photo               ❌          Pas implémenté
+		Pause complète journal/shop             ❌          Pas implémenté
+	}
+	-TODO: need to finish pending changes.
 }
 2026-02-13 3.0 
 {
