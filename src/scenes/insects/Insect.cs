@@ -4,7 +4,13 @@ using ProjectFlutter;
 
 public partial class Insect : Area2D
 {
-	public enum InsectState { Arriving, Visiting, Departing, Freed }
+	public enum InsectState { Arriving, Visiting, PreDeparture, Departing, Freed }
+
+	private const float PreDepartureMinDuration = 5f;
+	private const float PreDepartureMaxDuration = 8f;
+	private const float PreDepartureCircleRadius = 40f;
+	private const float PreDepartureCircleSpeed = 2.5f;
+	private const float PreDepartureWingSpeedMultiplier = 3f;
 
 	private InsectData _data;
 	private IMovementBehavior _movement;
@@ -16,6 +22,10 @@ public partial class Insect : Area2D
 	private Tween _currentTween;
 	private RandomNumberGenerator _rng;
 
+	// Pre-departure circling
+	private float _preDepartureTimer;
+	private float _preDepartureAngle;
+
 	// Placeholder visual color (set by Initialize based on movement pattern)
 	private Color _bodyColor = Colors.White;
 	private float _bodyRadius = 6f;
@@ -26,7 +36,7 @@ public partial class Insect : Area2D
 
 	public InsectData Data => _data;
 	public InsectState CurrentState => _state;
-	public bool IsPhotographable => _state == InsectState.Visiting && !_isFrozen && IsInsideTree();
+	public bool IsPhotographable => (_state == InsectState.Visiting || _state == InsectState.PreDeparture) && !_isFrozen && IsInsideTree();
 
 	private Action<TimeOfDayChangedEvent> _onTimeChanged;
 	private Action<PlantRemovedEvent> _onPlantRemoved;
@@ -89,6 +99,9 @@ public partial class Insect : Area2D
 			case InsectState.Visiting:
 				ProcessVisiting(dt);
 				break;
+			case InsectState.PreDeparture:
+				ProcessPreDeparture(dt);
+				break;
 		}
 
 		QueueRedraw();
@@ -111,8 +124,9 @@ public partial class Insect : Area2D
 		switch (_data?.MovementPattern)
 		{
 			case MovementPattern.Flutter:
-				// Wing shapes
-				float wingFlap = Mathf.Sin(_time * 8f) * 4f;
+				// Wing shapes — faster flap during pre-departure
+				float wingSpeed = _state == InsectState.PreDeparture ? 8f * PreDepartureWingSpeedMultiplier : 8f;
+				float wingFlap = Mathf.Sin(_time * wingSpeed) * 4f;
 				DrawCircle(new Vector2(-5f, wingFlap - 2f), 4f, _bodyColor.Lightened(0.3f));
 				DrawCircle(new Vector2(5f, wingFlap - 2f), 4f, _bodyColor.Lightened(0.3f));
 				break;
@@ -126,7 +140,7 @@ public partial class Insect : Area2D
 
 	public void Freeze(float duration = 0.5f)
 	{
-		if (_state != InsectState.Visiting) return;
+		if (_state != InsectState.Visiting && _state != InsectState.PreDeparture) return;
 		_isFrozen = true;
 		_freezeTimer = duration;
 		Modulate = new Color(1.3f, 1.3f, 1.3f, 1f);
@@ -159,7 +173,7 @@ public partial class Insect : Area2D
 		_visitTimeRemaining -= dt;
 		if (_visitTimeRemaining <= 0f)
 		{
-			StartDeparture();
+			StartPreDeparture();
 			return;
 		}
 
@@ -172,6 +186,35 @@ public partial class Insect : Area2D
 			target = _plantAnchor + offset.Normalized() * maxWander;
 
 		GlobalPosition = GlobalPosition.Lerp(target, dt * 8f);
+	}
+
+	private void StartPreDeparture()
+	{
+		if (_state == InsectState.PreDeparture || _state == InsectState.Departing || _state == InsectState.Freed) return;
+
+		_state = InsectState.PreDeparture;
+		_preDepartureTimer = _rng.RandfRange(PreDepartureMinDuration, PreDepartureMaxDuration);
+		_preDepartureAngle = _rng.RandfRange(0f, Mathf.Tau);
+	}
+
+	private void ProcessPreDeparture(float dt)
+	{
+		_preDepartureTimer -= dt;
+		if (_preDepartureTimer <= 0f)
+		{
+			StartDeparture();
+			return;
+		}
+
+		// Circle around the plant anchor with increasing radius
+		_preDepartureAngle += dt * PreDepartureCircleSpeed;
+		float expandingRadius = PreDepartureCircleRadius * (1f + (1f - _preDepartureTimer / PreDepartureMaxDuration) * 0.5f);
+		Vector2 circleTarget = _plantAnchor + new Vector2(
+			Mathf.Cos(_preDepartureAngle) * expandingRadius,
+			Mathf.Sin(_preDepartureAngle) * expandingRadius
+		);
+
+		GlobalPosition = GlobalPosition.Lerp(circleTarget, dt * 5f);
 	}
 
 	private void StartDeparture()

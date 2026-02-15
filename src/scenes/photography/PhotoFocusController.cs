@@ -216,9 +216,10 @@ public partial class PhotoFocusController : Control
 		// Freeze the insect
 		_targetInsect.Freeze(0.5f);
 
-		// Publish photo taken
+		// Publish photo taken (check discovery before recording)
 		var data = _targetInsect.Data;
-		EventBus.Publish(new PhotoTakenEvent(data.Id, data.DisplayName, stars, _targetInsect.GlobalPosition));
+		bool isNewDiscovery = !JournalManager.Instance.IsDiscovered(data.Id);
+		EventBus.Publish(new PhotoTakenEvent(data.Id, data.DisplayName, stars, _targetInsect.GlobalPosition, isNewDiscovery));
 
 		// Record in journal
 		JournalManager.Instance.DiscoverSpecies(data.Id, stars);

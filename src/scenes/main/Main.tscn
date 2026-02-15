@@ -24,6 +24,9 @@ script = ExtResource("11")
 
 [node name="StarterZone" parent="GameWorld" instance=ExtResource("1")]
 
+[node name="GardenGrid" parent="GameWorld/StarterZone"]
+GridSize = Vector2i(5, 5)
+
 [node name="MeadowZone" parent="GameWorld" instance=ExtResource("1")]
 visible = false
 process_mode = 4

@@ -840,7 +840,8 @@ Ces fonctionnalités de debug sont utiles pendant le développement mais **doive
 |------|---------|-------------|
 | Vitesse ×10 | `HUD.cs` | Quatrième vitesse non prévue au GDD (×1, ×2, ×3 seulement) |
 | F1 — Unlock all zones | `HUD.cs` + `ZoneManager.cs` | Débloque toutes les zones sans coût nectar ni prérequis journal |
-| Debug hint label | `HUD.tscn` | Label "F1 : Unlock all zones" en bas à gauche |
+| F2 — Spawn debug bee | `HUD.cs` | Spawne une Honeybee statique au centre de la caméra pour tester la photo |
+| Debug hint label | `HUD.tscn` | Label raccourcis debug en bas à gauche (40% opacité) |
 
 ---
 

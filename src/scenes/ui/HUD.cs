@@ -74,6 +74,10 @@ public partial class HUD : Control
 					ZoneManager.Instance.DebugUnlockAll();
 					GetViewport().SetInputAsHandled();
 					break;
+				case Key.F2:
+					DebugSpawnBee();
+					GetViewport().SetInputAsHandled();
+					break;
 				case Key.Escape:
 					if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
 					{
@@ -145,5 +149,41 @@ public partial class HUD : Control
 	private void UpdateSpeedButton()
 	{
 		_speedButton.Text = _speedLabels[_currentSpeedIndex];
+	}
+
+	private void DebugSpawnBee()
+	{
+		var camera = GetViewport().GetCamera2D();
+		if (camera == null) return;
+
+		// Spawn at camera center
+		Vector2 spawnPosition = camera.GlobalPosition;
+
+		var insectScene = GD.Load<PackedScene>("res://scenes/insects/Insect.tscn");
+		var insect = insectScene.Instantiate<Insect>();
+
+		var data = InsectRegistry.GetById("honeybee");
+		if (data == null) return;
+
+		// Initialize with very long visit time (static debug bee)
+		insect.Initialize(data, spawnPosition, spawnPosition, Vector2I.Zero);
+
+		// Find the active zone's InsectContainer
+		var gameWorld = GetTree().Root.GetNodeOrNull("Main/GameWorld");
+		if (gameWorld == null) return;
+
+		Node insectContainer = null;
+		foreach (var child in gameWorld.GetChildren())
+		{
+			if (child is Node2D zoneNode && zoneNode.Visible)
+			{
+				insectContainer = zoneNode.GetNodeOrNull("InsectContainer");
+				break;
+			}
+		}
+
+		if (insectContainer == null) return;
+		insectContainer.AddChild(insect);
+		GD.Print("Debug: Spawned static Honeybee at camera center");
 	}
 }

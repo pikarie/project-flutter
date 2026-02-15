@@ -86,5 +86,5 @@ offset_left = 10.0
 offset_top = -30.0
 offset_right = 250.0
 offset_bottom = -10.0
-text = "F1 : Unlock all zones"
+text = "F1 : Unlock all zones | F2 : Spawn debug bee"
 modulate = Color(1, 1, 1, 0.4)
