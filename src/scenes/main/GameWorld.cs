@@ -12,7 +12,11 @@ public partial class GameWorld : Node2D
 	{
 		_zones[ZoneType.Starter] = GetNode<Node2D>("StarterZone");
 		_zones[ZoneType.Meadow] = GetNode<Node2D>("MeadowZone");
+		_zones[ZoneType.Forest] = GetNode<Node2D>("ForestZone");
+		_zones[ZoneType.DeepWood] = GetNode<Node2D>("DeepWoodZone");
+		_zones[ZoneType.RockGarden] = GetNode<Node2D>("RockGardenZone");
 		_zones[ZoneType.Pond] = GetNode<Node2D>("PondZone");
+		_zones[ZoneType.Tropical] = GetNode<Node2D>("TropicalZone");
 
 		// Initialize: only Starter visible and processing
 		foreach (var (zone, node) in _zones)

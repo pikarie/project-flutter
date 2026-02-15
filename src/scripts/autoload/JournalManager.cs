@@ -31,4 +31,19 @@ public partial class JournalManager : Node
 		_discoveredSpecies.TryGetValue(insectId, out int rating) ? rating : 0;
 
 	public int GetDiscoveredCount() => _discoveredSpecies.Count;
+
+	public void DebugFillJournal(int count)
+	{
+		int added = 0;
+		foreach (var species in InsectRegistry.AllSpecies)
+		{
+			if (added >= count) break;
+			if (_discoveredSpecies.ContainsKey(species.Id)) continue;
+			_discoveredSpecies[species.Id] = 2;
+			EventBus.Publish(new SpeciesDiscoveredEvent(species.Id));
+			added++;
+		}
+		EventBus.Publish(new JournalUpdatedEvent("debug_fill", 2));
+		GD.Print($"DEBUG: Filled journal with {added} species (total: {_discoveredSpecies.Count})");
+	}
 }

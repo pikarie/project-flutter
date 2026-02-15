@@ -14,6 +14,7 @@ public partial class ZoneSelector : Control
 	private Action<ZoneChangedEvent> _onZoneChanged;
 	private Action<ZoneUnlockedEvent> _onZoneUnlocked;
 	private Action<NectarChangedEvent> _onNectarChanged;
+	private Action<JournalUpdatedEvent> _onJournalUpdated;
 
 	public override void _Ready()
 	{
@@ -25,9 +26,11 @@ public partial class ZoneSelector : Control
 		_onZoneChanged = _ => UpdateTabs();
 		_onZoneUnlocked = _ => UpdateTabs();
 		_onNectarChanged = _ => UpdateUnlockPanel();
+		_onJournalUpdated = _ => UpdateTabs();
 		EventBus.Subscribe(_onZoneChanged);
 		EventBus.Subscribe(_onZoneUnlocked);
 		EventBus.Subscribe(_onNectarChanged);
+		EventBus.Subscribe(_onJournalUpdated);
 
 		UpdateTabs();
 	}
@@ -37,20 +40,35 @@ public partial class ZoneSelector : Control
 		EventBus.Unsubscribe(_onZoneChanged);
 		EventBus.Unsubscribe(_onZoneUnlocked);
 		EventBus.Unsubscribe(_onNectarChanged);
+		EventBus.Unsubscribe(_onJournalUpdated);
 	}
+
+	private static readonly Dictionary<ZoneType, string> TabLabels = new()
+	{
+		{ ZoneType.Starter, "Garden" },
+		{ ZoneType.Meadow, "Meadow" },
+		{ ZoneType.Forest, "Forest" },
+		{ ZoneType.DeepWood, "Deep Wood" },
+		{ ZoneType.RockGarden, "Rock Garden" },
+		{ ZoneType.Pond, "Pond" },
+		{ ZoneType.Tropical, "Tropical" },
+	};
+
+	private HBoxContainer _tabContainer;
 
 	private void BuildTabs()
 	{
-		var container = new HBoxContainer
+		_tabContainer = new HBoxContainer
 		{
 			Position = new Vector2(10, 50),
 		};
-		container.AddThemeConstantOverride("separation", 6);
-		AddChild(container);
+		_tabContainer.AddThemeConstantOverride("separation", 6);
+		AddChild(_tabContainer);
 
-		CreateTab(container, ZoneType.Starter, "Garden");
-		CreateTab(container, ZoneType.Meadow, "Meadow");
-		CreateTab(container, ZoneType.Pond, "Pond");
+		foreach (var (zone, label) in TabLabels)
+		{
+			CreateTab(_tabContainer, zone, label);
+		}
 	}
 
 	private void CreateTab(HBoxContainer parent, ZoneType zone, string label)
@@ -179,8 +197,19 @@ public partial class ZoneSelector : Control
 	private void UpdateTabs()
 	{
 		var zoneManager = ZoneManager.Instance;
+		int journalCount = JournalManager.Instance.GetDiscoveredCount();
+
 		foreach (var (zone, button) in _tabButtons)
 		{
+			var (name, _, _, _, journalRequired) = ZoneManager.ZoneConfig[zone];
+
+			// Hide Tropical until player has enough journal entries to see it
+			if (zone == ZoneType.Tropical)
+			{
+				button.Visible = journalCount >= journalRequired;
+				if (!button.Visible) continue;
+			}
+
 			bool unlocked = zoneManager.IsUnlocked(zone);
 			bool active = zone == zoneManager.ActiveZone;
 
@@ -197,7 +226,6 @@ public partial class ZoneSelector : Control
 			button.AddThemeColorOverride("font_color",
 				active ? Colors.White : (unlocked ? new Color(0.8f, 0.8f, 0.8f) : new Color(0.5f, 0.5f, 0.5f)));
 
-			var (name, _, _, _, _) = ZoneManager.ZoneConfig[zone];
 			button.Text = unlocked ? name : $"{name} (locked)";
 		}
 	}

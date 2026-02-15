@@ -2,5 +2,9 @@ public enum ZoneType
 {
 	Starter,
 	Meadow,
-	Pond
+	Forest,
+	DeepWood,
+	RockGarden,
+	Pond,
+	Tropical
 }

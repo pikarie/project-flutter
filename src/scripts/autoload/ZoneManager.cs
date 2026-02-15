@@ -11,14 +11,22 @@ public partial class ZoneManager : Node
 	{
 		{ ZoneType.Starter, true },
 		{ ZoneType.Meadow, false },
+		{ ZoneType.Forest, false },
+		{ ZoneType.DeepWood, false },
+		{ ZoneType.RockGarden, false },
 		{ ZoneType.Pond, false },
+		{ ZoneType.Tropical, false },
 	};
 
 	public static readonly Dictionary<ZoneType, (string Name, int Width, int Height, int NectarCost, int JournalRequired)> ZoneConfig = new()
 	{
-		{ ZoneType.Starter, ("Starter Garden", 4, 4, 0, 0) },
+		{ ZoneType.Starter, ("Starter Garden", 5, 5, 0, 0) },
 		{ ZoneType.Meadow, ("Meadow", 6, 6, 100, 5) },
-		{ ZoneType.Pond, ("Pond Edge", 5, 5, 150, 12) },
+		{ ZoneType.Forest, ("Forest", 6, 6, 200, 11) },
+		{ ZoneType.DeepWood, ("Deep Wood", 5, 5, 350, 14) },
+		{ ZoneType.RockGarden, ("Rock Garden", 5, 5, 500, 18) },
+		{ ZoneType.Pond, ("Pond Edge", 5, 5, 700, 20) },
+		{ ZoneType.Tropical, ("Tropical Greenhouse", 7, 7, 1000, 54) },
 	};
 
 	public ZoneType ActiveZone => _activeZone;
@@ -36,6 +44,10 @@ public partial class ZoneManager : Node
 		var previous = _activeZone;
 		_activeZone = target;
 		GameManager.Instance.CurrentZone = target;
+
+		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+			GameManager.Instance.ChangeState(GameManager.GameState.Playing);
+
 		EventBus.Publish(new ZoneChangedEvent(previous, target));
 	}
 

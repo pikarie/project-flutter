@@ -23,14 +23,20 @@ Idea: "Kabuto Park" et "Rusty's Retirement" on tout les deux 42 éléments à d�
 	
 Idea: pour la mini jeu de caméra, avoir plusieurs click à faire? ou si c'est bizarre? a essayer peut-être.
 
+
 TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme "Plantera", "Kingdom: New Lands" ou "Milki Delivery"
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
-TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
+TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
+
+Idea: Est-ce que ça serait une bonne idée d'avoir un upgrade de la caméra (ou nativement) qui donne du nector a chaque capture de photo (1 nextar par exemple)? Ça donne une récompense pour prendre des photos surtout quand toutes les espèces commence a être découvert pour une zone. Ou sinon, le même genre de gain passif que pour les plantes, a 50 photos de ladybug, reward?
+
+Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Erractic pourle moment) ou pas assez diversifié? Dans les 72 insectes que nous avons, est-ce que certains doit avoir leur propre pattern custom? Est-ce une bonne idée d'ajouter d'autres patterns?
 
 
-2026-02-15 0.75 + 12h20-
+
+2026-02-15 0.75 + 1.5 + 15h15-
 {
-	-TODO: need to finish pending changes.
+	-#TODO: need to finish pending changes.
 	-Commit:
 	{
 		feat(sprint3.5): align codebase with GDD v3 — soft departure, juice stack, grid 5x5
@@ -104,6 +110,80 @@ TODO: changer le flaash de la photo pour quelque chose d'autre? Ça fait mal aux
 		- GardenCamera: add right-click drag panning alongside middle-click
 		- GDD v3.2: update debug section with F3/F4 entries
 	}
+	-Régler problème avec OBS qui change mon son de youtube lorsqu'il est ouvert, causer par le Jabra headset.
+	{
+		Problème : Le Jabra EVOLVE LINK a deux profils audio — "musique" (basses normales) et "appel" (basses coupées). Quand OBS s'ouvrait, il accédait au micro du Jabra par défaut, ce qui faisait croire au casque qu'un appel était en cours. Le Jabra switchait automatiquement en mode appel, réduisant les basses sur tout l'audio (YouTube, jeux, etc.).
+		
+		Solution en 2 étapes :
+		Dans Windows Sound → Playback, mettre un ASUS monitor comme Default Communications Device (pour isoler les flux "communication" du Jabra). Le Jabra reste le Default Device normal.
+		Dans OBS → Settings → Audio, mettre tous les Mic/Auxiliary Audio sur "Disabled" pour empêcher OBS d'ouvrir le micro du Jabra. Le Desktop Audio reste sur "Default" pour capter le son des jeux normalement.
+		Le micro Jabra reste disponible dans Windows pour Discord/Teams sans problème — c'est seulement OBS qui n'y touche plus.
+	}
+	-Phase sprint 4, phase 3
+	{
+		Phase 3A — Enums et données
+
+		ZoneType.cs : 7 zones (ajout Forest, DeepWood, RockGarden, Tropical)
+		ZoneManager.cs : configs avec coûts GDD (200/350/500/1000 nectar)
+		GameWorld.cs : 7 zones enregistrées
+		Phase 3B — Scènes et UI
+
+		Main.tscn : 4 nouvelles zones (ForestZone 6x6, DeepWoodZone 5x5, RockGardenZone 5x5, TropicalZone 7x7), toutes visible=false, process_mode=4
+		ZoneSelector.cs : tabs générés dynamiquement depuis TabLabels (7 zones), tab Tropical caché jusqu'à 54 entrées journal, abonnement à JournalUpdatedEvent
+		Phase 3C — Contenu
+
+		PlantRegistry.cs : 33 plantes (6 Starter, 6 Meadow, 5 Forest, 4 DeepWood, 4 RockGarden, 3 Pond, 5 Tropical)
+		InsectRegistry.cs : 72 espèces (14 Starter, 11 Meadow, 11 Forest, 9 DeepWood, 9 RockGarden, 8 Pond, 10 Tropical) avec textes journal uniques pour chaque espèce
+		Changements clés :
+
+		Luna Moth : Meadow → Forest (comme GDD v3.2)
+		Atlas Moth : Meadow → Tropical (comme GDD v3.2)
+		Firefly : Pond → DeepWood (comme GDD v3.2)
+		4 raretés legendaires dans Tropical + 1 dans DeepWood
+	}
+	-#TODO: tester la phase 3
+	-Commit:
+	{
+		feat(zones): extend to 7 zones with 72 species and 33 plants
+
+		Sprint 4 Phase 3 — Complete zone expansion from 3 to 7 zones with full
+		content population matching GDD v3.2 specifications.
+
+		Zones:
+		- Add Forest (6×6, 200nc), DeepWood (5×5, 350nc), RockGarden (5×5, 500nc),
+		  Tropical (7×7, 1000nc) to ZoneType enum, ZoneManager config, Main.tscn
+		  and GameWorld registration
+		- ZoneSelector: dynamic tab generation from ZoneConfig, Tropical tab hidden
+		  until 54 journal entries (75% of 72), subscribe to JournalUpdatedEvent
+
+		Species (72 total):
+		- Starter: 14 (Cabbage White, Orange Tip, Red Admiral, ladybugs, beetles,
+		  moths, Honeybee, Mantis, Lacewing, Hoverfly)
+		- Meadow: 11 (Monarch, Swallowtail, grasshoppers, bees, Tiger Beetle)
+		- Forest: 11 (Tiger Swallowtail, Luna Moth, Stag Beetle, Walking Stick...)
+		- DeepWood: 9 (Polyphemus, Cecropia, Death's-Head, Rhinoceros Beetle,
+		  Firefly, Leaf Insect legendary)
+		- RockGarden: 9 (Glasswing, Sacred Scarab, Teddy Bear Bee, Pillbug, Ant)
+		- Pond: 8 (Blue Dasher, Skimmers, Emperor Dragonfly, Damselfly, Strider)
+		- Tropical: 10 (Queen Alexandra's Birdwing, Orchid Mantis, Hercules Beetle,
+		  Comet Moth — 4 legendaries)
+
+		Key species relocations per GDD v3.2:
+		- Luna Moth: Meadow → Forest
+		- Atlas Moth: Meadow → Tropical
+		- Firefly: Pond → DeepWood
+
+		Plants (33 total):
+		- 6 Starter, 6 Meadow, 5 Forest, 4 DeepWood infrastructure (logs,
+		  compost, mushrooms, moss), 4 RockGarden alpine, 3 Pond aquatic,
+		  5 Tropical exotic
+
+		Fixes:
+		- Zone switching now exits PhotoMode/Journal/Shop back to Playing
+		- F5 debug shortcut fills journal with 53 species at 2★ for Tropical
+		  unlock testing
+	}
+	
 }
 2026-02-14 5.0
 {

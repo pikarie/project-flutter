@@ -956,6 +956,7 @@ Ces fonctionnalités de debug sont utiles pendant le développement mais **doive
 | F2 — Spawn debug bee | `HUD.cs` | Spawne une Honeybee statique au centre de la caméra pour tester la photo |
 | F3 — Toggle ×10 speed | `HUD.cs` + `TimeManager.cs` | Toggle vitesse ×10 debug, reclique restaure la vitesse précédente (×0.5, ×1 ou ×2) |
 | F4 — Toggle ×50 speed | `HUD.cs` + `TimeManager.cs` | Toggle vitesse ×50 debug, reclique restaure la vitesse précédente (×0.5, ×1 ou ×2) |
+| F5 — Fill journal 53 | `HUD.cs` + `JournalManager.cs` | Remplit le journal avec 53 espèces (2★) pour tester l'unlock Tropical à 75% (54 requis) |
 | Debug hint label | `HUD.tscn` | Label raccourcis debug en bas à gauche (40% opacité) |
 
 ---

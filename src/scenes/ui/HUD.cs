@@ -81,6 +81,10 @@ public partial class HUD : Control
 					TimeManager.Instance.ToggleDebugSpeed(50.0f);
 					GetViewport().SetInputAsHandled();
 					break;
+				case Key.F5:
+					JournalManager.Instance.DebugFillJournal(53);
+					GetViewport().SetInputAsHandled();
+					break;
 				case Key.Escape:
 					if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
 					{
