@@ -28,14 +28,73 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-Idea: Est-ce que ça serait une bonne idée d'avoir un upgrade de la caméra (ou nativement) qui donne du nector a chaque capture de photo (1 nextar par exemple)? Ça donne une récompense pour prendre des photos surtout quand toutes les espèces commence a être découvert pour une zone. Ou sinon, le même genre de gain passif que pour les plantes, a 50 photos de ladybug, reward?
+
 
 Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Erractic pourle moment) ou pas assez diversifié? Dans les 72 insectes que nous avons, est-ce que certains doit avoir leur propre pattern custom? Est-ce une bonne idée d'ajouter d'autres patterns?
 
+Idea: faire qu'on puisse clicker le pop-up de nouvelle espèce découverte et ça amène dans la page détaillé de cette insecte dans le journal.
 
+Idea: ajouter une étape entre arroser une case à la fois et débarer les sprinkler? Arroser manuellement plus de case? Ou si c'est une étapes inutile?
 
-2026-02-15 0.75 + 1.5 + 15h15-
+TODO research on "The Game Accessibility Guidelines"
+
+2026-02-16 20h35-
 {
+	
+	
+	-Idea: Est-ce que ça serait une bonne idée d'avoir un upgrade de la caméra (ou nativement) qui donne du nector a chaque capture de photo (1 nectar par exemple)? Ça donne une récompense pour prendre des photos surtout quand toutes les espèces commence a être découvert pour une zone. Ou sinon, le même genre de gain passif que pour les plantes, a 50 photos de ladybug, reward?
+		-Présentement, on a ceci: GameManager.cs — 3 bonus nectar : +5 nouvelle espèce découverte, +3 première photo 3★, +2 fin de journée
+		-Je trouve étrange de photographeir un insecte nouveau, car le nombre de nectar rtotalise 8 si je le prends en 3 étoiles.
+		-Aussi, est-ce que ça ne serait pas mieux d'avoir un passif d'une plante pour donner 1 ou 2 nectar par nuit plutot que juste comme ça (vient de nul part)?
+		-Brainstorm:
+		{
+			J'ai l'impression que je voudrait enlever le nextar de jour et de nuit à la fin du cycle tout court et potentiellement mettre un montant fix de découverte de nouvelle espèce comme un 10 rond peu importe le nombre d'étoile. Les étoiles c'est comme secondaire pour les objectif de débarrer de nouvells zones ou tu as besoin d'Avoir x nombre de photo 2 étoiles par example. +10 semble un beau chiffre rond qui aide vraiment en début de nouvelle zone. C'est sur que plus tard quand le joueur a une économie fleurrissante (haha jeu de mot!) il n'en aura pas vraiment besoin, mais je trouve ça mieux peut-être que les différentes quantité de nectar par nombre d'étoile. Qu'st-ce que u en penses?
+		}
+		-Réponse:
+		{
+			C'est du très bon design thinking, et je suis d'accord. Voici pourquoi ça marche :
+			La séparation des rôles devient limpide. En ce moment, le nectar récompense trois choses différentes (découverte, qualité de photo, passage du temps), et ça brouille le message. Avec ton changement :
+
+			Nectar = récolter des plantes (boucle économique principale, 95% du revenu)
+			+10 par nouvelle espèce = bonus de découverte (supplément, pas le core)
+			Étoiles = objectifs de déblocage pour le babillard + satisfaction complétionniste (journal vibrante vs esquisse)
+
+			Chaque système a une seule job. Les étoiles n'ont pas besoin de donner du nectar parce qu'elles ont déjà leur propre récompense : voir l'illustration passer d'esquisse pâle à vibrante, c'est la carotte du complétionniste. Et le babillard demande des étoiles pour les zones — ça suffit comme motivation.
+			Le +10 fixe a le bon profil économique. En début de zone, c'est significatif : le joueur commence avec 25 nectar, donc chaque découverte (10) lui achète presque 2 graines communes. Le Starter a 14 espèces = 140 nectar de découvertes, ce qui bootstrap bien l'économie. Mais sur 72 espèces totales, ça donne 720 nectar en tout — une fraction de ce qu'il faut pour tout acheter (expansions + sprinklers + zones + seeds). Le harvesting reste le vrai moteur, la découverte est un coup de pouce bienvenu qui s'espace naturellement au fur et à mesure que les espèces deviennent plus rares.
+			Et retirer le +2 de fin de journée, c'est la bonne décision. Ça élimine du nectar "gratuit" sans lien avec les actions du joueur. Tout le nectar vient maintenant de choix actifs : récolter ou découvrir. Si un joueur veut plus de nectar, il doit jardiner mieux — pas juste attendre.
+			Tu veux que je crée une nouvelle décision dans le log pour ça, ou on garde ça pour un decisions-log séparé sur l'économie? Ça déborde un peu du scope "Input & Controls" — ça pourrait mériter son propre fichier decisions-log-economy.md.
+		}
+		-Autre question sur nectar, économie partagé:
+		{
+			Avant de mettre ça dans un txt quelconque, tu me fais penser à quelque chose. Est-ce que le nectar est global au joueur ou reste par zone?
+		}
+		-Réponse:
+		{
+			Bonne question à clarifier. Le GDD actuel traite le nectar comme global — STARTING_NECTAR = 25, un seul GameManager.Instance.Nectar, et les coûts de déblocage de zones (100 → 200 → 350 → 500 → 700 → 1000) impliquent un portefeuille unique qui accumule au fil du temps.
+			Et je pense que global est le bon choix. Du nectar par zone forcerait le joueur à "développer" chaque zone indépendamment — imagine avoir 500 nectar dans le Starter mais ne pas pouvoir les utiliser pour acheter des graines dans le Meadow. C'est frustrant et punitif, surtout dans un jeu cozy. Aucun jeu du genre ne fait ça : Stardew Valley a un seul compte en banque, Rusty's Retirement a un pool global de spare parts, Neko Atsume a un seul portefeuille de poissons.
+			Le nectar global crée aussi de meilleures décisions : "J'ai 150 nectar — est-ce que j'agrandis mon Starter, ou j'achète des graines rares pour le Forest, ou je prends un sprinkler?" C'est de la compétition entre zones pour le même budget, ce qui est plus intéressant que des économies silotées.
+			Par contre, il y a un détail à surveiller : si le Starter est hyper-optimisé avec des plantes Level 5, le joueur pourrait "farmer" le Starter pour financer tout le reste. Est-ce un problème? Probablement pas — c'est un jeu cozy, et si le joueur veut optimiser son Starter comme machine à nectar, c'est un choix stratégique valide qui émerge naturellement.
+		}
+	-#TODO: need to finish document about keybinding and tile expansion.
+		-Devenu le GDD v 3.3
+	-#TODO: need to finish the pending changes (sprint 4, phase 4)
+	-Commit:
+	{
+		feat(sprint4-p4): add PlantLevelManager and nectar bonus system
+
+		- Create PlantLevelManager autoload: tracks harvest counts per plant,
+		  levels 1-5 at thresholds 0/5/15/30/50, nectar multipliers ×1.0-×2.0
+		- Apply level multiplier on harvest in GardenGrid
+		- Add nectar bonuses in GameManager: +5 new species discovered,
+		  +3 first 3-star photo, +2 day completed
+		- Publish DayEndedEvent in TimeManager at night-to-dawn transition
+		- Add PlantLevelUpEvent and DayEndedEvent to EventBus
+		- Register PlantLevelManager as autoload in project.godot
+	}
+}
+2026-02-15 4.5
+{
+	-0.75 + 1.5 + 1.5 + 0.75
 	-#TODO: need to finish pending changes.
 	-Commit:
 	{
@@ -183,7 +242,27 @@ Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Errac
 		- F5 debug shortcut fills journal with 53 species at 2★ for Tropical
 		  unlock testing
 	}
-	
+	{
+		docs(gdd): check off Sprint 4 Phase 3 completed items in checklist
+	}
+	-Phase sprint 4, phase 4
+	{
+		Sprint 4 Phase 4 — PlantLevelManager + bonus nectar
+
+		PlantLevelManager.cs (nouvel autoload) — Suivi des récoltes par plante, niveaux 1-5 (seuils 0/5/15/30/50), multiplicateurs nectar ×1.0/1.25/1.5/1.75/2.0
+		GardenGrid.cs — Applique le multiplicateur de niveau lors de la récolte
+		GameManager.cs — 3 bonus nectar : +5 nouvelle espèce découverte, +3 première photo 3★, +2 fin de journée
+		TimeManager.cs — Publie DayEndedEvent à la transition nuit→aube
+		Events.cs — Ajout PlantLevelUpEvent et DayEndedEvent
+		project.godot — PlantLevelManager enregistré comme autoload
+		Tu peux tester :
+
+		Récolter 5× la même plante → niveau 2 (+25% nectar)
+		Photographier une nouvelle espèce → +5 nectar
+		Attendre un cycle jour/nuit complet → +2 nectar à l'aube
+	}
+	-Brainstorm sur les key binding.
+	-TODO: lire et continue de répondre aux question du "decisions log input controls"
 }
 2026-02-14 5.0
 {
@@ -419,7 +498,7 @@ Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Errac
 		Pause monde en mode photo               ❌          Pas implémenté
 		Pause complète journal/shop             ❌          Pas implémenté
 	}
-	-TODO: need to finish pending changes.
+	-TODO: need to finish the pending changes.
 }
 2026-02-13 3.0 
 {

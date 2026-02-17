@@ -281,13 +281,17 @@ public partial class GardenGrid : Node2D
 
 			case CellState.State.Blooming:
 				var harvestedPlant = PlantRegistry.GetById(cell.PlantType);
-				int nectarYield = harvestedPlant?.NectarYield ?? 3;
+				int baseYield = harvestedPlant?.NectarYield ?? 3;
+				float multiplier = PlantLevelManager.Instance.GetNectarMultiplier(cell.PlantType);
+				int nectarYield = Mathf.RoundToInt(baseYield * multiplier);
 				GameManager.Instance.AddNectar(nectarYield);
 				cell.CurrentState = CellState.State.Growing;
 				cell.IsWatered = false;
 				var worldPosition = ToGlobal(GridToWorld(pos));
 				EventBus.Publish(new PlantHarvestedEvent(cell.PlantType, pos, nectarYield, worldPosition));
-				GD.Print($"Harvested {harvestedPlant?.DisplayName ?? cell.PlantType} at {pos}, +{nectarYield} nectar (total: {GameManager.Instance.Nectar})");
+				int level = PlantLevelManager.Instance.GetLevel(cell.PlantType);
+				string levelTag = level > 1 ? $" [Lv{level} x{multiplier:F2}]" : "";
+				GD.Print($"Harvested {harvestedPlant?.DisplayName ?? cell.PlantType} at {pos}, +{nectarYield} nectar{levelTag} (total: {GameManager.Instance.Nectar})");
 				break;
 		}
 		QueueRedraw();

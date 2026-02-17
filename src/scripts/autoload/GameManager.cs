@@ -1,3 +1,4 @@
+using System;
 using Godot;
 using ProjectFlutter;
 
@@ -12,10 +13,49 @@ public partial class GameManager : Node
 	public const int StartingNectar = 25;
 	public int Nectar { get; private set; }
 
+	private Action<SpeciesDiscoveredEvent> _onSpeciesDiscovered;
+	private Action<PhotoTakenEvent> _onPhotoTaken;
+	private Action<DayEndedEvent> _onDayEnded;
+
 	public override void _Ready()
 	{
 		Instance = this;
 		Nectar = StartingNectar;
+
+		_onSpeciesDiscovered = OnSpeciesDiscovered;
+		_onPhotoTaken = OnPhotoTaken;
+		_onDayEnded = OnDayEnded;
+		EventBus.Subscribe(_onSpeciesDiscovered);
+		EventBus.Subscribe(_onPhotoTaken);
+		EventBus.Subscribe(_onDayEnded);
+	}
+
+	public override void _ExitTree()
+	{
+		EventBus.Unsubscribe(_onSpeciesDiscovered);
+		EventBus.Unsubscribe(_onPhotoTaken);
+		EventBus.Unsubscribe(_onDayEnded);
+	}
+
+	private void OnSpeciesDiscovered(SpeciesDiscoveredEvent discoveryEvent)
+	{
+		AddNectar(5);
+		GD.Print($"Bonus: +5 nectar for discovering {discoveryEvent.InsectId}");
+	}
+
+	private void OnPhotoTaken(PhotoTakenEvent photoEvent)
+	{
+		if (photoEvent.StarRating >= 3 && photoEvent.IsNewDiscovery)
+		{
+			AddNectar(3);
+			GD.Print($"Bonus: +3 nectar for first 3-star photo of {photoEvent.InsectId}");
+		}
+	}
+
+	private void OnDayEnded(DayEndedEvent dayEvent)
+	{
+		AddNectar(2);
+		GD.Print($"Bonus: +2 nectar for completing day {dayEvent.DayNumber}");
 	}
 
 	public void ChangeState(GameState newState)

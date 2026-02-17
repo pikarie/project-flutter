@@ -35,6 +35,10 @@ public record PhotoMissedEvent(Vector2 WorldPosition);
 // -- Seeds --
 public record SeedSelectedEvent(string PlantId);
 
+// -- Plant leveling --
+public record PlantLevelUpEvent(string PlantId, int NewLevel);
+public record DayEndedEvent(int DayNumber);
+
 // -- Zones --
 public record ZoneChangedEvent(ZoneType From, ZoneType To);
 public record ZoneUnlockedEvent(ZoneType Zone);

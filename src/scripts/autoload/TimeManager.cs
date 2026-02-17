@@ -21,6 +21,7 @@ public partial class TimeManager : Node
 	private float _accumulatedTime;
 	private float _secondsPerGameMinute;
 	private int _lastHour = -1;
+	private int _dayCount;
 
 	public override void _Ready()
 	{
@@ -59,6 +60,13 @@ public partial class TimeManager : Node
 			var old = CurrentPeriod;
 			CurrentPeriod = period;
 			EventBus.Publish(new TimeOfDayChangedEvent(old, CurrentPeriod));
+
+			// Dawn marks the start of a new day
+			if (CurrentPeriod == "dawn" && old == "night")
+			{
+				_dayCount++;
+				EventBus.Publish(new DayEndedEvent(_dayCount));
+			}
 		}
 	}
 
