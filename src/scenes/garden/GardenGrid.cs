@@ -22,6 +22,9 @@ public partial class GardenGrid : Node2D
 	private static readonly Color GrassColor = new(0.35f, 0.55f, 0.2f);
 	private static readonly Color WaterTileColor = new(0.2f, 0.45f, 0.7f);
 	private static readonly Color WaterTileDeepColor = new(0.15f, 0.35f, 0.6f);
+	private static readonly Color SprinklerBodyColor = new(0.5f, 0.6f, 0.7f);
+	private static readonly Color SprinklerRangeColor = new(0.3f, 0.6f, 0.9f, 0.12f);
+	private static readonly Color SprinklerRangeBorderColor = new(0.3f, 0.6f, 0.9f, 0.3f);
 
 	// Plant stage placeholder colors
 	private static readonly Color SeedColor = new(0.6f, 0.45f, 0.2f);
@@ -87,12 +90,46 @@ public partial class GardenGrid : Node2D
 			return;
 		}
 
+		// Auto-water cells in sprinkler range
+		ApplySprinklerWatering();
+
 		var newHover = MouseToGrid();
 		if (newHover != _hoveredCell)
 		{
 			_hoveredCell = newHover;
 			QueueRedraw();
 		}
+	}
+
+	private void ApplySprinklerWatering()
+	{
+		bool changed = false;
+		foreach (var (position, cell) in _cells)
+		{
+			if (!cell.HasSprinkler) continue;
+			int radius = GetSprinklerRadius(cell.SprinklerTier);
+			for (int dx = -radius; dx <= radius; dx++)
+			{
+				for (int dy = -radius; dy <= radius; dy++)
+				{
+					var target = new Vector2I(position.X + dx, position.Y + dy);
+					if (_cells.TryGetValue(target, out var targetCell)
+						&& !targetCell.IsWater
+						&& !targetCell.HasSprinkler
+						&& !targetCell.IsWatered)
+					{
+						targetCell.IsWatered = true;
+						changed = true;
+					}
+				}
+			}
+		}
+		if (changed) QueueRedraw();
+	}
+
+	public static int GetSprinklerRadius(int tier)
+	{
+		return tier switch { 1 => 1, 2 => 2, 3 => 3, _ => 1 };
 	}
 
 	public override void _Draw()
@@ -133,6 +170,34 @@ public partial class GardenGrid : Node2D
 			}
 		}
 
+		// Draw sprinkler range overlays and bodies
+		foreach (var (position, cell) in _cells)
+		{
+			if (!cell.HasSprinkler) continue;
+			int radius = GetSprinklerRadius(cell.SprinklerTier);
+			// Range overlay
+			var rangeRect = new Rect2(
+				(position.X - radius) * TileSize,
+				(position.Y - radius) * TileSize,
+				(radius * 2 + 1) * TileSize,
+				(radius * 2 + 1) * TileSize
+			);
+			DrawRect(rangeRect, SprinklerRangeColor);
+			DrawRect(rangeRect, SprinklerRangeBorderColor, false, 1.5f);
+
+			// Sprinkler body: metallic circle with tier indicator
+			float cx = position.X * TileSize + TileSize / 2.0f;
+			float cy = position.Y * TileSize + TileSize / 2.0f;
+			DrawCircle(new Vector2(cx, cy), 14, SprinklerBodyColor);
+			DrawCircle(new Vector2(cx, cy), 8, WaterDropColor);
+			// Tier dots
+			for (int i = 0; i < cell.SprinklerTier; i++)
+			{
+				float dotX = cx - (cell.SprinklerTier - 1) * 5 + i * 10;
+				DrawCircle(new Vector2(dotX, cy + 20), 3, Colors.White);
+			}
+		}
+
 		// Draw hover highlight
 		if (_hoveredCell is Vector2I hovered)
 		{
@@ -158,7 +223,7 @@ public partial class GardenGrid : Node2D
 
 	private bool CanActOnCell(CellState cell)
 	{
-		if (cell == null || cell.IsWater) return false;
+		if (cell == null || cell.IsWater || cell.HasSprinkler) return false;
 		return cell.CurrentState switch
 		{
 			CellState.State.Tilled => _selectedPlantId != null,
@@ -217,19 +282,69 @@ public partial class GardenGrid : Node2D
 	{
 		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
 
+		// X key — remove plant at cursor (GDD v3.3 §4.12)
+		if (@event is InputEventKey { Pressed: true, Keycode: Key.X })
+		{
+			var removePos = MouseToGrid();
+			if (removePos is Vector2I pos)
+			{
+				RemovePlant(pos);
+				GetViewport().SetInputAsHandled();
+			}
+			return;
+		}
+
 		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed)
 		{
-			var gridPos = MouseToGrid();
-			if (gridPos is not Vector2I pos) return;
-
-			switch (mouseBtn.ButtonIndex)
+			// Sprinkler placing mode
+			if (ShopUI.Instance != null && ShopUI.Instance.IsPlacingSprinkler)
 			{
-				case MouseButton.Left:
-					HandlePrimaryAction(pos);
-					break;
-				case MouseButton.Right:
-					HandleSecondaryAction(pos);
-					break;
+				if (mouseBtn.ButtonIndex == MouseButton.Left)
+				{
+					var gridPos = MouseToGrid();
+					if (gridPos is not Vector2I sprinklerPos) return;
+					if (PlaceSprinkler(sprinklerPos, ShopUI.Instance.SelectedSprinklerTier))
+					{
+						ShopUI.Instance.ExitPlacingMode();
+						GD.Print($"Sprinkler placed at {sprinklerPos}");
+					}
+					else
+					{
+						GD.Print($"Cannot place sprinkler at {sprinklerPos}");
+					}
+					GetViewport().SetInputAsHandled();
+				}
+				else if (mouseBtn.ButtonIndex == MouseButton.Right)
+				{
+					// Cancel placing — refund nectar
+					int tier = ShopUI.Instance.SelectedSprinklerTier;
+					GameManager.Instance.AddNectar(ShopUI.SprinklerCosts[tier]);
+					ShopUI.Instance.ExitPlacingMode();
+					GD.Print("Sprinkler placement cancelled — nectar refunded");
+					GetViewport().SetInputAsHandled();
+				}
+				return;
+			}
+
+			// Right-click — deselect seed (GDD v3.3 §4.12)
+			if (mouseBtn.ButtonIndex == MouseButton.Right)
+			{
+				if (_selectedPlantId != null)
+				{
+					_selectedPlantId = null;
+					EventBus.Publish(new SeedSelectedEvent(null));
+					GD.Print("Seed deselected");
+					GetViewport().SetInputAsHandled();
+				}
+				return;
+			}
+
+			// Left-click — contextual action
+			if (mouseBtn.ButtonIndex == MouseButton.Left)
+			{
+				var gridPos = MouseToGrid();
+				if (gridPos is not Vector2I pos) return;
+				HandlePrimaryAction(pos);
 			}
 		}
 	}
@@ -297,24 +412,36 @@ public partial class GardenGrid : Node2D
 		QueueRedraw();
 	}
 
-	private void HandleSecondaryAction(Vector2I pos)
+	private void RemovePlant(Vector2I pos)
 	{
-		var cell = _cells[pos];
+		if (!_cells.TryGetValue(pos, out var cell)) return;
 		if (cell.IsWater) return;
-		if (cell.CurrentState != CellState.State.Tilled)
+
+		// Remove sprinkler
+		if (cell.HasSprinkler)
 		{
+			cell.HasSprinkler = false;
+			cell.SprinklerTier = 0;
 			cell.CurrentState = CellState.State.Tilled;
-			cell.PlantType = "";
-			cell.GrowthStage = 0;
-			cell.IsWatered = false;
 			cell.MaxInsectSlots = 2;
-			cell.PlantNode?.QueueFree();
-			cell.PlantNode = null;
-			cell.ClearSlots();
-			EventBus.Publish(new PlantRemovedEvent(pos));
-			GD.Print($"Removed plant at {pos}");
+			GD.Print($"Removed sprinkler at {pos}");
 			QueueRedraw();
+			return;
 		}
+
+		if (cell.CurrentState == CellState.State.Tilled) return;
+
+		cell.CurrentState = CellState.State.Tilled;
+		cell.PlantType = "";
+		cell.GrowthStage = 0;
+		cell.IsWatered = false;
+		cell.MaxInsectSlots = 2;
+		cell.PlantNode?.QueueFree();
+		cell.PlantNode = null;
+		cell.ClearSlots();
+		EventBus.Publish(new PlantRemovedEvent(pos));
+		GD.Print($"Removed plant at {pos}");
+		QueueRedraw();
 	}
 
 	private Vector2I? MouseToGrid()
@@ -340,6 +467,21 @@ public partial class GardenGrid : Node2D
 			gridPos.X * TileSize + TileSize / 2.0f,
 			gridPos.Y * TileSize + TileSize / 2.0f
 		);
+	}
+
+	public bool PlaceSprinkler(Vector2I pos, int tier)
+	{
+		if (!_cells.TryGetValue(pos, out var cell)) return false;
+		if (cell.IsWater || cell.HasSprinkler) return false;
+		if (cell.CurrentState != CellState.State.Tilled) return false;
+		cell.CurrentState = CellState.State.Empty;
+		cell.IsWatered = false;
+		cell.MaxInsectSlots = 0;
+		cell.HasSprinkler = true;
+		cell.SprinklerTier = tier;
+		EventBus.Publish(new SprinklerPlacedEvent(pos, tier));
+		QueueRedraw();
+		return true;
 	}
 
 	public Dictionary<Vector2I, CellState> GetCells() => _cells;

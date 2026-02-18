@@ -41,6 +41,17 @@ offset_right = -4.0
 offset_bottom = 214.0
 text = "Journal"
 
+[node name="ShopButton" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_top = 220.0
+offset_right = -4.0
+offset_bottom = 250.0
+text = "Shop"
+
 [node name="PhotoModeLabel" type="Label" parent="."]
 layout_mode = 1
 anchors_preset = 5
@@ -61,7 +72,7 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_left = 10.0
 offset_top = -30.0
-offset_right = 400.0
+offset_right = 750.0
 offset_bottom = -10.0
-text = "F1:Zones | F2:Bee | F3:x10 | F4:x50 | F5:Journal53"
+text = "X:Remove | Space:Speed | Q/E:Zones | S:Shop | L:Lantern | F1:UnlockAll | F2:Bee | F3:x10 | F4:x50 | F5:J53 | F6:+500N"
 modulate = Color(1, 1, 1, 0.4)

@@ -39,6 +39,10 @@ public record SeedSelectedEvent(string PlantId);
 public record PlantLevelUpEvent(string PlantId, int NewLevel);
 public record DayEndedEvent(int DayNumber);
 
+// -- Tools --
+public record SprinklerPlacedEvent(Vector2I GridPos, int Tier);
+public record LanternToggledEvent(bool IsActive);
+
 // -- Zones --
 public record ZoneChangedEvent(ZoneType From, ZoneType To);
 public record ZoneUnlockedEvent(ZoneType Zone);

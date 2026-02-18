@@ -7,8 +7,11 @@ public partial class HUD : Control
 	private Label _nectarLabel;
 	private Button _photoButton;
 	private Button _journalButton;
+	private Button _shopButton;
 	private Label _photoModeLabel;
 	private AnalogClock _analogClock;
+	private ShopUI _shopUI;
+	private Label _placingLabel;
 
 	private Action<NectarChangedEvent> _onNectarChanged;
 	private Action<GameStateChangedEvent> _onStateChanged;
@@ -18,6 +21,7 @@ public partial class HUD : Control
 		_nectarLabel = GetNode<Label>("NectarLabel");
 		_photoButton = GetNode<Button>("PhotoButton");
 		_journalButton = GetNode<Button>("JournalButton");
+		_shopButton = GetNode<Button>("ShopButton");
 		_photoModeLabel = GetNode<Label>("PhotoModeLabel");
 
 		// Create analog clock and anchor top-right
@@ -32,8 +36,35 @@ public partial class HUD : Control
 		_analogClock.OffsetBottom = 140f;
 		AddChild(_analogClock);
 
+		// Create ShopUI overlay (full-rect so centered panel works)
+		_shopUI = new ShopUI();
+		_shopUI.LayoutMode = 1;
+		_shopUI.AnchorsPreset = (int)LayoutPreset.FullRect;
+		_shopUI.AnchorRight = 1.0f;
+		_shopUI.AnchorBottom = 1.0f;
+		_shopUI.OffsetRight = 0;
+		_shopUI.OffsetBottom = 0;
+		AddChild(_shopUI);
+
+		// Sprinkler placing mode label
+		_placingLabel = new Label
+		{
+			Text = "Click to place sprinkler — Right-click to cancel",
+			Visible = false,
+			HorizontalAlignment = HorizontalAlignment.Center,
+		};
+		_placingLabel.SetAnchorsPreset(LayoutPreset.CenterTop);
+		_placingLabel.OffsetLeft = -180;
+		_placingLabel.OffsetRight = 180;
+		_placingLabel.OffsetTop = 45;
+		_placingLabel.OffsetBottom = 70;
+		_placingLabel.AddThemeFontSizeOverride("font_size", 15);
+		_placingLabel.AddThemeColorOverride("font_color", new Color(0.4f, 0.7f, 1f));
+		AddChild(_placingLabel);
+
 		_photoButton.Pressed += OnPhotoButtonPressed;
 		_journalButton.Pressed += OnJournalButtonPressed;
+		_shopButton.Pressed += () => ToggleShop();
 
 		_onNectarChanged = OnNectarChanged;
 		_onStateChanged = OnStateChanged;
@@ -65,6 +96,29 @@ public partial class HUD : Control
 					ToggleJournal();
 					GetViewport().SetInputAsHandled();
 					break;
+				case Key.S:
+					ToggleShop();
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.L:
+					if (GameManager.Instance.HasLantern)
+					{
+						GameManager.Instance.ToggleLantern();
+						GetViewport().SetInputAsHandled();
+					}
+					break;
+				case Key.Space:
+					TimeManager.Instance.CycleSpeed();
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.Q:
+					ZoneManager.Instance.CycleZonePrevious();
+					GetViewport().SetInputAsHandled();
+					break;
+				case Key.E:
+					ZoneManager.Instance.CycleZoneNext();
+					GetViewport().SetInputAsHandled();
+					break;
 				case Key.F1:
 					ZoneManager.Instance.DebugUnlockAll();
 					GetViewport().SetInputAsHandled();
@@ -85,8 +139,19 @@ public partial class HUD : Control
 					JournalManager.Instance.DebugFillJournal(53);
 					GetViewport().SetInputAsHandled();
 					break;
+				case Key.F6:
+					GameManager.Instance.AddNectar(500);
+					GD.Print("DEBUG: +500 nectar");
+					GetViewport().SetInputAsHandled();
+					break;
 				case Key.Escape:
-					if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+					if (_shopUI.IsPlacingSprinkler)
+					{
+						_shopUI.ExitPlacingMode();
+						_placingLabel.Visible = false;
+						GetViewport().SetInputAsHandled();
+					}
+					else if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
 					{
 						GameManager.Instance.ChangeState(GameManager.GameState.Playing);
 						GetViewport().SetInputAsHandled();
@@ -114,11 +179,24 @@ public partial class HUD : Control
 			gameManager.ChangeState(GameManager.GameState.Journal);
 	}
 
+	private void ToggleShop()
+	{
+		var gameManager = GameManager.Instance;
+		if (gameManager.CurrentState == GameManager.GameState.Shop)
+			_shopUI.CloseShop();
+		else
+			_shopUI.OpenShop();
+	}
+
 	private void OnPhotoButtonPressed() => TogglePhotoMode();
 
 	private void OnJournalButtonPressed() => ToggleJournal();
 
-	private void OnStateChanged(GameStateChangedEvent evt) => UpdatePhotoModeUI();
+	private void OnStateChanged(GameStateChangedEvent evt)
+	{
+		UpdatePhotoModeUI();
+		_placingLabel.Visible = _shopUI.IsPlacingSprinkler;
+	}
 
 	private void UpdatePhotoModeUI()
 	{

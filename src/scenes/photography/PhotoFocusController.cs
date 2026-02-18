@@ -213,6 +213,23 @@ public partial class PhotoFocusController : Control
 		float normalized = distance / WorldRadius;
 		int stars = normalized <= ThreeStarPct ? 3 : normalized <= TwoStarPct ? 2 : 1;
 
+		// Night photography cap (GDD §4.4):
+		// Without lantern: max 2★ (except firefly during pulse → handled later)
+		// With lantern active: 3★ possible
+		// Firefly + lantern active: max 2★ (washed out by light)
+		bool isNight = TimeManager.Instance.IsNighttime();
+		if (isNight && stars == 3)
+		{
+			bool isFirefly = _targetInsect.Data.Id == "firefly";
+			bool lanternOn = GameManager.Instance.HasLantern && GameManager.Instance.LanternActive;
+
+			if (isFirefly && lanternOn)
+				stars = 2; // Firefly washed out by lantern
+			else if (!lanternOn)
+				stars = 2; // No lantern at night → max 2★
+			// else: non-firefly + lantern = 3★ OK
+		}
+
 		// Freeze the insect
 		_targetInsect.Freeze(0.5f);
 

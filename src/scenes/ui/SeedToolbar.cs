@@ -14,6 +14,7 @@ public partial class SeedToolbar : Control
 	private Action<GameStateChangedEvent> _onStateChanged;
 	private Action<NectarChangedEvent> _onNectarChanged;
 	private Action<ZoneChangedEvent> _onZoneChanged;
+	private Action<SeedSelectedEvent> _onSeedSelected;
 
 	public override void _Ready()
 	{
@@ -24,9 +25,11 @@ public partial class SeedToolbar : Control
 		_onStateChanged = OnStateChanged;
 		_onNectarChanged = _ => UpdateButtonStates();
 		_onZoneChanged = OnZoneChanged;
+		_onSeedSelected = OnSeedSelected;
 		EventBus.Subscribe(_onStateChanged);
 		EventBus.Subscribe(_onNectarChanged);
 		EventBus.Subscribe(_onZoneChanged);
+		EventBus.Subscribe(_onSeedSelected);
 
 		RebuildSlots(ZoneType.Starter);
 	}
@@ -36,6 +39,7 @@ public partial class SeedToolbar : Control
 		EventBus.Unsubscribe(_onStateChanged);
 		EventBus.Unsubscribe(_onNectarChanged);
 		EventBus.Unsubscribe(_onZoneChanged);
+		EventBus.Unsubscribe(_onSeedSelected);
 	}
 
 	private void OnZoneChanged(ZoneChangedEvent zoneEvent)
@@ -204,6 +208,13 @@ public partial class SeedToolbar : Control
 
 			button.Modulate = canAfford ? Colors.White : new Color(1f, 1f, 1f, 0.5f);
 		}
+	}
+
+	private void OnSeedSelected(SeedSelectedEvent seedEvent)
+	{
+		if (_selectedPlantId == seedEvent.PlantId) return;
+		_selectedPlantId = seedEvent.PlantId;
+		UpdateButtonStates();
 	}
 
 	private void OnStateChanged(GameStateChangedEvent stateEvent)

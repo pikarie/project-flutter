@@ -11,7 +11,29 @@ public partial class GameManager : Node
 	public GameState CurrentState { get; private set; } = GameState.Playing;
 	public ZoneType CurrentZone { get; set; } = ZoneType.Starter;
 	public const int StartingNectar = 25;
+	public const int LanternCost = 50;
 	public int Nectar { get; private set; }
+
+	// Lantern: purchased once, toggled on/off at night
+	public bool HasLantern { get; private set; }
+	public bool LanternActive { get; private set; }
+
+	public bool BuyLantern()
+	{
+		if (HasLantern) return false;
+		if (!SpendNectar(LanternCost)) return false;
+		HasLantern = true;
+		GD.Print("Purchased garden lantern!");
+		return true;
+	}
+
+	public void ToggleLantern()
+	{
+		if (!HasLantern) return;
+		LanternActive = !LanternActive;
+		EventBus.Publish(new LanternToggledEvent(LanternActive));
+		GD.Print($"Lantern {(LanternActive ? "ON" : "OFF")}");
+	}
 
 	private Action<SpeciesDiscoveredEvent> _onSpeciesDiscovered;
 

@@ -12,6 +12,10 @@ public class CellState
 	public bool IsWater { get; set; }
 	public Node2D PlantNode { get; set; }
 
+	// Sprinkler
+	public bool HasSprinkler { get; set; }
+	public int SprinklerTier { get; set; } // 1=3×3, 2=5×5, 3=7×7
+
 	// Insect slot tracking
 	public int MaxInsectSlots { get; set; } = 2;
 	private readonly List<Node2D> _occupyingInsects = new();

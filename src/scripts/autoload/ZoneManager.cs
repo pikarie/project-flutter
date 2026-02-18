@@ -69,6 +69,40 @@ public partial class ZoneManager : Node
 		return true;
 	}
 
+	private static readonly ZoneType[] ZoneOrder =
+	{
+		ZoneType.Starter, ZoneType.Meadow, ZoneType.Forest,
+		ZoneType.DeepWood, ZoneType.RockGarden, ZoneType.Pond, ZoneType.Tropical,
+	};
+
+	public void CycleZoneNext()
+	{
+		int current = System.Array.IndexOf(ZoneOrder, _activeZone);
+		for (int i = 1; i < ZoneOrder.Length; i++)
+		{
+			var candidate = ZoneOrder[(current + i) % ZoneOrder.Length];
+			if (_unlockedZones[candidate])
+			{
+				SwitchToZone(candidate);
+				return;
+			}
+		}
+	}
+
+	public void CycleZonePrevious()
+	{
+		int current = System.Array.IndexOf(ZoneOrder, _activeZone);
+		for (int i = 1; i < ZoneOrder.Length; i++)
+		{
+			var candidate = ZoneOrder[(current - i + ZoneOrder.Length) % ZoneOrder.Length];
+			if (_unlockedZones[candidate])
+			{
+				SwitchToZone(candidate);
+				return;
+			}
+		}
+	}
+
 	public void DebugUnlockAll()
 	{
 		foreach (var zone in ZoneConfig.Keys)

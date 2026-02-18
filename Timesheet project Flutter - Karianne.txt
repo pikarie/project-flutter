@@ -12,31 +12,16 @@ Idea: Dans le journal, avoir différents bullet point ex:
 	-Description
 	-Where to find //Ajouter des icones? Du genre, soleil ou lone, quel zone, quel type de plante ça prends?
 		-Est-ce qu'on voudrait faire que les indices apparaissent après certaines conditions? Si l'insecte à spawner, mais qu'on ne la pas capturer?
-Idea: "Kabuto Park" et "Rusty's Retirement" on tout les deux 42 éléments à découvrrir (insecte et l'autre crops).
-	-"Fields of Mistria" contient 68 insectes: https://fieldsofmistria.wiki.gg/wiki/Bugs. Utilise le pattern [adjectif fantaisiste] + [vrai type d'insecte].
-	{
-		Le jeu a 68 insectes Steam Community, et ils utilisent un mélange très intéressant. Les insectes communs portent des vrais noms (Ant, Bumblebee, Grasshopper, Praying Mantis, Rhinoceros Beetle, Cricket, Firefly, Cicada, Snail), mais les espèces rares et spéciales utilisent des noms fantaisistes basés sur des vrais insectes : Lightning Dragonfly, Windleaf Butterfly, Mote Firefly, Dragon Horn Beetle, Singing Katydid dans les Deep Woods Sportskeeda, et dans les mines, Copper Nugget Beetle, Lantern Moth, Coral Mantis, Sea Scarab, Crystal Wing Moth, Gem Shard Caterpillar, Fire Wasp, Cooktop Beetle, Lava Snail, Smoke Moth, Diamond Beetle Sportskeeda. Il y a aussi des Legendary comme la Fairy Bee et le Speedy Snail The Escapist.
-		
-		Le pattern est clair : [adjectif fantaisiste] + [vrai type d'insecte]. Tu reconnais immédiatement que c'est un papillon ou un scarabée, mais le préfixe le rend unique au monde du jeu.
-	}
-	-Je pense donc que pour mon jeu, 25 insectes est trop petit. Peut-être que close plus proche du 50?
-	
-Idea: pour la mini jeu de caméra, avoir plusieurs click à faire? ou si c'est bizarre? a essayer peut-être.
 
+Idea: pour la mini jeu de caméra, avoir plusieurs click à faire? ou si c'est bizarre? a essayer peut-être.
 
 TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme "Plantera", "Kingdom: New Lands" ou "Milki Delivery"
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Erractic pourle moment) ou pas assez diversifié? Dans les 72 insectes que nous avons, est-ce que certains doit avoir leur propre pattern custom? Est-ce une bonne idée d'ajouter d'autres patterns?
-
-Idea: faire qu'on puisse clicker le pop-up de nouvelle espèce découverte et ça amène dans la page détaillé de cette insecte dans le journal.
-
-
-
 TODO research on "The Game Accessibility Guidelines"
 
-2026-02-17 20h30-
+2026-02-17 1.0 + 21h45-
 {
 	Idea: ajouter une étape entre arroser une case à la fois et débarer les sprinkler? Arroser manuellement plus de case? Ou si c'est une étapes inutile?
 		-Réponse rapide, non, laisse comme c'est (1 manuelle, 3 sprinkler)
@@ -79,6 +64,64 @@ TODO research on "The Game Accessibility Guidelines"
 		- Remove +2 nectar end-of-day passive income
 		- Fix F2 debug: use "western_honeybee" instead of obsolete "honeybee" ID
 	}
+	-Sprint 4 phase 5 - Sprinklers + Lanterne + Shop.
+	{
+		Phase 5A : Sprinklers dans CellState + GardenGrid
+		Phase 5B : Lanterne dans GameManager + PhotoFocusController
+		Phase 5C : Créer ShopUI.cs + raccourci S
+		Phase 5D : Build + vérification
+	}
+	-Commit:
+	{
+		feat(sprint4-p5): add sprinklers, lantern, shop and GDD v3.3 controls
+
+		Sprinkler system: 3 tiers (3x3/5x5/7x7) purchasable from shop,
+		auto-water all tiles in range, visual overlay with tier indicator,
+		placement restricted to empty tilled cells, removable with X key.
+
+		Garden lantern: single purchase (50 nectar), toggleable at night.
+		Night photography capped at 2★ without lantern; firefly washed out
+		(2★) when lantern is active.
+
+		ShopUI: centered overlay panel with sprinkler tiers, lantern buy/toggle,
+		nectar display. Accessible via S key, Shop button, or ESC to close.
+
+		Controls aligned with GDD v3.3 §4.12:
+		- Middle-click only for camera pan (right-click freed)
+		- Right-click deselects seed (with SeedToolbar visual sync)
+		- X key removes plant or sprinkler at cursor
+		- Space cycles time speed, Q/E navigates zones
+		- L toggles lantern, F6 debug +500 nectar
+	}
+	-Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Erractic pourle moment) ou pas assez diversifié? Dans les 72 insectes que nous avons, est-ce que certains doit avoir leur propre pattern custom? Est-ce une bonne idée d'ajouter d'autres patterns?
+		-Réponse rapide, non, on va en ajouter une de plus, le "hop/leap" pour un total de 7
+		{
+			Les movement patterns — le Sprint 4 Blueprint dans le projet propose déjà d'ajouter Dart (libellules), Skim (patineuses d'eau), et Pulse (lucioles) aux 4 existants, ce qui donnerait 7 au total. Est-ce que c'est assez pour 72 espèces? Regardons la distribution :Avec 4 patterns pour 72 espèces, tu aurais environ 18 espèces par pattern en moyenne, et en pratique Flutter et Crawl seraient surchargés (25-30 espèces chacun). Les 3 additions du Sprint 4 Blueprint (Dart, Skim, Pulse) aident, mais il manque probablement encore un pattern qu'aucun des 7 ne couvre bien : Hop/Leap.
+			Pense aux crickets, grasshoppers, et potentiellement certains scarabées. Leur mouvement naturel c'est : immobile → saut court → immobile → saut. C'est fondamentalement différent de Crawl (mouvement continu au sol) et de Erratic (changements de direction imprévisibles en vol). Un cricket qui glisse sur le sol comme un beetle, ça ne se sent pas bien. Le saut avec une pause entre chaque bond est visuellement distinctif et mécaniquement simple à implémenter — c'est un tween de position avec une courbe parabolique en Y.
+			Par contre, je ne pense pas qu'il faille aller au-delà de 8 patterns. La vraie diversité visuelle vient des paramètres à l'intérieur de chaque pattern, pas du nombre de patterns. Un Flutter avec speed=0.3, amplitude=40, wingSpeed=2 (Luna Moth, lent et majestueux) se sent complètement différent d'un Flutter avec speed=1.2, amplitude=15, wingSpeed=8 (Cabbage White, rapide et nerveux). Si chaque pattern expose 3-4 paramètres tunables (vitesse, amplitude, fréquence, durée de pause), 8 patterns × variations de paramètres donnent facilement 30-40 comportements visuellement distincts.
+			Voici comment les 8 patterns couvriraient les 72 :
+			PatternInsectes typiquesComportement~EspècesFlutterPapillons, papillons de nuit, lacewingsVol avec battements d'ailes visibles, trajectoire douce~18-20HoverAbeilles, bourdons, hummingbird mothsPosition quasi-stationnaire avec micro-oscillations~10-12CrawlScarabées, fourmis, araignées, chenilles, walking stickMouvement continu au sol, rotation vers direction~15-18ErraticMouches, certains petits papillonsChangements de direction brusques et imprévisibles~5-7DartLibellulesImmobile en hover → dash rapide → hover à nouveau~4-5SkimPatineuses d'eau, gerrisGlisse sur la surface de l'eau, mouvements fluides~3-4PulseLuciolesMouvement lent + oscillation de glow rythmique~3-4HopCrickets, sauterellesPauses entre sauts paraboliques courts~4-5
+			Les paramètres par pattern feraient le reste du travail. Pas besoin d'un pattern custom par espèce — c'est du scope creep pour un gain visuel marginal à 32-48px.
+		}
+	-Idea: est-ce que c'est une bonne idée qu'on puisse cliquer le pop-up de nouvelle espèce découverte et ça redirife vers la page détaillé de cette insecte dans le journal?
+		-Réponse rapide, oui! Moins de clique comme ça.
+		{
+		
+			Le popup de découverte cliquable — oui, à 100%. C'est du UX de base que presque tous les jeux de collection font. Pokémon te montre l'entrée Pokédex après une capture. Genshin affiche la page d'archive après un unlock. Ne pas le faire serait frustrant : le joueur voit "Nouvelle espèce : Monarch!" et sa réaction naturelle c'est "montre-moi!" Le forcer à fermer le popup, ouvrir le journal, naviguer à l'onglet insectes, et trouver le Monarch manuellement... c'est 4 étapes pour quelque chose qui devrait être 1 clic.
+
+			L'implémentation est simple — le popup a déjà l'ID de l'espèce, donc le clic ouvre le journal directement à JournalManager.ShowEntry(speciesId). Et si le joueur ne veut pas voir la page? Il ferme le popup normalement (clic ailleurs, ESC, ou attendre le fade-out automatique). Aucun downside.
+		}
+	-Cette question à déjà été répondu:
+		-Question:
+			-Idea: "Kabuto Park" et "Rusty's Retirement" on tout les deux 42 éléments à découvrrir (insecte et l'autre crops).
+			-"Fields of Mistria" contient 68 insectes: https://fieldsofmistria.wiki.gg/wiki/Bugs. Utilise le pattern [adjectif fantaisiste] + [vrai type d'insecte].
+			{
+				Le jeu a 68 insectes Steam Community, et ils utilisent un mélange très intéressant. Les insectes communs portent des vrais noms (Ant, Bumblebee, Grasshopper, Praying Mantis, Rhinoceros Beetle, Cricket, Firefly, Cicada, Snail), mais les espèces rares et spéciales utilisent des noms fantaisistes basés sur des vrais insectes : Lightning Dragonfly, Windleaf Butterfly, Mote Firefly, Dragon Horn Beetle, Singing Katydid dans les Deep Woods Sportskeeda, et dans les mines, Copper Nugget Beetle, Lantern Moth, Coral Mantis, Sea Scarab, Crystal Wing Moth, Gem Shard Caterpillar, Fire Wasp, Cooktop Beetle, Lava Snail, Smoke Moth, Diamond Beetle Sportskeeda. Il y a aussi des Legendary comme la Fairy Bee et le Speedy Snail The Escapist.
+				
+				Le pattern est clair : [adjectif fantaisiste] + [vrai type d'insecte]. Tu reconnais immédiatement que c'est un papillon ou un scarabée, mais le préfixe le rend unique au monde du jeu.
+			}
+			-Je pense donc que pour mon jeu, 25 insectes est trop petit. Peut-être que close plus proche du 50?
+		-Réponse rapide: on a maintenant 72 insectes.
 }
 2026-02-16 0.75
 {

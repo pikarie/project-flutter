@@ -762,10 +762,10 @@ project-flutter/
 - **Livrable:** Boucle complète photographier → journal → collection fonctionnelle
 
 ### Sprint 4 — Économie, Zones & Temps (Semaines 7–9, ~60h)
-- [ ] Système de monnaie nectar (récolter fleurs, gagner nectar, portefeuille global)
-- [ ] **+10 nectar par nouvelle espèce documentée** (unique par espèce, peu importe étoiles)
-- [ ] UI Shop de graines (acheter graines avec nectar)
-- [ ] Système de déblocage de zones temporaire (coût nectar + seuil journal simple — sera remplacé par babillard au Sprint 5)
+- [x] Système de monnaie nectar (récolter fleurs, gagner nectar, portefeuille global)
+- [x] **+10 nectar par nouvelle espèce documentée** (unique par espèce, peu importe étoiles)
+- [x] UI Shop de graines (acheter graines avec nectar)
+- [x] Système de déblocage de zones temporaire (coût nectar + seuil journal simple — sera remplacé par babillard au Sprint 5)
 - [ ] **Expansion de zones** (§4.13) : achat de sections de terrain, grille dynamique, cap insectes scaling
 - [x] **Construire les 7 zones avec grilles configurables**
 - [x] **Navigation par onglets entre zones (signets horizontaux, Tropical caché <54 journal)**
@@ -775,13 +775,13 @@ project-flutter/
 - [ ] Pierres chauffantes pour Rock Garden
 - [ ] Mécanique de serre pour Tropical (brume, lampe UV)
 - [ ] Balancement économie : 25 nectar départ → Meadow ~15 min → Tropical ~4h30
-- [ ] Hotbar de graines en bas d'écran + curseur fantôme
-- [ ] **Contrôles complets** (§4.12) : left-click contextuel, right-click deselect, 1-9 hotbar, Q/E zones, ESC cascading, X pour retrait de plante
+- [x] Hotbar de graines en bas d'écran + curseur fantôme
+- [x] **Contrôles complets** (§4.12) : left-click contextuel, right-click deselect, 1-9 hotbar, Q/E zones, ESC cascading, X pour retrait de plante
 - [ ] **Key rebinding** : UI dans réglages journal, InputMap + user://settings.cfg, reset par défaut
-- [ ] 9+ nouveaux événements EventBus (ZoneChanged, NectarChanged, SeedPurchased, etc.)
-- [ ] Sprinklers 3 niveaux (passifs, rayon 3×3 / 5×5 / 7×7)
-- [ ] Lanterne de jardin (achat unique, toggle on/off, affecte qualité photo nuit)
-- [ ] Système de leveling global des plantes (PlantLevelManager)
+- [x] 9+ nouveaux événements EventBus (ZoneChanged, NectarChanged, SeedPurchased, etc.)
+- [x] Sprinklers 3 niveaux (passifs, rayon 3×3 / 5×5 / 7×7)
+- [x] Lanterne de jardin (achat unique, toggle on/off, affecte qualité photo nuit)
+- [x] Système de leveling global des plantes (PlantLevelManager)
 - [x] **Refonte cycle jour/nuit : 5 min → 15 min (DAY_CYCLE_DURATION = 900)**
 - [x] **Horloge analogique HUD : cadran 12 segments colorés nets, aiguille, chiffre vitesse au centre**
 - [x] **Speed control intégré à l'horloge : clic pour cycler ×0.5/×1/×2**
@@ -857,7 +857,7 @@ project-flutter/
 - [ ] Système de sauvegarde/chargement (JSON, auto-save)
 - [ ] Récompense journal 100% — certificat platine + événement spécial
 - [ ] Tropical Greenhouse : apparition surprise à 75% journal
-- [ ] Mécanique firefly nuit (3★ pendant pulse, lanterne OFF)
+- [x] Mécanique firefly nuit (3★ pendant pulse, lanterne OFF)
 - [ ] Playtesting et balancement des taux de spawn, économie, leveling plantes
 - [ ] Bug fixing
 - **Livrable:** Build prêt à tester

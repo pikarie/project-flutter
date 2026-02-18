@@ -55,7 +55,7 @@ public partial class GardenCamera : Camera2D
 
 		if (@event is InputEventMouseButton mouseBtn)
 		{
-			if (mouseBtn.ButtonIndex is MouseButton.Middle or MouseButton.Right)
+			if (mouseBtn.ButtonIndex is MouseButton.Middle)
 			{
 				_isDragging = mouseBtn.Pressed;
 				_lastDragPosition = mouseBtn.GlobalPosition;
