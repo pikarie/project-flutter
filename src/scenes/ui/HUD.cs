@@ -145,7 +145,7 @@ public partial class HUD : Control
 		var insectScene = GD.Load<PackedScene>("res://scenes/insects/Insect.tscn");
 		var insect = insectScene.Instantiate<Insect>();
 
-		var data = InsectRegistry.GetById("honeybee");
+		var data = InsectRegistry.GetById("western_honeybee");
 		if (data == null) return;
 
 		// Initialize with very long visit time (static debug bee)
@@ -167,6 +167,6 @@ public partial class HUD : Control
 
 		if (insectContainer == null) return;
 		insectContainer.AddChild(insect);
-		GD.Print("Debug: Spawned static Honeybee at camera center");
+		GD.Print("Debug: Spawned static Western Honeybee at camera center");
 	}
 }

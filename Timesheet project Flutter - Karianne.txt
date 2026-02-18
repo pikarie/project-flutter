@@ -28,20 +28,60 @@ TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile co
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
-
-
 Question: est-ce que 4 "MovementPattern" est assez (Hover, Flutter, Crawl, Erractic pourle moment) ou pas assez diversifié? Dans les 72 insectes que nous avons, est-ce que certains doit avoir leur propre pattern custom? Est-ce une bonne idée d'ajouter d'autres patterns?
 
 Idea: faire qu'on puisse clicker le pop-up de nouvelle espèce découverte et ça amène dans la page détaillé de cette insecte dans le journal.
 
-Idea: ajouter une étape entre arroser une case à la fois et débarer les sprinkler? Arroser manuellement plus de case? Ou si c'est une étapes inutile?
+
 
 TODO research on "The Game Accessibility Guidelines"
 
-2026-02-16 20h35-
+2026-02-17 20h30-
 {
-	
-	
+	Idea: ajouter une étape entre arroser une case à la fois et débarer les sprinkler? Arroser manuellement plus de case? Ou si c'est une étapes inutile?
+		-Réponse rapide, non, laisse comme c'est (1 manuelle, 3 sprinkler)
+		-Réponse:
+		{
+			Je pense que c'est redondant, et voici pourquoi : le vrai saut entre l'arrosoir manuel et le Sprinkler I, c'est pas la taille — c'est l'automatisation. L'arrosoir couvre 1 case par clic, le Sprinkler I couvre 3×3 sans jamais cliquer. Le joueur n'achète pas "plus de cases arrosées", il achète "je n'ai plus jamais à penser à arroser cette zone." C'est un changement qualitatif, pas quantitatif.
+			
+			Si tu ajoutes un arrosoir amélioré 3×3 manuel entre les deux, tu crées deux problèmes. D'abord, ça dilue la valeur du Sprinkler I — pourquoi payer 40 nectar pour un objet passif 3×3 si j'ai déjà un outil 3×3 que j'ai acheté pour 15? Ensuite, ça ajoute un palier dans une progression qui est déjà très lisible : gratuit → 40 → 120 → 300, chaque step achète strictement plus de liberté.
+			
+			Dans PvZ, l'arrosoir amélioré fait sens parce que le gameplay est l'arrosage — c'est une action constante et stressante. Dans Project Flutter, l'arrosage est une corvée qu'on veut éliminer pour se concentrer sur la photo. La progression actuelle dit exactement ça : "au début tu arroses à la main, puis tu investis pour ne plus y penser." C'est la récompense. Ajouter un entre-deux ralentit le moment où le joueur atteint cette satisfaction.
+			
+			La seule variante qui pourrait avoir du sens serait un arrosoir qui arrose la case sous le curseur en passant dessus (sans cliquer), genre un "hover-to-water". Mais même là, c'est du scope creep pour un gain de confort mineur quand le Sprinkler I à 40 nectar est déjà très accessible.
+		}
+	-#TODO: analyer avec la version 3.3 si on doit faire un sprint intermédiaire avant de continuer le sprint 4 phase 5
+	-Commencer un sprint 4.5 de refonte pour s'engliner avec le GDD v3.3
+	{
+		Update Todos
+
+		Refonte bonus nectar dans GameManager.cs (+10 découverte, supprimer photo/jour)
+
+		Corriger F2 debug honeybee → western_honeybee dans HUD.cs
+
+		Mettre à jour MEMORY.md et CLAUDE.md (GDD v3.2 → v3.3)
+
+		Build + vérification
+	}
+	{
+		Découverte d'espèce : +5 → +10 nectar
+		Supprimé : bonus photo 3★ (+3) — les étoiles servent au babillard/complétionnisme uniquement
+		Supprimé : bonus fin de journée (+2) — pas de revenu passif
+		Nettoyé les subscriptions _onPhotoTaken et _onDayEnded
+	}
+	-Commit:
+	{
+		refactor(economy): align nectar bonuses with GDD v3.3
+
+		- Change species discovery bonus from +5 to +10 nectar
+		- Remove +3 nectar bonus for first 3-star photo (stars now serve
+		  conservation board and completionism only, not economy)
+		- Remove +2 nectar end-of-day passive income
+		- Fix F2 debug: use "western_honeybee" instead of obsolete "honeybee" ID
+	}
+}
+2026-02-16 0.75
+{
 	-Idea: Est-ce que ça serait une bonne idée d'avoir un upgrade de la caméra (ou nativement) qui donne du nector a chaque capture de photo (1 nectar par exemple)? Ça donne une récompense pour prendre des photos surtout quand toutes les espèces commence a être découvert pour une zone. Ou sinon, le même genre de gain passif que pour les plantes, a 50 photos de ladybug, reward?
 		-Présentement, on a ceci: GameManager.cs — 3 bonus nectar : +5 nouvelle espèce découverte, +3 première photo 3★, +2 fin de journée
 		-Je trouve étrange de photographeir un insecte nouveau, car le nombre de nectar rtotalise 8 si je le prends en 3 étoiles.
@@ -77,6 +117,20 @@ TODO research on "The Game Accessibility Guidelines"
 		}
 	-#TODO: need to finish document about keybinding and tile expansion.
 		-Devenu le GDD v 3.3
+		{
+			Sections modifiées :
+
+			§4.1 — référence vers §4.12, curseurs contextuels marqués à tester
+			§4.5 — cap insectes scale avec expansions (+3-5 par tier)
+			§4.7 — refonte complète : +10 fixe par découverte, étoiles ne donnent plus de nectar, fin de journée supprimée, nectar explicitement global, séparation des rôles documentée
+			§4.8 — expansions ajoutées au Tier 1 des sinks, note sprinkler III mise à jour (ne couvre plus toute la zone après expansion)
+			§8.3 — architecture dynamique avec ExpansionTier
+			§8.4 — expansion tier + key bindings ajoutés aux données sauvegardées
+			§9 Sprint 4 — contrôles, rebinding, expansion, +10 découverte ajoutés au scope
+			§10 — nectar sinks mis à jour (~2000-3500 pour expansions), revenus ajustés
+			§13 — DISCOVERY_BONUS = 10, commentaires sur l'absence des anciens bonus
+			§15 — changelog v3.2→v3.3 complet
+		}
 	-#TODO: need to finish the pending changes (sprint 4, phase 4)
 	-Commit:
 	{
@@ -91,6 +145,7 @@ TODO research on "The Game Accessibility Guidelines"
 		- Add PlantLevelUpEvent and DayEndedEvent to EventBus
 		- Register PlantLevelManager as autoload in project.godot
 	}
+	-TODO: analyer avec la version 3.3 si on doit faire un sprint intermédiaire avant de continuer le sprint 4 phase 5
 }
 2026-02-15 4.5
 {
