@@ -220,7 +220,16 @@ Le journal est l'**interface unique centrale** du jeu. Un seul bouton l'ouvre, d
 | 🌱 **Herbier** | Niveaux des plantes, barres de progression, badges feuille colorés, auras |
 | 🎨 **Collection** | Bordures de photos débloquées, statistiques, cosmétiques |
 | 🏛️ **Conservation** | Jalons de l'agence, certificats, récompenses de progression |
-| ⚙️ **Réglages** | Son, contrôles, langue, plein écran |
+
+**Pause menu (ESC) — séparé du journal :**
+Les réglages ne font PAS partie du journal. Recherche (20+ jeux avec journal/encyclopédie) : les jeux gardent les settings séparés du contenu thématique. ESC ouvre un menu pause minimaliste :
+
+| Option | Action |
+|--------|--------|
+| Reprendre | Ferme le menu pause |
+| Réglages | Son, contrôles (key bindings), langue, plein écran |
+| Sauvegarder | Sauvegarde manuelle |
+| Quitter | Retour au menu principal |
 
 **Détail section Insectes :**
 - Grille d'entrées : espèces découvertes montrent des portraits illustrés au niveau de qualité atteint ; non découvertes montrent des silhouettes grises
@@ -442,7 +451,7 @@ Les certificats apparaissent dans la section Conservation du journal. Chaque jal
 | Pan caméra | WASD | Middle-mouse | Disponible si la zone dépasse la taille de l'écran |
 | Pause/réglages | ESC | — | Quand aucune action/panel actif |
 
-**Priorité cascading ESC :** Graine sélectionnée → déselectionner. Mode photo → quitter. Shop/journal ouvert → fermer. Rien d'actif → menu pause/réglages. Standard universel du genre.
+**ESC cascade (non-négociable) :** Fermer sous-panel actif (ex: page détail insecte) → fermer journal/shop → ouvrir menu pause → fermer menu pause. Chaque appui ESC remonte d'un niveau. Jamais plus de 2-3 clics pour atteindre les réglages (ESC → Réglages → Controls).
 
 **Mode photo — bouton séparé (pas contextuel) :**
 Le mode photo reste un toggle/maintien dédié, pas un clic contextuel sur les insectes. Raisons :
@@ -453,7 +462,7 @@ Le mode photo reste un toggle/maintien dédié, pas un clic contextuel sur les i
 - 🧪 **À réévaluer après playtesting** : si le toggle semble être de la friction inutile, tester le mode contextuel (curseur change automatiquement au survol d'un insecte, clic & maintien commence le focus)
 
 **Rebinding obligatoire au lancement :**
-Toutes les touches sont remappables via le menu Réglages du journal (§4.6). Implémentation via le singleton `InputMap` de Godot 4.5. Stockage dans `user://settings.cfg` via `ConfigFile`. Bouton « Réinitialiser par défaut » inclus.
+Toutes les touches sont remappables via le menu pause (ESC → Réglages → Controls). Implémentation via le singleton `InputMap` de Godot 4.5. Stockage dans `user://settings.cfg` via `ConfigFile`. Bouton « Réinitialiser par défaut » inclus.
 
 Raisons :
 - ~10% des joueurs sont gauchers (étude UCL 2023, 422,772 participants) et ont besoin de remapper vers IJKL ou des layouts main droite
@@ -862,13 +871,15 @@ project-flutter/
 - **Livrable:** Tout l'art en jeu, transition complète des placeholders vers art final
 
 ### Sprint 7 — UI & Journal Complet (Semaines 17–18, ~40h)
-- [ ] Journal comme hub central avec 5 signets (Insectes, Herbier, Collection, Conservation, Réglages)
+- [ ] Journal comme hub central avec 4 signets (Insectes, Herbier, Collection, Conservation)
 - [ ] Animation tourner les pages entre sections
+- [ ] **Pause menu** (ESC → Reprendre, Réglages, Sauvegarder, Quitter)
+- [ ] **Réglages dans pause menu** (son, contrôles/key bindings, langue, plein écran)
+- [ ] **ESC cascade** : sous-panel → journal/shop → pause menu → fermer
 - [ ] UI du shop final (scroll, catégories par zone, prix, aperçus)
 - [ ] Section Herbier (niveaux plantes, barres progression, badges)
 - [ ] Section Collection (bordures débloquées, statistiques)
 - [ ] Section Conservation (certificats, jalons 25/50/75/100%)
-- [ ] Réglages dans le journal (son, contrôles, langue)
 - [ ] Système photo 3 niveaux visuels (esquisse → aquarelle → vibrante)
 - [ ] Application des bordures de photo sur les entrées journal
 - [ ] HUD final (compteur nectar animé, horloge analogique colorée, zone actuelle)
@@ -1149,7 +1160,7 @@ Ces fonctionnalités de debug sont utiles pendant le développement mais **doive
 | Bordures photo | Non existant | 8–12 cadres décoratifs (15–50 nectar) | Sink cosmétique infini, personnalisation |
 | Narrative | "Pas d'histoire" | Agence de conservation, jalons 25/50/75/100% | Raison de remplir le journal, récompenses de progression |
 | Tropical Greenhouse | Zone 7 visible | Zone secrète cachée jusqu'à 75% journal | Moment surprise et délice |
-| Journal | Simple collectathon | Hub central avec 5 onglets (Insectes, Herbier, Collection, Conservation, Réglages) | Interface immersive unique, pas de menu séparé |
+| Journal | Simple collectathon | Hub central avec 4 onglets (Insectes, Herbier, Collection, Conservation). **Réglages sortis du journal → pause menu ESC** (Reprendre, Réglages, Sauvegarder, Quitter). ESC cascade non-négociable. | Recherche 20+ jeux : settings séparés du contenu thématique. Max 2-3 clics pour atteindre les contrôles. |
 | Arrosage | Manuel seulement | Manuel + sprinklers passifs | Automatisation comme progression |
 | Plantes sans eau | Ralentissent | Arrêtent complètement de pousser (mais ne meurent jamais) | Plus cozy, pression douce |
 | Indices de départ | Disparition abrupte | Soft warning (ailes rapides 5–10s) — 🧪 **à tester** : fuite instantanée post-photo vs soft warning | Design cozy vs tension Pokémon — tester les deux |

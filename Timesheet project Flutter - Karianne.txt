@@ -21,12 +21,7 @@ TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux 
 
 TODO research on "The Game Accessibility Guidelines"
 
-#Settings : sortir du journal, mettre dans le pause menu — La recherche (20 jeux) montre que les jeux avec journal/encyclopédie gardent les settings séparés du contenu thématique. Journal = 4 signets (Insectes, Herbier, 
-Collection, Conservation). ESC ouvre un pause menu minimaliste (Reprendre, Réglages, Sauvegarder, Quitter). Key bindings = section Controls dans les Réglages, jamais plus profond que 2-3 clics.
-
-#ESC cascade — Fermer sous-panel → fermer journal → ouvrir pause menu → fermer pause menu. Non-négociable selon la recherche.
-
-2026-02-18 19h45-
+2026-02-18 2.25
 {
 	-#TODO: Sprint 4 restant -> refactor Sprinkler -> Sprint 5
 	-#TODO: Sprint 4 phase 6 - Key Rebinding System
@@ -126,7 +121,10 @@ Collection, Conservation). ESC ouvre un pause menu minimaliste (Reprendre, Régl
 		SpawnSystem: dynamic insect cap per expansion tier.
 		GDD v3.4 §4.13 updated with concrete dimensions and UX decisions.
 	}
-	
+	-Commit: 
+	{
+		docs(gdd): move settings to pause menu, add ESC cascade and expansion UX details
+	}
 }
 2026-02-17 1.75
 {
