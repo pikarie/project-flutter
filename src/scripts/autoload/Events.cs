@@ -46,6 +46,7 @@ public record LanternToggledEvent(bool IsActive);
 // -- Zones --
 public record ZoneChangedEvent(ZoneType From, ZoneType To);
 public record ZoneUnlockedEvent(ZoneType Zone);
+public record ZoneExpandedEvent(ZoneType Zone, int NewTier, string ExpansionName);
 
 // -- Input --
 public record KeybindingsResetEvent();

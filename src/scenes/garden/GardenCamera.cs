@@ -10,6 +10,7 @@ public partial class GardenCamera : Camera2D
 	[Export] public float MaxZoom { get; set; } = 3.0f;
 
 	private Action<ZoneChangedEvent> _onZoneChanged;
+	private Action<ZoneExpandedEvent> _onZoneExpanded;
 	private bool _isDragging;
 	private Vector2 _lastDragPosition;
 
@@ -19,12 +20,20 @@ public partial class GardenCamera : Camera2D
 		PositionSmoothingSpeed = 8.0f;
 
 		_onZoneChanged = OnZoneChanged;
+		_onZoneExpanded = OnZoneExpanded;
 		EventBus.Subscribe(_onZoneChanged);
+		EventBus.Subscribe(_onZoneExpanded);
 	}
 
 	public override void _ExitTree()
 	{
 		EventBus.Unsubscribe(_onZoneChanged);
+		EventBus.Unsubscribe(_onZoneExpanded);
+	}
+
+	private void OnZoneExpanded(ZoneExpandedEvent expansionEvent)
+	{
+		ClampToZoneBounds();
 	}
 
 	private void OnZoneChanged(ZoneChangedEvent zoneEvent)
@@ -100,10 +109,10 @@ public partial class GardenCamera : Camera2D
 
 	private void ClampToZoneBounds()
 	{
-		var (_, width, height, _, _) = ZoneManager.ZoneConfig[ZoneManager.Instance.ActiveZone];
+		var gridSize = ZoneManager.Instance.GetCurrentGridSize(ZoneManager.Instance.ActiveZone);
 		const int tileSize = 128;
-		float halfWidth = width * tileSize / 2f;
-		float halfHeight = height * tileSize / 2f;
+		float halfWidth = gridSize.X * tileSize / 2f;
+		float halfHeight = gridSize.Y * tileSize / 2f;
 		const float padding = 64f;
 
 		// Account for viewport size so camera doesn't show beyond grid + padding

@@ -25,6 +25,7 @@ script = ExtResource("11")
 [node name="StarterZone" parent="GameWorld" instance=ExtResource("1")]
 
 [node name="GardenGrid" parent="GameWorld/StarterZone"]
+ZoneType = 0
 GridSize = Vector2i(5, 5)
 
 [node name="MeadowZone" parent="GameWorld" instance=ExtResource("1")]
@@ -32,6 +33,7 @@ visible = false
 process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/MeadowZone"]
+ZoneType = 1
 GridSize = Vector2i(6, 6)
 
 [node name="ForestZone" parent="GameWorld" instance=ExtResource("1")]
@@ -39,6 +41,7 @@ visible = false
 process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/ForestZone"]
+ZoneType = 2
 GridSize = Vector2i(6, 6)
 
 [node name="DeepWoodZone" parent="GameWorld" instance=ExtResource("1")]
@@ -46,6 +49,7 @@ visible = false
 process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/DeepWoodZone"]
+ZoneType = 3
 GridSize = Vector2i(5, 5)
 
 [node name="RockGardenZone" parent="GameWorld" instance=ExtResource("1")]
@@ -53,6 +57,7 @@ visible = false
 process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/RockGardenZone"]
+ZoneType = 4
 GridSize = Vector2i(5, 5)
 
 [node name="PondZone" parent="GameWorld" instance=ExtResource("1")]
@@ -60,6 +65,7 @@ visible = false
 process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/PondZone"]
+ZoneType = 5
 GridSize = Vector2i(5, 5)
 WaterTileData = PackedInt32Array(4, 1, 3, 2, 4, 2, 3, 3, 4, 3)
 
@@ -68,6 +74,7 @@ visible = false
 process_mode = 4
 
 [node name="GardenGrid" parent="GameWorld/TropicalZone"]
+ZoneType = 6
 GridSize = Vector2i(7, 7)
 
 [node name="GardenCamera" type="Camera2D" parent="."]

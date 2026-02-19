@@ -29,11 +29,68 @@ public partial class ZoneManager : Node
 		{ ZoneType.Tropical, ("Tropical Greenhouse", 7, 7, 1000, 54) },
 	};
 
+	private readonly Dictionary<ZoneType, int> _expansionTiers = new()
+	{
+		{ ZoneType.Starter, 0 },
+		{ ZoneType.Meadow, 0 },
+		{ ZoneType.Forest, 0 },
+		{ ZoneType.DeepWood, 0 },
+		{ ZoneType.RockGarden, 0 },
+		{ ZoneType.Pond, 0 },
+		{ ZoneType.Tropical, 0 },
+	};
+
 	public ZoneType ActiveZone => _activeZone;
 
 	public override void _Ready()
 	{
 		Instance = this;
+	}
+
+	public int GetExpansionTier(ZoneType zone) => _expansionTiers[zone];
+
+	public Vector2I GetCurrentGridSize(ZoneType zone)
+	{
+		int tier = _expansionTiers[zone];
+		if (tier == 0)
+		{
+			var (_, width, height, _, _) = ZoneConfig[zone];
+			return new Vector2I(width, height);
+		}
+		var tierData = ExpansionConfig.GetTierData(zone, tier);
+		return new Vector2I(tierData.GridWidth, tierData.GridHeight);
+	}
+
+	public bool CanExpand(ZoneType zone)
+	{
+		int currentTier = _expansionTiers[zone];
+		if (currentTier >= ExpansionConfig.MaxExpansionTier(zone)) return false;
+		var nextTierData = ExpansionConfig.GetTierData(zone, currentTier + 1);
+		return GameManager.Instance.Nectar >= nextTierData.NectarCost;
+	}
+
+	public bool TryExpand(ZoneType zone)
+	{
+		int currentTier = _expansionTiers[zone];
+		if (currentTier >= ExpansionConfig.MaxExpansionTier(zone)) return false;
+		var nextTierData = ExpansionConfig.GetTierData(zone, currentTier + 1);
+		if (!GameManager.Instance.SpendNectar(nextTierData.NectarCost)) return false;
+		_expansionTiers[zone] = currentTier + 1;
+		EventBus.Publish(new ZoneExpandedEvent(zone, currentTier + 1, nextTierData.Name));
+		return true;
+	}
+
+	public int GetInsectCap(ZoneType zone)
+	{
+		const int baseInsectCap = 12;
+		int tier = _expansionTiers[zone];
+		int bonus = 0;
+		for (int i = 1; i <= tier; i++)
+		{
+			var tierData = ExpansionConfig.GetTierData(zone, i);
+			if (tierData != null) bonus += tierData.InsectCapBonus;
+		}
+		return baseInsectCap + bonus;
 	}
 
 	public bool IsUnlocked(ZoneType zone) => _unlockedZones[zone];
@@ -114,5 +171,21 @@ public partial class ZoneManager : Node
 			}
 		}
 		GD.Print("DEBUG: All zones unlocked");
+	}
+
+	public void DebugExpandActive()
+	{
+		var zone = _activeZone;
+		int currentTier = _expansionTiers[zone];
+		int maxTier = ExpansionConfig.MaxExpansionTier(zone);
+		if (currentTier >= maxTier)
+		{
+			GD.Print($"DEBUG: {zone} already at max expansion tier {currentTier}");
+			return;
+		}
+		_expansionTiers[zone] = currentTier + 1;
+		var tierData = ExpansionConfig.GetTierData(zone, currentTier + 1);
+		EventBus.Publish(new ZoneExpandedEvent(zone, currentTier + 1, tierData.Name));
+		GD.Print($"DEBUG: {zone} expanded to tier {currentTier + 1} ({tierData.Name}, {tierData.GridWidth}×{tierData.GridHeight})");
 	}
 }

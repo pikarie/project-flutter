@@ -472,22 +472,23 @@ Raisons :
 - Chaque zone a **2–3 sections d'expansion** achetables
 - Chaque section est **grande et nommée** (pas de micro-achats — chaque expansion est un jalon satisfaisant)
 - Les sections apparaissent comme zones grisées/envahies par la végétation au bord de la zone active
-- Coût visible sur la section (icône nectar + montant)
+- **Label au hover** : le nom et le coût nectar apparaissent uniquement quand la souris survole la zone grisée, centré sur celle-ci. Si pas assez de nectar : texte rouge "(not enough!)". Si assez : texte doré.
+- **Confirmation avant achat** : premier clic → "Click to confirm" + "Right-click to cancel". Deuxième clic → achat. Les expansions coûtent 100–600₦, la confirmation évite les achats accidentels.
 - Animation d'achat : défrichage, nouvelles tiles qui apparaissent, zone qui s'agrandit visuellement
 - Le cap d'insectes augmente avec chaque expansion (+3–5 par tier — voir §4.5)
 
 **Cibles de taille (à ajuster au playtesting) :**
 
-| Zone | Base | Expansion 1 | Expansion 2 | Cible max tiles |
-|------|------|-------------|-------------|-----------------|
-| Starter 🌱 | 5×5 (25) | "Back Garden" | "Flower Beds" | ~120–150 |
-| Meadow 🌻 | 6×6 (36) | "Wild Meadow" | "Golden Fields" | ~150–200 |
-| Forest 🌲 | 6×6 (36) | "Mossy Clearing" | "Deep Canopy" | ~120–150 |
-| Deep Wood 🪵 | 5×5 (25) | "Rotting Grove" | — | ~100–120 |
-| Rock Garden ⛰️ | 5×5 (25) | "Stone Terrace" | — | ~100–120 |
-| Pond 🐸 | 5×5 (25) | "Lily Shore" | — | ~100–130 |
-| Tropical 🌺 | 7×7 (49) | "Orchid Wing" | "Canopy Walk" | ~150–180 |
-| **Total** | **~221** | | | **~850–1,050** |
+| Zone | Base | Expansion 1 | Expansion 2 | Forme | Cible max tiles |
+|------|------|-------------|-------------|-------|-----------------|
+| Starter 🌱 | 5×5 (25) | "Back Garden" 9×9 (81) 100₦ | "Flower Beds" 13×13 (169) 250₦ | Rings | ~120–150 |
+| Meadow 🌻 | 6×6 (36) | "Wild Meadow" 14×6 (84) 150₦ | "Golden Fields" 14×10 (140) 400₦ | Latéral H | ~150–200 |
+| Forest 🌲 | 6×6 (36) | "Mossy Clearing" 10×10 (100) 150₦ | "Deep Canopy" 14×14 (196) 350₦ | Rings | ~120–150 |
+| Deep Wood 🪵 | 5×5 (25) | "Rotting Grove" 11×5 (55) 200₦ | — | Latéral H | ~100–120 |
+| Rock Garden ⛰️ | 5×5 (25) | "Stone Terrace" 9×9 (81) 200₦ | — | Rings | ~100–120 |
+| Pond 🐸 | 5×5 (25) | "Lily Shore" 9×9 (81) 175₦ | — | Rings | ~100–130 |
+| Tropical 🌺 | 7×7 (49) | "Orchid Wing" 15×7 (105) 300₦ | "Canopy Walk" 15×11 (165) 600₦ | Latéral H | ~150–180 |
+| **Total** | **~221** | | | | **~850–1,050** |
 
 **Coûts d'expansion (escaladants, à balancer) :**
 
@@ -497,11 +498,12 @@ Raisons :
 | Tier 2 | 200–500 | Mid-to-late game |
 | Tier 3 (Tropical) | 500–1000 | Endgame |
 
-**Forme d'expansion — 🧪 À tester :**
-- **Option A — Rings (concentric) :** Chaque expansion ajoute une bordure autour de la zone. Simple, jardin centré. Risque : générique.
-- **Option B — Latéral (style Rusty's Retirement) :** Expansion dans une direction spécifique. Plus de personnalité, zones deviennent rectangulaires.
-- **Option C — Sections asymétriques nommées :** Chaque expansion a une forme unique liée au thème de la zone. "Lily Shore" étend les berges autour de l'étang. Plus de travail, mais le plus satisfaisant.
-- **Recommandation :** Commencer par Option A (rings) pour la simplicité. Refactorer vers Option C si le playtesting montre un manque de personnalité. La structure de données (`ZoneData.ExpansionTier`) est la même dans les deux cas.
+**Forme d'expansion — choix implémenté : Mix varié par zone :**
+- **Starter, Forest, Rock Garden, Pond** → Rings concentriques (bordures carrées autour de la zone)
+- **Meadow, Tropical** → Latéral horizontal (d'abord en largeur, puis en hauteur)
+- **Deep Wood** → Latéral horizontal (une seule expansion large)
+- **Contrainte écran 16:9** : toutes les zones rectangulaires sont horizontales (plus larges que hautes), jamais verticales.
+- La structure de données (`ExpansionConfig`) permet d'ajuster les tailles sans changer la logique.
 
 **Impact systèmes :**
 - Le Sprinkler III (7×7) ne couvre plus une zone entière après expansion — placement stratégique requis

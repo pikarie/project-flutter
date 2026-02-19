@@ -117,6 +117,10 @@ public partial class HUD : Control
 					GD.Print("DEBUG: +500 nectar");
 					GetViewport().SetInputAsHandled();
 					return;
+				case Key.F7:
+					ZoneManager.Instance.DebugExpandActive();
+					GetViewport().SetInputAsHandled();
+					return;
 			}
 		}
 

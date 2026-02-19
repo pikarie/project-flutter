@@ -21,10 +21,15 @@ TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux 
 
 TODO research on "The Game Accessibility Guidelines"
 
-2026-02-18 19h40-
+#Settings : sortir du journal, mettre dans le pause menu — La recherche (20 jeux) montre que les jeux avec journal/encyclopédie gardent les settings séparés du contenu thématique. Journal = 4 signets (Insectes, Herbier, 
+Collection, Conservation). ESC ouvre un pause menu minimaliste (Reprendre, Réglages, Sauvegarder, Quitter). Key bindings = section Controls dans les Réglages, jamais plus profond que 2-3 clics.
+
+#ESC cascade — Fermer sous-panel → fermer journal → ouvrir pause menu → fermer pause menu. Non-négociable selon la recherche.
+
+2026-02-18 19h45-
 {
-	-TODO: Sprint 4 restant -> refactor Sprinkler -> Sprint 5
-	-Sprint 4 phase 6 - Key Rebinding System
+	-#TODO: Sprint 4 restant -> refactor Sprinkler -> Sprint 5
+	-#TODO: Sprint 4 phase 6 - Key Rebinding System
 	{
 		2 fichiers créés :
 		-InputManager.cs — autoload singleton, 26 actions InputMap (clavier + souris), persistance user://settings.cfg, API de rebinding avec détection de conflits, reset par défaut
@@ -70,7 +75,58 @@ TODO research on "The Game Accessibility Guidelines"
 
 		C'est l'approche que la plupart des jeux Godot utilisent pour le rebinding souris — un "input blocker" temporaire.
 	}
-	-
+	-#TODO: si je rebinding le camera drag avec des flèches, ma caméra va super loin en dehors de la zone de jeu. Est-ce mieux d'ajouter un max d'éloignement par rapport à la zone de jeu pour ne pas que le joueur se perdre dans Godot?
+		-Réponse: 
+		{			
+			Oui, c'est un bug à corriger indépendamment du rebinding. Le ZoneManager.UpdateCameraBounds() dans le GDD définit déjà des LimitLeft/Right/Top/Bottom avec un padding de 32px, mais ça ne s'applique peut-être qu'au scroll/zoom et pas au pan WASD/flèches.
+			La solution la plus simple : après chaque frame de camera pan, clamp la position de la caméra aux mêmes limites que celles déjà calculées dans UpdateCameraBounds(). Le padding de 32px est suffisant pour voir les bords de la zone sans se perdre dans le vide vert de Godot. Avec les expansions de zones (§4.13), les limites se mettent à jour automatiquement puisque UpdateCameraBounds() utilise déjà ActiveZoneData.GridWidth/Height.
+			Et si tu veux être encore plus safe, ajoute un bouton "recentrer caméra" (genre Home ou double-clic middle mouse) qui snap la caméra au centre de la zone active. C'est un filet de sécurité gratuit qui coûte 2 lignes de code.
+		}
+	-Commit:
+	{
+		feat(sprint4-p6): add key rebinding system and camera bounds
+
+		InputManager autoload with 26 rebindable actions (keyboard + mouse),
+		ConfigFile persistence, conflict detection with auto-swap.
+		KeybindingUI two-column panel in Journal Settings tab.
+		Camera clamped to zone bounds to prevent panning into void.
+	}
+	-Phase 6 : Key Rebinding ✓
+	-Phase 7 : Zone Expansions (§4.13 — achat de terrains avec nectar) ← prochain
+	-Phase 8 : Balancing + Polish
+	-Phase 4.6 : Sprinkler UX refactor
+	-Sprint 5 : Hop pattern, nouveaux patterns, popup discovery cliquable
+	-TODO: Sprint 4 phase 7 - Zone Expansions (§4.13 — achat de terrains avec nectar)
+	{
+		Nouveaux fichiers :
+			-ExpansionConfig.cs — données statiques : 7 zones avec formes variées (rings, latéral, vertical)
+		
+		Fichiers modifiés :
+			-Events.cs — ZoneExpandedEvent
+			-ZoneManager.cs — _expansionTiers, TryExpand(), GetCurrentGridSize(), GetInsectCap(), DebugExpandActive()
+			-GardenGrid.cs — [Export] ZoneType, ExpandGrid() avec remapping de coordonnées, preview d'expansion, achat par clic avec confirmation
+			-Main.tscn — exports ZoneType pour les 7 grilles
+			-GardenCamera.cs — bounds dynamiques via GetCurrentGridSize(), subscribe ZoneExpandedEvent
+			-SpawnSystem.cs — cap insectes dynamique
+			-HUD.cs — F7 debug expand
+		
+		Pour tester : F1 (unlock all zones) → F7 (expand la zone active). Les tuiles sombres autour de la grille montrent la preview de la prochaine expansion. Clic dessus → texte de confirmation → re-clic → expansion.
+	}
+	-Commit:
+	{
+		feat(sprint4-p7): add zone expansion system with varied forms and purchase UX
+
+		ExpansionConfig: 7 zones with mixed shapes (rings for Starter/Forest/
+		RockGarden/Pond, lateral horizontal for Meadow/DeepWood/Tropical),
+		1-2 tiers per zone, 100-600 nectar costs, +3-5 insect cap per tier.
+		ZoneManager: expansion state tracking, CanExpand/TryExpand API.
+		GardenGrid: ExpandGrid with coordinate remapping, grayed preview on
+		hover only with cost label, click-to-confirm purchase, nectar check.
+		GardenCamera: dynamic bounds from GetCurrentGridSize.
+		SpawnSystem: dynamic insect cap per expansion tier.
+		GDD v3.4 §4.13 updated with concrete dimensions and UX decisions.
+	}
+	
 }
 2026-02-17 1.75
 {

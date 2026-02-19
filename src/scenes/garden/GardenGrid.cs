@@ -8,11 +8,13 @@ public partial class GardenGrid : Node2D
 	[Export] public Vector2I GridSize { get; set; } = new(4, 4);
 	[Export] public int TileSize { get; set; } = 128;
 	[Export] public int[] WaterTileData { get; set; } = System.Array.Empty<int>();
+	[Export] public ZoneType ZoneType { get; set; }
 
 	private TileMapLayer _groundLayer;
 	private Dictionary<Vector2I, CellState> _cells = new();
 	private Vector2I? _hoveredCell;
 	private string _selectedPlantId;
+	private bool _expansionConfirmPending;
 
 	private static readonly Color SoilTilledColor = new(0.45f, 0.28f, 0.12f);
 	private static readonly Color SoilWateredColor = new(0.35f, 0.22f, 0.10f);
@@ -32,7 +34,14 @@ public partial class GardenGrid : Node2D
 	private static readonly Color GrowingColor = new(0.2f, 0.65f, 0.15f);
 	private static readonly Color WaterDropColor = new(0.3f, 0.6f, 0.9f);
 
+	// Expansion preview colors
+	private static readonly Color ExpansionPreviewColor = new(0.25f, 0.35f, 0.15f, 0.5f);
+	private static readonly Color ExpansionBorderColor = new(0.5f, 0.6f, 0.3f, 0.6f);
+	private static readonly Color ExpansionConfirmColor = new(0.4f, 0.55f, 0.25f, 0.7f);
+	private static readonly Color ExpansionTextColor = new(1f, 0.9f, 0.6f);
+
 	private Action<SeedSelectedEvent> _onSeedSelected;
+	private Action<ZoneExpandedEvent> _onZoneExpanded;
 
 	public override void _Ready()
 	{
@@ -64,12 +73,60 @@ public partial class GardenGrid : Node2D
 		}
 
 		_onSeedSelected = OnSeedSelected;
+		_onZoneExpanded = OnZoneExpanded;
 		EventBus.Subscribe(_onSeedSelected);
+		EventBus.Subscribe(_onZoneExpanded);
 	}
 
 	public override void _ExitTree()
 	{
 		EventBus.Unsubscribe(_onSeedSelected);
+		EventBus.Unsubscribe(_onZoneExpanded);
+	}
+
+	private void OnZoneExpanded(ZoneExpandedEvent expansionEvent)
+	{
+		if (expansionEvent.Zone != ZoneType) return;
+		var newSize = ZoneManager.Instance.GetCurrentGridSize(ZoneType);
+		ExpandGrid(newSize);
+	}
+
+	public void ExpandGrid(Vector2I newGridSize)
+	{
+		int offsetX = (newGridSize.X - GridSize.X) / 2;
+		int offsetY = (newGridSize.Y - GridSize.Y) / 2;
+
+		// Remap existing cells to new coordinates
+		var newCells = new Dictionary<Vector2I, CellState>();
+		foreach (var (oldPosition, cellState) in _cells)
+		{
+			var newPosition = new Vector2I(oldPosition.X + offsetX, oldPosition.Y + offsetY);
+			newCells[newPosition] = cellState;
+		}
+
+		// Fill new cells as Tilled
+		for (int x = 0; x < newGridSize.X; x++)
+		{
+			for (int y = 0; y < newGridSize.Y; y++)
+			{
+				var position = new Vector2I(x, y);
+				if (!newCells.ContainsKey(position))
+					newCells[position] = new CellState { CurrentState = CellState.State.Tilled };
+			}
+		}
+
+		_cells = newCells;
+		GridSize = newGridSize;
+		_expansionConfirmPending = false;
+
+		// Recenter the grid
+		Position = new Vector2(
+			-GridSize.X * TileSize / 2.0f,
+			-GridSize.Y * TileSize / 2.0f
+		);
+
+		QueueRedraw();
+		GD.Print($"Grid expanded to {GridSize.X}×{GridSize.Y}");
 	}
 
 	private void OnSeedSelected(SeedSelectedEvent seedEvent)
@@ -99,6 +156,10 @@ public partial class GardenGrid : Node2D
 			_hoveredCell = newHover;
 			QueueRedraw();
 		}
+
+		// Redraw for expansion preview hover effect
+		if (MouseToExpansionPreview() != null)
+			QueueRedraw();
 	}
 
 	private void ApplySprinklerWatering()
@@ -219,6 +280,95 @@ public partial class GardenGrid : Node2D
 				}
 			}
 		}
+
+		// Draw expansion preview
+		DrawExpansionPreview();
+	}
+
+	private void DrawExpansionPreview()
+	{
+		int currentTier = ZoneManager.Instance.GetExpansionTier(ZoneType);
+		int maxTier = ExpansionConfig.MaxExpansionTier(ZoneType);
+		if (currentTier >= maxTier) return;
+
+		var nextTierData = ExpansionConfig.GetTierData(ZoneType, currentTier + 1);
+		var nextSize = new Vector2I(nextTierData.GridWidth, nextTierData.GridHeight);
+
+		int offsetX = (nextSize.X - GridSize.X) / 2;
+		int offsetY = (nextSize.Y - GridSize.Y) / 2;
+
+		Color fillColor = _expansionConfirmPending ? ExpansionConfirmColor : ExpansionPreviewColor;
+		bool isHoveringPreview = MouseToExpansionPreview() != null;
+
+		// Draw ring/band cells (cells in next size that are NOT in current size)
+		for (int x = -offsetX; x < GridSize.X + offsetX; x++)
+		{
+			for (int y = -offsetY; y < GridSize.Y + offsetY; y++)
+			{
+				bool isExistingCell = x >= 0 && x < GridSize.X && y >= 0 && y < GridSize.Y;
+				if (isExistingCell) continue;
+
+				var rect = new Rect2(x * TileSize, y * TileSize, TileSize, TileSize);
+				Color cellColor = isHoveringPreview ? fillColor.Lightened(0.15f) : fillColor;
+				DrawRect(rect, cellColor);
+				DrawRect(rect, ExpansionBorderColor, false, 1.0f);
+			}
+		}
+
+		// Draw label centered on expansion area — hover only (or confirm state)
+		if (!isHoveringPreview && !_expansionConfirmPending) return;
+
+		bool canAfford = ZoneManager.Instance.CanExpand(ZoneType);
+
+		string costText;
+		string secondLine = null;
+		if (_expansionConfirmPending)
+		{
+			costText = $"Click to confirm: {nextTierData.Name}";
+			secondLine = "Right-click to cancel";
+		}
+		else if (canAfford)
+		{
+			costText = $"{nextTierData.Name} — {nextTierData.NectarCost} nectar";
+		}
+		else
+		{
+			costText = $"{nextTierData.Name} — {nextTierData.NectarCost} nectar (not enough!)";
+		}
+
+		// Position text on the expansion preview band (not on the existing grid)
+		float areaCenterX;
+		float areaCenterY;
+		if (offsetY > 0)
+		{
+			// Top band exists (rings or vertical growth) — center text in top band
+			areaCenterX = (GridSize.X * TileSize) / 2.0f;
+			areaCenterY = -offsetY * TileSize / 2.0f;
+		}
+		else
+		{
+			// Side bands only (lateral horizontal) — center text in right band
+			areaCenterX = GridSize.X * TileSize + offsetX * TileSize / 2.0f;
+			areaCenterY = (GridSize.Y * TileSize) / 2.0f;
+		}
+
+		var font = ThemeDB.FallbackFont;
+		int fontSize = 14;
+		var textSize = font.GetStringSize(costText, HorizontalAlignment.Center, -1, fontSize);
+		float totalHeight = textSize.Y + 6;
+		if (secondLine != null)
+			totalHeight += fontSize + 4;
+		var textPosition = new Vector2(areaCenterX - textSize.X / 2, areaCenterY + textSize.Y / 2);
+		var textBgRect = new Rect2(textPosition.X - 6, textPosition.Y - textSize.Y - 2, textSize.X + 12, totalHeight);
+		DrawRect(textBgRect, new Color(0, 0, 0, 0.6f));
+		Color mainTextColor = canAfford || _expansionConfirmPending ? ExpansionTextColor : new Color(1f, 0.5f, 0.5f);
+		DrawString(font, textPosition, costText, HorizontalAlignment.Left, -1, fontSize, mainTextColor);
+		if (secondLine != null)
+		{
+			var secondSize = font.GetStringSize(secondLine, HorizontalAlignment.Center, -1, fontSize);
+			var secondPosition = new Vector2(areaCenterX - secondSize.X / 2, textPosition.Y + fontSize + 4);
+			DrawString(font, secondPosition, secondLine, HorizontalAlignment.Left, -1, fontSize, new Color(0.8f, 0.8f, 0.8f));
+		}
 	}
 
 	private bool CanActOnCell(CellState cell)
@@ -281,6 +431,43 @@ public partial class GardenGrid : Node2D
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
+
+		// Expansion purchase interaction
+		if (@event.IsActionPressed("primary_action") && MouseToExpansionPreview() != null)
+		{
+			if (_expansionConfirmPending)
+			{
+				ZoneManager.Instance.TryExpand(ZoneType);
+				GetViewport().SetInputAsHandled();
+			}
+			else if (ZoneManager.Instance.CanExpand(ZoneType))
+			{
+				_expansionConfirmPending = true;
+				QueueRedraw();
+				GetViewport().SetInputAsHandled();
+			}
+			else
+			{
+				GetViewport().SetInputAsHandled();
+			}
+			return;
+		}
+
+		// Cancel expansion confirm
+		if (_expansionConfirmPending)
+		{
+			if (@event.IsActionPressed("cancel_action") || @event.IsActionPressed("primary_action"))
+			{
+				_expansionConfirmPending = false;
+				QueueRedraw();
+				if (@event.IsActionPressed("cancel_action"))
+				{
+					GetViewport().SetInputAsHandled();
+					return;
+				}
+				// primary_action on non-preview area — fall through to normal handling
+			}
+		}
 
 		// Remove plant — rebindable (X / Delete by default)
 		if (@event.IsActionPressed("remove_plant"))
@@ -456,6 +643,36 @@ public partial class GardenGrid : Node2D
 			return gridPos;
 
 		return null;
+	}
+
+	private Vector2I? MouseToExpansionPreview()
+	{
+		int currentTier = ZoneManager.Instance.GetExpansionTier(ZoneType);
+		if (currentTier >= ExpansionConfig.MaxExpansionTier(ZoneType)) return null;
+
+		var nextTierData = ExpansionConfig.GetTierData(ZoneType, currentTier + 1);
+		var nextSize = new Vector2I(nextTierData.GridWidth, nextTierData.GridHeight);
+
+		int offsetX = (nextSize.X - GridSize.X) / 2;
+		int offsetY = (nextSize.Y - GridSize.Y) / 2;
+
+		var mousePos = GetGlobalMousePosition();
+		var localPos = ToLocal(mousePos);
+		var gridPos = new Vector2I(
+			Mathf.FloorToInt(localPos.X / TileSize),
+			Mathf.FloorToInt(localPos.Y / TileSize)
+		);
+
+		// Must be within the expanded bounds
+		if (gridPos.X < -offsetX || gridPos.X >= GridSize.X + offsetX) return null;
+		if (gridPos.Y < -offsetY || gridPos.Y >= GridSize.Y + offsetY) return null;
+
+		// Must NOT be within the current grid
+		bool isCurrentGrid = gridPos.X >= 0 && gridPos.X < GridSize.X
+			&& gridPos.Y >= 0 && gridPos.Y < GridSize.Y;
+		if (isCurrentGrid) return null;
+
+		return gridPos;
 	}
 
 	public Vector2 GridToWorld(Vector2I gridPos)

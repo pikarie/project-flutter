@@ -39,8 +39,9 @@ public partial class SpawnSystem : Node
 
 	private void TrySpawn()
 	{
-		// Population cap
-		if (_insectContainer.GetChildCount() >= MaxInsectsPerZone) return;
+		// Population cap — dynamic based on zone expansion tier
+		int insectCap = ZoneManager.Instance.GetInsectCap(GameManager.Instance.CurrentZone);
+		if (_insectContainer.GetChildCount() >= insectCap) return;
 
 		// Find blooming cells with available insect slots
 		var bloomingCells = _gardenGrid.GetCells()
