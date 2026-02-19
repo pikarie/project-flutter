@@ -134,8 +134,8 @@ public partial class GardenGrid : Node2D
 
 	public override void _Draw()
 	{
-		// Draw grass background
-		int margin = TileSize * 2;
+		// Draw grass background — large enough to fill screen at any zoom/resolution
+		int margin = 3072;
 		var bgRect = new Rect2(
 			-margin, -margin,
 			GridSize.X * TileSize + margin * 2,
@@ -282,8 +282,8 @@ public partial class GardenGrid : Node2D
 	{
 		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
 
-		// X key — remove plant at cursor (GDD v3.3 §4.12)
-		if (@event is InputEventKey { Pressed: true, Keycode: Key.X })
+		// Remove plant — rebindable (X / Delete by default)
+		if (@event.IsActionPressed("remove_plant"))
 		{
 			var removePos = MouseToGrid();
 			if (removePos is Vector2I pos)
@@ -294,58 +294,55 @@ public partial class GardenGrid : Node2D
 			return;
 		}
 
-		if (@event is InputEventMouseButton mouseBtn && mouseBtn.Pressed)
+		// Sprinkler placing mode
+		if (ShopUI.Instance != null && ShopUI.Instance.IsPlacingSprinkler)
 		{
-			// Sprinkler placing mode
-			if (ShopUI.Instance != null && ShopUI.Instance.IsPlacingSprinkler)
-			{
-				if (mouseBtn.ButtonIndex == MouseButton.Left)
-				{
-					var gridPos = MouseToGrid();
-					if (gridPos is not Vector2I sprinklerPos) return;
-					if (PlaceSprinkler(sprinklerPos, ShopUI.Instance.SelectedSprinklerTier))
-					{
-						ShopUI.Instance.ExitPlacingMode();
-						GD.Print($"Sprinkler placed at {sprinklerPos}");
-					}
-					else
-					{
-						GD.Print($"Cannot place sprinkler at {sprinklerPos}");
-					}
-					GetViewport().SetInputAsHandled();
-				}
-				else if (mouseBtn.ButtonIndex == MouseButton.Right)
-				{
-					// Cancel placing — refund nectar
-					int tier = ShopUI.Instance.SelectedSprinklerTier;
-					GameManager.Instance.AddNectar(ShopUI.SprinklerCosts[tier]);
-					ShopUI.Instance.ExitPlacingMode();
-					GD.Print("Sprinkler placement cancelled — nectar refunded");
-					GetViewport().SetInputAsHandled();
-				}
-				return;
-			}
-
-			// Right-click — deselect seed (GDD v3.3 §4.12)
-			if (mouseBtn.ButtonIndex == MouseButton.Right)
-			{
-				if (_selectedPlantId != null)
-				{
-					_selectedPlantId = null;
-					EventBus.Publish(new SeedSelectedEvent(null));
-					GD.Print("Seed deselected");
-					GetViewport().SetInputAsHandled();
-				}
-				return;
-			}
-
-			// Left-click — contextual action
-			if (mouseBtn.ButtonIndex == MouseButton.Left)
+			if (@event.IsActionPressed("primary_action"))
 			{
 				var gridPos = MouseToGrid();
-				if (gridPos is not Vector2I pos) return;
-				HandlePrimaryAction(pos);
+				if (gridPos is not Vector2I sprinklerPos) return;
+				if (PlaceSprinkler(sprinklerPos, ShopUI.Instance.SelectedSprinklerTier))
+				{
+					ShopUI.Instance.ExitPlacingMode();
+					GD.Print($"Sprinkler placed at {sprinklerPos}");
+				}
+				else
+				{
+					GD.Print($"Cannot place sprinkler at {sprinklerPos}");
+				}
+				GetViewport().SetInputAsHandled();
 			}
+			else if (@event.IsActionPressed("cancel_action"))
+			{
+				// Cancel placing — refund nectar
+				int tier = ShopUI.Instance.SelectedSprinklerTier;
+				GameManager.Instance.AddNectar(ShopUI.SprinklerCosts[tier]);
+				ShopUI.Instance.ExitPlacingMode();
+				GD.Print("Sprinkler placement cancelled — nectar refunded");
+				GetViewport().SetInputAsHandled();
+			}
+			return;
+		}
+
+		// Cancel / deselect seed — rebindable (Right-click by default)
+		if (@event.IsActionPressed("cancel_action"))
+		{
+			if (_selectedPlantId != null)
+			{
+				_selectedPlantId = null;
+				EventBus.Publish(new SeedSelectedEvent(null));
+				GD.Print("Seed deselected");
+				GetViewport().SetInputAsHandled();
+			}
+			return;
+		}
+
+		// Primary action — rebindable (Left-click by default)
+		if (@event.IsActionPressed("primary_action"))
+		{
+			var gridPos = MouseToGrid();
+			if (gridPos is not Vector2I pos) return;
+			HandlePrimaryAction(pos);
 		}
 	}
 

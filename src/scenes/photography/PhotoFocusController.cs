@@ -57,13 +57,15 @@ public partial class PhotoFocusController : Control
 	{
 		if (GameManager.Instance.CurrentState != GameManager.GameState.PhotoMode) return;
 
-		if (@event is InputEventMouseButton mouseButton && mouseButton.ButtonIndex == MouseButton.Left)
+		// Photo focus — rebindable (Left-click by default)
+		if (@event.IsActionPressed("primary_action"))
 		{
-			if (mouseButton.Pressed)
-				TryStartFocus();
-			else
-				CancelFocus();
-
+			TryStartFocus();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (@event.IsActionReleased("primary_action"))
+		{
+			CancelFocus();
 			GetViewport().SetInputAsHandled();
 		}
 	}

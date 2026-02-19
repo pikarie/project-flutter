@@ -53,34 +53,27 @@ public partial class SeedToolbar : Control
 	{
 		if (GameManager.Instance.CurrentState != GameManager.GameState.Playing) return;
 
-		if (@event is InputEventKey { Pressed: true } keyEvent)
+		// ESC deselect — not rebindable
+		if (@event is InputEventKey { Pressed: true, Keycode: Key.Escape } && _selectedPlantId != null)
 		{
-			int slotIndex = keyEvent.Keycode switch
-			{
-				Key.Key1 => 0,
-				Key.Key2 => 1,
-				Key.Key3 => 2,
-				Key.Key4 => 3,
-				Key.Key5 => 4,
-				Key.Key6 => 5,
-				Key.Key7 => 6,
-				Key.Key8 => 7,
-				Key.Key9 => 8,
-				_ => -1
-			};
+			_selectedPlantId = null;
+			UpdateButtonStates();
+			EventBus.Publish(new SeedSelectedEvent(null));
+			GetViewport().SetInputAsHandled();
+			return;
+		}
 
-			if (slotIndex >= 0 && slotIndex < _availablePlants.Count)
+		// Hotbar keys via InputMap
+		for (int i = 0; i < 9; i++)
+		{
+			if (@event.IsActionPressed($"hotbar_{i + 1}"))
 			{
-				SelectSeed(_availablePlants[slotIndex].Id);
-				GetViewport().SetInputAsHandled();
-			}
-
-			if (keyEvent.Keycode == Key.Escape && _selectedPlantId != null)
-			{
-				_selectedPlantId = null;
-				UpdateButtonStates();
-				EventBus.Publish(new SeedSelectedEvent(null));
-				GetViewport().SetInputAsHandled();
+				if (i < _availablePlants.Count)
+				{
+					SelectSeed(_availablePlants[i].Id);
+					GetViewport().SetInputAsHandled();
+				}
+				return;
 			}
 		}
 	}

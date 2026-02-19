@@ -84,80 +84,95 @@ public partial class HUD : Control
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
+		// ESC and debug keys — not rebindable, direct keycode check
 		if (@event is InputEventKey { Pressed: true } keyEvent)
 		{
 			switch (keyEvent.Keycode)
 			{
-				case Key.C:
-					TogglePhotoMode();
-					GetViewport().SetInputAsHandled();
-					break;
-				case Key.J:
-					ToggleJournal();
-					GetViewport().SetInputAsHandled();
-					break;
-				case Key.S:
-					ToggleShop();
-					GetViewport().SetInputAsHandled();
-					break;
-				case Key.L:
-					if (GameManager.Instance.HasLantern)
-					{
-						GameManager.Instance.ToggleLantern();
-						GetViewport().SetInputAsHandled();
-					}
-					break;
-				case Key.Space:
-					TimeManager.Instance.CycleSpeed();
-					GetViewport().SetInputAsHandled();
-					break;
-				case Key.Q:
-					ZoneManager.Instance.CycleZonePrevious();
-					GetViewport().SetInputAsHandled();
-					break;
-				case Key.E:
-					ZoneManager.Instance.CycleZoneNext();
-					GetViewport().SetInputAsHandled();
-					break;
+				case Key.Escape:
+					HandleEscape();
+					return;
 				case Key.F1:
 					ZoneManager.Instance.DebugUnlockAll();
 					GetViewport().SetInputAsHandled();
-					break;
+					return;
 				case Key.F2:
 					DebugSpawnBee();
 					GetViewport().SetInputAsHandled();
-					break;
+					return;
 				case Key.F3:
 					TimeManager.Instance.ToggleDebugSpeed(10.0f);
 					GetViewport().SetInputAsHandled();
-					break;
+					return;
 				case Key.F4:
 					TimeManager.Instance.ToggleDebugSpeed(50.0f);
 					GetViewport().SetInputAsHandled();
-					break;
+					return;
 				case Key.F5:
 					JournalManager.Instance.DebugFillJournal(53);
 					GetViewport().SetInputAsHandled();
-					break;
+					return;
 				case Key.F6:
 					GameManager.Instance.AddNectar(500);
 					GD.Print("DEBUG: +500 nectar");
 					GetViewport().SetInputAsHandled();
-					break;
-				case Key.Escape:
-					if (_shopUI.IsPlacingSprinkler)
-					{
-						_shopUI.ExitPlacingMode();
-						_placingLabel.Visible = false;
-						GetViewport().SetInputAsHandled();
-					}
-					else if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
-					{
-						GameManager.Instance.ChangeState(GameManager.GameState.Playing);
-						GetViewport().SetInputAsHandled();
-					}
-					break;
+					return;
 			}
+		}
+
+		// Rebindable actions via InputMap
+		if (@event.IsActionPressed("toggle_photo_mode"))
+		{
+			TogglePhotoMode();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (@event.IsActionPressed("toggle_journal"))
+		{
+			ToggleJournal();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (@event.IsActionPressed("toggle_shop"))
+		{
+			ToggleShop();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (@event.IsActionPressed("toggle_lantern"))
+		{
+			if (GameManager.Instance.HasLantern)
+			{
+				GameManager.Instance.ToggleLantern();
+				GetViewport().SetInputAsHandled();
+			}
+		}
+		else if (@event.IsActionPressed("cycle_speed"))
+		{
+			TimeManager.Instance.CycleSpeed();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (@event.IsActionPressed("zone_previous"))
+		{
+			ZoneManager.Instance.CycleZonePrevious();
+			GetViewport().SetInputAsHandled();
+		}
+		else if (@event.IsActionPressed("zone_next"))
+		{
+			ZoneManager.Instance.CycleZoneNext();
+			GetViewport().SetInputAsHandled();
+		}
+	}
+
+	private void HandleEscape()
+	{
+		if (_shopUI.IsPlacingSprinkler)
+		{
+			_shopUI.ExitPlacingMode();
+			_placingLabel.Visible = false;
+			GetViewport().SetInputAsHandled();
+		}
+		else if (GameManager.Instance.CurrentState != GameManager.GameState.Playing)
+		{
+			GameManager.Instance.ChangeState(GameManager.GameState.Playing);
+			GetViewport().SetInputAsHandled();
 		}
 	}
 

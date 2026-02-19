@@ -7,6 +7,7 @@ public partial class JournalUI : Control
 	private ScrollContainer _gridView;
 	private GridContainer _gridContainer;
 	private VBoxContainer _detailView;
+	private KeybindingUI _keybindingUI;
 	private Label _footerLabel;
 	private ColorRect _detailPortrait;
 	private Label _detailName;
@@ -95,6 +96,14 @@ public partial class JournalUI : Control
 		// Detail view
 		BuildDetailView(mainLayout);
 
+		// Keybinding settings view
+		_keybindingUI = new KeybindingUI
+		{
+			Visible = false,
+			SizeFlagsVertical = SizeFlags.ExpandFill,
+		};
+		mainLayout.AddChild(_keybindingUI);
+
 		// Footer
 		_footerLabel = new Label();
 		_footerLabel.AddThemeColorOverride("font_color", new Color(0.5f, 0.4f, 0.3f));
@@ -114,6 +123,10 @@ public partial class JournalUI : Control
 		title.AddThemeFontSizeOverride("font_size", 28);
 		title.AddThemeColorOverride("font_color", new Color(0.35f, 0.25f, 0.15f));
 		header.AddChild(title);
+
+		var settingsButton = new Button { Text = "Settings" };
+		settingsButton.Pressed += ShowSettings;
+		header.AddChild(settingsButton);
 
 		var closeButton = new Button { Text = "Close" };
 		closeButton.Pressed += () => GameManager.Instance.ChangeState(GameManager.GameState.Playing);
@@ -234,12 +247,22 @@ public partial class JournalUI : Control
 
 		_gridView.Visible = false;
 		_detailView.Visible = true;
+		_keybindingUI.Visible = false;
 	}
 
 	private void ShowGrid()
 	{
 		_gridView.Visible = true;
 		_detailView.Visible = false;
+		_keybindingUI.Visible = false;
+	}
+
+	private void ShowSettings()
+	{
+		_gridView.Visible = false;
+		_detailView.Visible = false;
+		_keybindingUI.Visible = true;
+		_keybindingUI.Refresh();
 	}
 
 	private static Color GetSpeciesColor(string speciesId)

@@ -46,35 +46,46 @@ public partial class GardenCamera : Camera2D
 		if (Input.IsActionPressed("camera_down")) dir.Y += 1;
 
 		if (dir != Vector2.Zero)
+		{
 			Position += dir.Normalized() * PanSpeed * (float)delta / Zoom.X;
+			ClampToZoneBounds();
+		}
 	}
 
 	public override void _UnhandledInput(InputEvent @event)
 	{
 		if (!IsInteractiveState) return;
 
-		if (@event is InputEventMouseButton mouseBtn)
+		// Camera drag — rebindable (Middle-click by default)
+		if (@event.IsActionPressed("camera_drag"))
 		{
-			if (mouseBtn.ButtonIndex is MouseButton.Middle)
-			{
-				_isDragging = mouseBtn.Pressed;
+			_isDragging = true;
+			if (@event is InputEventMouseButton mouseBtn)
 				_lastDragPosition = mouseBtn.GlobalPosition;
-				GetViewport().SetInputAsHandled();
-				return;
-			}
+			GetViewport().SetInputAsHandled();
+			return;
+		}
+		if (@event.IsActionReleased("camera_drag"))
+		{
+			_isDragging = false;
+			GetViewport().SetInputAsHandled();
+			return;
+		}
 
-			float zoomDelta = mouseBtn.ButtonIndex switch
-			{
-				MouseButton.WheelUp => ZoomSpeed,
-				MouseButton.WheelDown => -ZoomSpeed,
-				_ => 0
-			};
-
-			if (zoomDelta != 0)
-			{
-				float newZoom = Mathf.Clamp(Zoom.X + zoomDelta, MinZoom, MaxZoom);
-				Zoom = new Vector2(newZoom, newZoom);
-			}
+		// Zoom — rebindable (Scroll wheel by default)
+		if (@event.IsActionPressed("zoom_in"))
+		{
+			float newZoom = Mathf.Clamp(Zoom.X + ZoomSpeed, MinZoom, MaxZoom);
+			Zoom = new Vector2(newZoom, newZoom);
+			ClampToZoneBounds();
+			return;
+		}
+		if (@event.IsActionPressed("zoom_out"))
+		{
+			float newZoom = Mathf.Clamp(Zoom.X - ZoomSpeed, MinZoom, MaxZoom);
+			Zoom = new Vector2(newZoom, newZoom);
+			ClampToZoneBounds();
+			return;
 		}
 
 		if (@event is InputEventMouseMotion mouseMotion && _isDragging)
@@ -82,7 +93,30 @@ public partial class GardenCamera : Camera2D
 			Vector2 delta = mouseMotion.GlobalPosition - _lastDragPosition;
 			Position -= delta / Zoom;
 			_lastDragPosition = mouseMotion.GlobalPosition;
+			ClampToZoneBounds();
 			GetViewport().SetInputAsHandled();
 		}
+	}
+
+	private void ClampToZoneBounds()
+	{
+		var (_, width, height, _, _) = ZoneManager.ZoneConfig[ZoneManager.Instance.ActiveZone];
+		const int tileSize = 128;
+		float halfWidth = width * tileSize / 2f;
+		float halfHeight = height * tileSize / 2f;
+		const float padding = 64f;
+
+		// Account for viewport size so camera doesn't show beyond grid + padding
+		var viewportSize = GetViewportRect().Size;
+		float halfViewportWidth = viewportSize.X / (2f * Zoom.X);
+		float halfViewportHeight = viewportSize.Y / (2f * Zoom.Y);
+
+		float limitX = Mathf.Max(halfWidth + padding - halfViewportWidth, 0f);
+		float limitY = Mathf.Max(halfHeight + padding - halfViewportHeight, 0f);
+
+		Position = new Vector2(
+			Mathf.Clamp(Position.X, -limitX, limitX),
+			Mathf.Clamp(Position.Y, -limitY, limitY)
+		);
 	}
 }

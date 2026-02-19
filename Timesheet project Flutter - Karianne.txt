@@ -21,8 +21,60 @@ TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux 
 
 TODO research on "The Game Accessibility Guidelines"
 
-2026-02-17 1.0 + 21h45-
+2026-02-18 19h40-
 {
+	-TODO: Sprint 4 restant -> refactor Sprinkler -> Sprint 5
+	-Sprint 4 phase 6 - Key Rebinding System
+	{
+		2 fichiers créés :
+		-InputManager.cs — autoload singleton, 26 actions InputMap (clavier + souris), persistance user://settings.cfg, API de rebinding avec détection de conflits, reset par défaut
+		-KeybindingUI.cs — panel de rebinding dans les Settings du journal, mode écoute pour capturer touches/clics, groupes (Mouse, Gameplay, Navigation, Garden)
+		
+		8 fichiers modifiés :
+		-project.godot — InputManager en autoload (avant tous les autres), section [input] supprimée
+		-Events.cs — KeybindingsResetEvent
+		-HUD.cs — 7 actions migrées vers IsActionPressed(), ESC/F-keys restent en direct
+		-SeedToolbar.cs — hotbar 1-9 migrée vers InputMap
+		-GardenGrid.cs — X, left-click, right-click migrés
+		-GardenCamera.cs — middle-click drag, scroll zoom migrés
+		-PhotoFocusController.cs — left-click focus migrée
+		-JournalUI.cs — bouton Settings + onglet KeybindingUI
+		
+		Bonus automatiques avec la migration :
+
+		Tab fonctionne maintenant comme alt pour Journal (J)
+		Delete fonctionne comme alt pour retrait de plante (X)
+	}
+	-Question:
+	{
+		pour la page de journal des settings the rebind. Est-ce que C'est mieux d'ajouter un bouton save et cancel ou si a chaque nouveau rebind, c'est "live" Il y a un bouton pour retourner au default value mais je me demande si le ui actuel est intuitif pour le joueur.
+
+		Aussi, est-ce qu'on devrait faire "2 colonnes"? En ce moment, il faut scroller beaucoup pour voir toutes les options (26 actions remappable)
+
+		Est-ce qu'il y a une facon pour que le listener d'input fonctionne avec la souris? Je ne suis pas capable de mettre le left click, right click, middle mouse click, wheel down. Étonnament, le wheel up fonctionne, sauf que la scroll bar du menu bouge en même temps que je suis en train d'enregistrer une touche.
+	}
+	-Réponse:
+	{
+		Trois bonnes questions, prenons-les une par une.
+		Save/Cancel vs Live — le live est mieux pour un jeu cozy. Presque tous les jeux modernes font du live rebinding : tu cliques le slot, tu appuies sur ta nouvelle touche, c'est immédiat. Un bouton Save/Cancel ajoute de la friction et crée de la confusion ("attends, est-ce que j'ai sauvegardé?"). Le bouton "Reset to Defaults" que tu as déjà couvre le seul cas où le joueur veut annuler en masse. Si quelqu'un remap une seule touche par erreur, il clique dessus et remap à nouveau — c'est plus rapide que Cancel. Par contre, sauvegarde automatique dans le ConfigFile à chaque changement pour que ça persiste entre les sessions.
+		Deux colonnes — oui, absolument. 26 actions dans une seule colonne avec scroll, c'est beaucoup. Deux colonnes côte à côte (Mouse + Gameplay à gauche, Navigation + UI à droite par exemple) réduisent le scroll de moitié et donnent une meilleure vue d'ensemble. Regarde comment Celeste ou Hollow Knight organisent ça — souvent par catégories visuellement séparées sur la même page sans scroll.
+		Le problème technique avec la souris — c'est le problème classique du rebinding souris dans Godot. Le listener qui attend l'input du joueur reçoit le clic, mais le système UI de Godot le traite aussi comme un clic UI (le bouton se "dépresse", la scrollbar bouge, etc.). Trois solutions :
+		La plus propre : quand tu entres en mode "listening for input" sur un slot, capture le prochain _Input() avant que l'UI le consomme avec GetViewport().SetInputAsHandled(). Concrètement, pendant le listening, tu overrides _Input() (pas _UnhandledInput()) avec une priorité haute, et dès que tu reçois un InputEventMouseButton tu l'enregistres et appelles SetInputAsHandled() pour empêcher la propagation vers les boutons UI et la scrollbar.
+		Pour le scroll wheel spécifiquement, tu dois aussi désactiver temporairement le scroll de la ScrollContainer pendant le listening (set scroll_vertical à la valeur actuelle et ignore les scroll events, ou temporairement retirer le ScrollContainer du focus).
+		Le pattern serait :
+
+		Joueur clique sur un slot → le slot passe en mode "Press any key..."
+		Tu actives un overlay invisible plein écran (un Control avec MouseFilter.Stop) qui capture tous les inputs souris avant qu'ils atteignent l'UI en dessous
+		Dans le _GuiInput de cet overlay, tu enregistres le bouton/touche et fermes l'overlay
+		La scrollbar et les autres boutons ne voient jamais l'input
+
+		C'est l'approche que la plupart des jeux Godot utilisent pour le rebinding souris — un "input blocker" temporaire.
+	}
+	-
+}
+2026-02-17 1.75
+{
+	-1.0 + 0.75
 	Idea: ajouter une étape entre arroser une case à la fois et débarer les sprinkler? Arroser manuellement plus de case? Ou si c'est une étapes inutile?
 		-Réponse rapide, non, laisse comme c'est (1 manuelle, 3 sprinkler)
 		-Réponse:
@@ -122,6 +174,41 @@ TODO research on "The Game Accessibility Guidelines"
 			}
 			-Je pense donc que pour mon jeu, 25 insectes est trop petit. Peut-être que close plus proche du 50?
 		-Réponse rapide: on a maintenant 72 insectes.
+	-Création de GDD 3.4
+		-Résumé des modifs:
+		{
+			Voici le GDD v3.4. Résumé des changements :
+			§4.4 — 8 movement patterns avec tableau complet incluant Hop (crickets, sauterelles), difficulté photo par pattern, et note sur la paramétérisation (8 patterns × paramètres tunables = 30-40+ comportements pour 72 espèces).
+			§4.4 — Popup découverte cliquable : clic sur la bannière "Nouvelle espèce" ouvre directement la page journal. Fermer normalement sinon.
+			§4.8 — Sprinkler UX complète :
+
+			Achat → inventaire hotbar avec compteur ×N (plus de shop aller-retour)
+			Ghost preview du sprinkler + overlay bleuté du rayon pendant le placement
+			Overlay chevauchement en bleu foncé pour les cases déjà couvertes
+			Ghost rouge sur case invalide (même pattern que seed cursor)
+			Overlay disparaît après placement (pas de bruit visuel permanent)
+			Retrait X/Delete → retour inventaire (pas de destruction)
+			Case du sprinkler elle-même arrosée
+			Cases corrigées : 9/25/49 (incluant la case centrale)
+
+			Sprint 4 — checkboxes mises à jour selon ta progression (nectar, shop, hotbar, contrôles, sprinklers, lanterne, leveling tous cochés).
+			Sprint 5 — 3 → 4 nouveaux patterns (ajout Hop).
+		}
+	-#TODO: voir si je fais un sprint intermédiaire de mise à niveau du GDD 3.3 à GDD 3.4
+		-TODO: Sprint 4 restant -> refactor Sprinkler -> Sprint 5
+		{
+			Étape							Pourquoi dans cet ordre
+			-------------------------------------------------------
+			Phase 6 — Key rebinding			Indépendant, ne touche pas aux sprinklers
+			Phase 7 — Zone expansions		Les sprinklers actuels fonctionnent. Les zones agrandies vont justement créer le besoin de multi-sprinklers
+			Phase 8 — Balancing				Ajuster les valeurs avec tout en place
+			Phase 4.6 — Sprinkler UX v3.4	Ghost preview, inventaire hotbar, overlap detection — tout ça a plus de sens à tester avec les zones agrandies
+			Sprint 5						Hop pattern, 4 nouveaux patterns, pop-up cliquable, etc.
+			
+			Raison principale : le refactor Sprinkler UX (multi-achat, overlap detection) est conçu pour le gameplay post-expansion. Faire les expansions d'abord donne un vrai terrain de test. Refactorer maintenant → risque de re-refactorer quand les grilles dynamiques arrivent.
+
+			Les sprinklers actuels marchent bien pour continuer le développement.
+		}
 }
 2026-02-16 0.75
 {
