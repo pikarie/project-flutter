@@ -242,57 +242,58 @@ public static class InsectRegistry
 		CreateInsect("colorado_potato_beetle", "Colorado Potato Beetle", ZoneType.DeepWood, "common",
 			MovementPattern.Crawl, "day", 0.7f, 80f, 220f, 12f,
 			"Bold yellow-and-black striped wing cases make this a recognizable forest floor dweller.",
-			"Crawls through deep wood vegetation."),
+			"Crawls through deep wood vegetation.",
+			requiredDecompositionStage: 0),
 
 		CreateInsect("weevil", "Weevil", ZoneType.DeepWood, "common",
 			MovementPattern.Crawl, "day", 0.7f, 80f, 220f, 10f,
 			"A tiny beetle with a comically long snout used for boring into wood and fungi.",
 			"Found on mushroom clusters in the deep wood.",
-			requiredPlants: new[] { "mushroom_cluster" }),
+			requiredDecompositionStage: 0),
 
 		CreateInsect("carpenter_bee", "Carpenter Bee", ZoneType.DeepWood, "uncommon",
 			MovementPattern.Erratic, "day", 0.5f, 60f, 180f, 35f,
 			"A large, robust bee that excavates nesting tunnels in dead wood with powerful mandibles.",
 			"Nests near dead logs.",
-			requiredPlants: new[] { "dead_log" }),
+			requiredDecompositionStage: 0),
 
 		// ── Deep Wood Zone — Night (6 species) ──────────────────────
 
 		CreateInsect("polyphemus_moth", "Polyphemus Moth", ZoneType.DeepWood, "rare",
 			MovementPattern.Hover, "night", 0.2f, 30f, 90f, 35f,
 			"Giant eyespots on its hindwings stare like the cyclops of myth, startling predators.",
-			"Appears near dead logs at night.",
-			requiredPlants: new[] { "dead_log" }),
+			"Appears near rotting logs at night.",
+			requiredDecompositionStage: 2),
 
 		CreateInsect("cecropia_moth", "Cecropia Moth", ZoneType.DeepWood, "very_rare",
 			MovementPattern.Hover, "night", 0.08f, 20f, 60f, 40f,
 			"North America's largest moth, with wings painted in russet, cream, and red crescents.",
-			"Extremely rare — requires dead logs in deep wood.",
-			requiredPlants: new[] { "dead_log" }),
+			"Extremely rare — requires rotting logs in deep wood.",
+			requiredDecompositionStage: 2),
 
 		CreateInsect("deaths_head_hawkmoth", "Death's-Head Hawkmoth", ZoneType.DeepWood, "very_rare",
 			MovementPattern.Erratic, "night", 0.08f, 15f, 50f, 50f,
 			"A skull-shaped marking on its thorax and the ability to squeak make this moth legendary.",
 			"Haunts the deep wood on dark nights.",
-			requiredPlants: new[] { "dead_log" }),
+			requiredDecompositionStage: 2),
 
 		CreateInsect("rhinoceros_beetle", "Rhinoceros Beetle", ZoneType.DeepWood, "rare",
 			MovementPattern.Crawl, "night", 0.2f, 40f, 120f, 8f,
 			"One of the strongest animals relative to its size, lifting 850 times its own weight.",
-			"Found near compost piles in the deep wood.",
-			requiredPlants: new[] { "compost_pile" }),
+			"Found near rotting logs in the deep wood.",
+			requiredDecompositionStage: 2),
 
 		CreateInsect("firefly", "Firefly", ZoneType.DeepWood, "uncommon",
 			MovementPattern.Erratic, "night", 0.5f, 45f, 130f, 35f,
 			"Creates a magical display of bioluminescent flashes to attract a mate in the darkness.",
-			"Glows near moss patches in the deep wood.",
-			requiredPlants: new[] { "moss_patch" }),
+			"Glows near moldy logs in the deep wood.",
+			requiredDecompositionStage: 1),
 
 		CreateInsect("leaf_insect", "Leaf Insect", ZoneType.DeepWood, "legendary",
 			MovementPattern.Crawl, "night", 0.03f, 10f, 40f, 4f,
 			"The ultimate camouflage artist — its body perfectly mimics a living leaf, veins and all.",
-			"The rarest deep wood dweller. Search moss patches on dark nights.",
-			requiredPlants: new[] { "moss_patch" }),
+			"The rarest deep wood dweller. Search near rotten logs on dark nights.",
+			requiredDecompositionStage: 2),
 
 		// ── Rock Garden Zone — Day (6 species) ──────────────────────
 
@@ -305,18 +306,20 @@ public static class InsectRegistry
 		CreateInsect("glasswing", "Glasswing", ZoneType.RockGarden, "very_rare",
 			MovementPattern.Hover, "day", 0.08f, 15f, 50f, 45f,
 			"Transparent wings make this butterfly nearly invisible in flight — a living ghost.",
-			"Extremely rare. Appears near sun-warmed rocks."),
+			"Extremely rare. Appears near sun-warmed rocks.",
+			requiresHeatedStone: true),
 
 		CreateInsect("sacred_scarab", "Sacred Scarab", ZoneType.RockGarden, "rare",
 			MovementPattern.Crawl, "day", 0.2f, 40f, 120f, 10f,
 			"Revered in ancient Egypt, this beetle rolls dung balls with cosmic determination.",
-			"Basks on sun-warmed rocks during the day."),
+			"Basks on sun-warmed rocks during the day.",
+			requiresHeatedStone: true),
 
 		CreateInsect("teddy_bear_bee", "Teddy Bear Bee", ZoneType.RockGarden, "rare",
 			MovementPattern.Hover, "day", 0.2f, 40f, 120f, 32f,
 			"Covered in dense golden-brown fur, this plump bee looks like a tiny flying teddy bear.",
-			"Visits thyme and edelweiss in alpine areas.",
-			requiredPlants: new[] { "thyme" }),
+			"Visits thyme near sun-warmed rocks.",
+			requiredPlants: new[] { "thyme" }, requiresHeatedStone: true),
 
 		CreateInsect("leafcutter_bee", "Leafcutter Bee", ZoneType.RockGarden, "uncommon",
 			MovementPattern.Hover, "day", 0.5f, 60f, 180f, 30f,
@@ -446,20 +449,20 @@ public static class InsectRegistry
 		CreateInsect("atlas_moth", "Atlas Moth", ZoneType.Tropical, "very_rare",
 			MovementPattern.Hover, "night", 0.08f, 20f, 60f, 45f,
 			"One of the largest moths in the world — its wingtips resemble snake heads to deter predators.",
-			"Appears near lantana on tropical nights.",
-			requiredPlants: new[] { "lantana" }),
+			"Appears near lantana under UV light on tropical nights.",
+			requiredPlants: new[] { "lantana" }, requiresUVLamp: true),
 
 		CreateInsect("comet_moth", "Comet Moth", ZoneType.Tropical, "legendary",
 			MovementPattern.Flutter, "night", 0.03f, 10f, 40f, 38f,
 			"A spectacular yellow moth with 20cm tail streamers that trail behind it like a comet.",
-			"Visits orchids on rare tropical nights.",
-			requiredPlants: new[] { "orchid" }),
+			"Visits orchids under UV light on rare tropical nights.",
+			requiredPlants: new[] { "orchid" }, requiresUVLamp: true),
 
 		CreateInsect("hercules_beetle", "Hercules Beetle", ZoneType.Tropical, "legendary",
 			MovementPattern.Crawl, "night", 0.03f, 10f, 40f, 6f,
 			"The largest beetle on Earth, with a massive horn that can be longer than its body.",
-			"Emerges in the greenhouse on dark nights.",
-			requiredPlants: new[] { "bougainvillea" }),
+			"Emerges under UV light in the greenhouse on dark nights.",
+			requiredPlants: new[] { "bougainvillea" }, requiresUVLamp: true),
 
 		// ── Tropical Zone — Day (1 more) ────────────────────────────
 
@@ -475,7 +478,9 @@ public static class InsectRegistry
 		MovementPattern pattern, string timeOfDay, float spawnWeight,
 		float visitMin, float visitMax, float speed,
 		string journalText, string hintText,
-		string[] requiredPlants = null, int requiredWaterTiles = 0)
+		string[] requiredPlants = null, int requiredWaterTiles = 0,
+		int requiredDecompositionStage = -1, bool requiresHeatedStone = false,
+		bool requiresUVLamp = false)
 	{
 		return new InsectData
 		{
@@ -486,6 +491,9 @@ public static class InsectRegistry
 			TimeOfDay = timeOfDay,
 			RequiredPlants = requiredPlants,
 			RequiredWaterTiles = requiredWaterTiles,
+			RequiredDecompositionStage = requiredDecompositionStage,
+			RequiresHeatedStone = requiresHeatedStone,
+			RequiresUVLamp = requiresUVLamp,
 			SpawnWeight = spawnWeight,
 			VisitDurationMin = visitMin,
 			VisitDurationMax = visitMax,

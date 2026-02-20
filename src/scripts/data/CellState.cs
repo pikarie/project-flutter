@@ -16,6 +16,18 @@ public class CellState
 	public bool HasSprinkler { get; set; }
 	public int SprinklerTier { get; set; } // 1=3×3, 2=5×5, 3=7×7
 
+	// Log / decomposition (Deep Wood zone)
+	public bool HasLog { get; set; }
+	public int DecompositionStage { get; set; } // 0=fresh, 1=moldy, 2=rotten
+	public float DecompositionTimer { get; set; }
+
+	// Heated stone (Rock Garden zone)
+	public bool HasHeatedStone { get; set; }
+	public float StoneHeat { get; set; } // 0.0–1.0, rises in day, falls at night
+
+	// UV Lamp (Tropical zone)
+	public bool HasUVLamp { get; set; }
+
 	// Insect slot tracking
 	public int MaxInsectSlots { get; set; } = 2;
 	private readonly List<Node2D> _occupyingInsects = new();

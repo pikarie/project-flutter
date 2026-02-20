@@ -15,12 +15,258 @@ Idea: Dans le journal, avoir différents bullet point ex:
 
 Idea: pour la mini jeu de caméra, avoir plusieurs click à faire? ou si c'est bizarre? a essayer peut-être.
 
+Idea: pouvoir nivuler le terrain en 0-4 niveaux? FF Tactic
+
 TODO: pas sur de la vue de dessus. Potentiellement essayer une vue de profile comme "Plantera", "Kingdom: New Lands" ou "Milki Delivery"
 	-♥ Parallax effect for the background in "Milki Delivery" https://www.reddit.com/r/IndieDev/comments/1qqexhj/this_is_what_our_game_looks_like_behind_the_scenes/
 TODO: changer le flash de la photo pour quelque chose d'autre? Ça fait mal aux yeux, puis certaines personnes sont photo sensible je crois.
 
 TODO research on "The Game Accessibility Guidelines"
 
+TODO: Adam: focuser sur la core game loop avant de s'éparpiller dans des détails ou des mécaniques peut-être inutile.
+
+2026-02-19 1.5
+{
+	-#TODO Sprint 4 — restant (mécaniques de zone):
+	-Résumé des mécaniques de zone:
+	{
+		============================================================
+		MÉCANIQUES DE ZONE — COMMENT ÇA FONCTIONNE
+		============================================================
+
+
+		------------------------------------------------------------
+		POND — TUILES D’EAU
+		------------------------------------------------------------
+
+		Placement :
+		  - Configurées via WaterTileData (paires x,y) dans le .tscn
+		  - Pas plantables par le joueur
+
+		Visuel :
+		  - Lignes horizontales animées avec mouvement sine-wave
+		  - Offset Y varie selon position X + temps
+		  - Petits arcs "ripple" oscillants par-dessus
+
+		Redraw :
+		  - QueueRedraw() chaque frame tant qu’il y a des tuiles d’eau
+
+		Spawn :
+		  - Insectes aquatiques (RequiredWaterTiles > 0 sans RequiredPlants)
+		  - Spawn directement sur les tuiles d’eau
+		  - SpawnSystem collecte waterCells séparément de bloomingCells
+
+		Slots :
+		  - Les tuiles d’eau ont des slots insectes (comme les plantes)
+		  - Plusieurs insectes peuvent s’y poser
+
+
+		------------------------------------------------------------
+		DEEP WOOD — BÛCHES ET DÉCOMPOSITION
+		------------------------------------------------------------
+
+		Placement :
+		  - Bûches pré-placées via LogTileData (paires x,y)
+		  - Pas plantables
+
+		Stades :
+		  0 = Frais
+		  1 = Moisi
+		  2 = Pourri
+		  - Chaque stade dure 180 secondes (affecté par TimeManager.SpeedMultiplier)
+
+		Visuel :
+		  - Frais  : brun clair
+		  - Moisi  : brun-vert avec accents mousse
+		  - Pourri : brun-noir
+
+		Spawn :
+		  - RequiredDecompositionStage minimum (-1 = pas requis)
+		  - SpawnSystem vérifie qu’au moins une bûche est au stade requis
+		  - Les insectes spawnent SUR les bûches (pas sur les plantes)
+
+		Progression :
+		  - Common         → stade 0+
+		  - Firefly        → stade 1+
+		  - Rare/Very Rare → stade 2
+		  - Le joueur doit attendre la décomposition pour voir les espèces rares
+
+
+		------------------------------------------------------------
+		ROCK GARDEN — PIERRES CHAUFFANTES
+		------------------------------------------------------------
+
+		Placement :
+		  - Pré-placées via StoneTileData (paires x,y)
+
+		Chaleur dynamique :
+		  - StoneHeat (0.0–1.0)
+		  - Monte le jour
+		  - Descend la nuit
+		  - Lié à TimeManager.IsDaytime() et SpeedMultiplier
+
+		Visuel :
+		  - Pierres grises → orange
+		  - Lerp de couleur selon StoneHeat
+		  - Plus chaud = plus orange
+
+		Spawn :
+		  - RequiresHeatedStone = true
+		  - Au moins une pierre avec StoneHeat >= 0.5
+		  - Spawn SUR les pierres chaudes
+		  - Insectes nocturnes (Field Cricket, Cone-Headed Grasshopper)
+			n’ont PAS besoin de pierres
+
+		Cycle :
+		  - Matin      : chauffe
+		  - Après-midi : chaud
+		  - Nuit       : refroidit
+		  - Rythme naturel pour insectes héliophiles
+
+
+		------------------------------------------------------------
+		TROPICAL — BRUME + LAMPE UV
+		------------------------------------------------------------
+
+		Brume :
+		  - Overlay semi-transparent dessiné dans _Draw()
+		  - Alpha oscillant (sine-wave)
+		  - Dérive verticale lente
+		  - Effet purement visuel
+
+		Lampe UV :
+		  - Placée via UVLampTileData (paires x,y)
+		  - Rendu : cercle violet / glow
+
+		Spawn :
+		  - Atlas Moth
+		  - Comet Moth
+		  - Hercules Beetle
+		  - RequiresUVLamp = true
+		  - Vérifie au moins 1 lampe UV dans la zone
+		  - Nécessite AUSSI :
+			  • la nuit
+			  • plantes spécifiques (lantana, orchid, bougainvillea)
+
+		Accès :
+		  - Zone cachée tant que < 54 espèces au journal
+
+
+		============================================================
+		FLUX COMMUN DU SPAWNSYSTEM
+		============================================================
+
+		Toutes les 5 secondes (±1s aléatoire) → TrySpawn()
+
+		1. Vérifie le cap d’insectes (basé sur l’expansion)
+		2. 40% chance de tick silencieux (anticipation)
+		3. Collecte :
+			 - bloomingCells
+			 - waterCells
+			 - logCells
+			 - stoneCells
+		4. Filtre espèces éligibles :
+			 - Temps du jour
+			 - Zone
+			 - Plantes
+			 - Eau
+			 - Décomposition
+			 - Pierre chaude
+			 - Lampe UV
+		5. Sélection pondérée aléatoire
+		6. Choix cible de spawn (priorité) : pierre chaude → bûche → eau → plante en floraison
+	}
+	-TODO: aggrandir le bouton de "Tropical Greenhouse". la fin du mot est coupé.
+	-Commit:
+	{
+		feat(sprint4-p8): add zone-specific mechanics and economy balancing
+
+		- Pond: water tile sine-wave animation, aquatic insect spawn on water
+		- Deep Wood: log tiles with 3 decomposition stages (fresh/moldy/rotten)
+		- Rock Garden: heated stones with dynamic day/night temperature
+		- Tropical: mist overlay, UV lamp, nocturnal moth spawn conditions
+		- SpawnSystem: modular filters (water, decomposition, heat, UV lamp)
+		- Economy: remove obsolete Deep Wood plants, add bracket fungus + woodland fern
+		- GDD: correct ROI table, update Deep Wood description, check off Sprint 4 items
+		- ZoneSelector: widen Tropical Greenhouse tab to prevent text clipping
+	}
+	-Questions:
+	{
+		1. Est-ce qu'on voudrait quand même faire un pop-up du nom de s'insecte photgraphié même si ce n'est pas la première fois qu'on le photographie? En ce moment, si on re-photographie, on a juste l'animation du nombre d'étoile au dessus de l'insecte.
+
+		2. Est-ce qu'on voudrait planter les seed comme un pinceau, sur le mouse press au lieu de sur un mouse clic? Ça permettrait de planter plus vite. Même chose pour la collecte, permettre le click and drag au lieu de devoir cliquer une fleur à la fois.
+
+		3. Pour la mécanique dans Deep Wood, les buches sont déjà place sur le terrain, mais si ells se rendent à un niveau de decomposition plus élevés, devrais-ton faire que le bois se désagrège et faire que du nouveau bois apparaisse? Sinon, je ne sais pas comment faire pour avoir de nouveau des insect sur du bois niveau 1 ou 2. Est-ce que c'est mieux si le joueur achete du bois et le place où ils veut? Oui, il peut y avoir des spawn déja place, mais possiblement avec quelques level 1 et un ou 2 level deux serait déja plus diversifier? 
+
+		5. Je me pose des questions sur laisser plus d'objets que le joueur peux placer lui mêmes versus lui en donner par défaut. Les buches, les pierres, les lampes uv.
+
+		6. Comment visuellement dire au joueur quil a acheetr la lanterne dans al shop? Est-ce que c'est mieux que la lanterne devienne un objet avec un rayon de lumière prédéfini un peu comme le sprinkler? Il doit en acheter et les placer pour prendre des photos de nuits 23 étoiles?
+
+		7.Pour l'expansion des zones, penses-tu que c'est mieux de laisser le choix au joueur d'étendre comme il le souhaite via un menu ou autre chaque zone? S'il souhaite étendu en cercle, il peux choisir cette option. S'il souhaite étendre à gauche et droite, c'est une autre option?
+
+		8. A quoi sert la brume dans la tropical greenhouse?
+		
+		9.Pour le deep wood, est-ce qu'on commence le jeu par plusieurs buche level 1 ou si en en mets de d'autre niveau aussi? A quel rythme doit ton spawner de nouvelle buche? Quelle serais la meilleur facon visuel de voir les buche apparaitre?
+
+		10.pour le rock garden, est-ce que d'avoir de plus grandes roches, peint à la main (plusieurs cases) serait une bonne idée comme les roches restent fixes de toute façons?
+
+		11. Tropical Garden, est-ce que ça serait une bonne idée d'avoir une "valve" sur le terrain que l'on peu ouvrir pour faire de la brume? Ou si on laisse 100% ouvert et automatiquement générer par le jeu? Est-ce que tous les insectes du tropical garden ont besoin de mist?
+	}
+		-Réponses:
+		{
+			1. Popup du nom à chaque photo?
+			Non, pas à chaque fois. Après la première découverte, le joueur sait déjà quel insecte c'est. Un popup répétitif deviendrait du bruit — surtout quand tu rephotographies le même Honeybee pour la 10e fois pour améliorer tes étoiles. L'animation étoiles au-dessus de l'insecte est suffisante comme feedback. Par contre, si le joueur améliore son record d'étoiles (passe de 1★ à 2★), un petit toast discret "★★ Honeybee — Nouveau record!" serait satisfaisant sans être intrusif. Pas un popup modal, juste un texte flottant qui fade out.
+			
+			2. Paint-mode pour planter et récolter?
+			Oui, c'est une excellente idée. Click-and-drag pour planter en "peinture" est exactement ce que les joueurs attendent quand ils ont 100+ tiles à remplir après une expansion. Cliquer case par case sur une zone 13×13, c'est 169 clics — insupportable. Même chose pour la récolte : drag sur plusieurs fleurs matures pour les récolter en séquence rapide. Le feedback serait un petit "pop" par case plantée/récoltée pendant le drag, avec les particules et le texte nectar qui s'accumulent.
+			Par contre, garde le clic simple aussi — pour placer une seule plante précisément, le joueur ne veut pas déclencher un drag accidentel. Un petit seuil de distance (3-5 pixels de mouvement) avant de passer en mode pinceau résoudrait ça.
+			
+			3. Deep Wood — bûches qui se régénèrent?
+			Le problème que tu identifies est réel : si les bûches se décomposent en stade 3 et restent là, il n'y a plus de stade 1-2 pour attirer les insectes correspondants. Trois options :
+			La meilleure : cycle naturel. La bûche passe stade 1 → 2 → 3 → disparaît → une nouvelle bûche stade 1 respawn après un délai. C'est écologiquement réaliste (le bois pourrit et retourne à la terre, de nouveaux arbres tombent) et ça crée un cycle vivant dans la zone. Le joueur n'a rien à gérer — c'est la nature.
+			L'alternative : le joueur achète et place les bûches comme les sprinklers. Plus de contrôle stratégique ("je veux 3 bûches stade 1 pour attirer des Stag Beetles") mais ça transforme les bûches en infrastructure, ce qui est moins organique pour Deep Wood.
+			Mon vote : cycle naturel avec quelques bûches pré-placées. Les bûches initiales donnent une première vague d'insectes immédiatement. Le cycle de décomposition/respawn maintient la diversité automatiquement. Le joueur peut acheter des bûches supplémentaires s'il veut densifier, mais ce n'est pas obligatoire.
+			
+			5. Objets joueur-placés vs pré-placés?
+			Ça dépend de l'objet et de ce qu'il apporte au gameplay :
+			Les bûches et pierres chauffantes fonctionnent mieux comme éléments naturels pré-placés qui font partie de l'identité de la zone. Deep Wood a des bûches parce que c'est une forêt. Rock Garden a des pierres parce que c'est un jardin de roches. Le joueur ne devrait pas devoir "construire" le décor naturel — c'est la zone qui le fournit. Acheter des bûches/pierres supplémentaires pour densifier = optionnel et stratégique.
+			Les sprinklers, lanternes, lampes UV sont des outils du joueur — des investissements actifs. Le joueur décide où les mettre pour optimiser son jardin. C'est du contrôle, pas du décor.
+			La distinction : si ça existe naturellement dans l'écosystème → pré-placé (avec option d'en acheter plus). Si c'est un outil/infrastructure → joueur-placé uniquement.
+			
+			6. Lanterne — refonte en objet placable avec rayon?
+			Oui, c'est une bien meilleure idée que le toggle global actuel. Une lanterne avec un rayon de lumière (comme un sprinkler de lumière) crée des décisions spatiales intéressantes : "où est-ce que je place ma lanterne pour couvrir mes plantes nocturnes?" Le joueur achète 1-2 lanternes, les place, et seuls les insectes dans le rayon sont photographiables à 3★ la nuit.
+			Ça rend aussi la mécanique firefly encore plus intéressante : le firefly atteint 3★ seulement hors du rayon de la lanterne (lanterne OFF = plus nécessaire, juste hors rayon). Le joueur doit planter des Evening Primrose volontairement loin de sa lanterne pour attirer les fireflies dans le noir.
+			Le rayon pourrait être similaire au Sprinkler I (3×3 ou 5×5). Plus petit que les sprinklers parce que la lumière est plus thématiquement "localisée". Le joueur en achète plusieurs pour couvrir plus de terrain.
+			
+			7. Choix d'expansion par le joueur?
+			Non, je ne recommande pas ça. Ça semble libérateur en théorie, mais en pratique ça crée de la paralysie de choix et beaucoup de complexité UI/code pour un gain minimal. Le joueur ne pense pas "je veux étendre en cercle" ou "je veux étendre à droite" — il pense "je veux plus de place."
+			Les expansions nommées fixes (Wild Meadow, Golden Fields) avec des formes pré-définies sont meilleures pour trois raisons. D'abord, chaque expansion a une identité — "j'ai débloqué le Wild Meadow!" est plus mémorable que "j'ai ajouté 48 tiles à droite." Ensuite, ça simplifie massivement le code — pas de système de placement libre, pas de formes arbitraires à gérer. Enfin, ça te permet de designer la progression — tu contrôles exactement combien de tiles à quel coût, quel shape donne la meilleure expérience.
+			Garde les formes fixes par zone. Teste-les en jeu. Ajuste les shapes si nécessaire. Le joueur ne manquera pas un choix qu'il n'a jamais eu.
+			
+			8. Brume dans Tropical?
+			La brume (mist/humidity) serait un marqueur visuel et mécanique pour la serre tropicale. Visuellement, des particules de brume semi-transparentes qui dérivent lentement donnent immédiatement l'atmosphère "serre chaude et humide" — c'est ce qui distingue visuellement Tropical de toutes les autres zones. C'est l'équivalent de l'eau dans Pond ou des bûches dans Deep Wood.
+			Mécaniquement, la brume pourrait être la condition de spawn pour certains insectes tropicaux (comme WaterRequired pour les libellules ou DecomposingWood pour les scarabées). Les insectes tropicaux nécessitent l'humidité de la serre pour apparaître — c'est pour ça qu'ils n'existent que dans Tropical. La brume serait "gratuite" (toujours active dans la serre) plutôt qu'un objet achetable — c'est l'environnement lui-même, pas un outil.
+			La lampe UV serait le vrai outil achetable/plaçable de Tropical — comme la lanterne mais pour attirer les papillons de nuit tropicaux spécifiquement.	
+			
+			9. Deep Wood — Bûches initiales et respawn
+			Commence avec un mix : 3-4 bûches stade 1, 1-2 bûches stade 2. Pas de stade 3 au début — le joueur doit voir la progression se faire devant lui. Découvrir qu'une bûche a changé d'apparence et attire de nouveaux insectes, c'est un moment "oh!" qu'il faut préserver.
+			Pour le rythme de décomposition : chaque stade dure 2-3 jours de jeu (30-45 minutes réelles). Donc une bûche fraîche atteint le stade 3 en ~6-9 jours, puis disparaît 1-2 jours plus tard. Une nouvelle bûche stade 1 apparaît 1 jour après la disparition, à un emplacement aléatoire parmi des spots pré-définis (pas n'importe où — tu veux des positions qui font sens visuellement, comme le bord de la zone ou près d'autres bûches).
+			Visuellement pour l'apparition : pas de pop instantané. La meilleure approche serait un petit monticule de terre/mousse qui apparaît le jour avant (hint visuel : "quelque chose pousse ici"), puis le lendemain la bûche est là en stade 1. Si c'est trop de travail pour un premier pass, un simple fade-in sur ~2 secondes quand le joueur entre dans la zone fonctionne. Le joueur ne verra jamais une bûche apparaître sous ses yeux — elles apparaissent "hors-caméra" quand il est dans une autre zone, comme dans Animal Crossing où les fossiles et mauvaises herbes apparaissent pendant la nuit.
+			Le nombre total de bûches actives dans la zone devrait être cappé — genre 5-6 en base, 8-10 après expansion. Ça évite que la zone se remplisse de bois mort et laisse de la place pour les plantes du joueur.
+			
+			10. Rock Garden — Grandes roches multi-cases
+			Oui, des roches peintes à la main sur 2×2 ou même 2×3 cases seraient superbes et donneraient une identité forte à la zone. Les roches sont permanentes et fixes — contrairement aux bûches qui cyclent, les pierres ne bougent pas, ce qui est thématiquement correct. Un jardin de roches japonais c'est exactement ça : des formations rocheuses imposantes autour desquelles tu aménages.
+			Ça crée aussi des contraintes de layout intéressantes. Le joueur ne peut pas planter sur les cases de roche, donc il doit optimiser l'espace autour. Une zone 9×9 avec 3-4 grandes roches (occupant 12-16 cases) laisse ~65-69 cases plantables — c'est un puzzle spatial que les autres zones n'ont pas. Les pierres chauffantes deviendraient les faces des grosses roches exposées au soleil, pas des objets séparés à placer.
+			Par contre, côté art pipeline, chaque formation rocheuse multi-cases serait un sprite unique plus grand (256×128 pour un 2×1, 256×256 pour un 2×2). C'est plus de travail que des tiles répétitives, mais puisqu'il en faudrait seulement 3-4 designs différents pour toute la zone, c'est gérable. Et le résultat visuel vaut largement l'investissement — ce serait probablement la zone la plus distinctive visuellement.
+			
+			11. Tropical — Brume contrôlable ou automatique?
+			La valve est une idée charmante mais elle pose un problème de design : pourquoi le joueur la fermerait-il? Si tous les insectes tropicaux ont besoin de brume, la valve optimale est "toujours ouvert" et le joueur n'a aucune raison de la toucher. Un levier qui n'a qu'une seule bonne position n'est pas un choix, c'est une corvée.
+			La valve devient intéressante seulement si certains insectes tropicaux préfèrent le sec. Genre 60-70% des insectes tropicaux nécessitent MistRequired, mais 2-3 espèces rares apparaissent uniquement quand la brume est désactivée (insectes de canopée sèche, certains scarabées qui fuient l'humidité). Là, le joueur a une vraie décision : brume ON pour les papillons tropicaux, brume OFF pour le rare Jewel Beetle qui ne sort que par temps sec. Toggle la valve, attendre, photographier, re-toggle.
+			Si tu ne veux pas cette complexité, laisse la brume 100% automatique et permanente. C'est l'ambiance de la serre — elle est toujours humide, point. La condition MistRequired devient simplement "être dans la zone Tropical", ce qui est juste une façon élégante de dire "insecte exclusif à cette zone." Simple, pas de mécanique supplémentaire à expliquer, la brume est purement visuelle et atmosphérique.
+			Mon vote : la valve avec le split sec/humide est plus intéressante et donne une micro-décision unique à Tropical que aucune autre zone n'a. Mais c'est du scope additionnel — si tu veux garder ça simple pour le premier pass, brume automatique + ajouter la valve plus tard si le playtest montre que Tropical manque de personnalité mécanique.
+		}
+	-
+}
 2026-02-18 2.25
 {
 	-#TODO: Sprint 4 restant -> refactor Sprinkler -> Sprint 5
@@ -124,6 +370,29 @@ TODO research on "The Game Accessibility Guidelines"
 	-Commit: 
 	{
 		docs(gdd): move settings to pause menu, add ESC cascade and expansion UX details
+	}
+	-Plan pour la suite:
+	{
+		Sprint 4 — restant (mécaniques de zone):
+			-Tuiles d'eau Pond (déjà partiellement fait — WaterTileData existe, mais manque l'animation sine-wave)
+			-Bûches/compost Deep Wood (3 stades de décomposition, attirent certains insectes)
+			-Pierres chauffantes Rock Garden (mécanique propre à la zone)
+			-Serre Tropical (brume, lampe UV)
+			-Balancement économie (25₦ départ → Meadow ~15 min → Tropical ~4h30)
+		
+		Sprint 4.6 — Sprinkler UX refactor:
+			-Hotbar inventaire (compteur ×N, achat multiples)
+			-Ghost preview pendant placement (overlay bleuté du rayon)
+			-Overlap detection (bleu foncé pour chevauchement)
+			-Retrait non-destructif (X/Delete → retour inventaire)
+		
+		Sprint 5 — Registres de contenu & Babillard:
+			-4 nouveaux patterns (Dart, Skim, Pulse, Hop)
+			-Conditions de spawn avancées
+			-Spawn weights par rareté + pity timer
+			-Popup découverte cliquable
+			-Babillard de conservation
+			-Texte journal EN + FR
 	}
 }
 2026-02-17 1.75

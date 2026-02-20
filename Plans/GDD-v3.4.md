@@ -252,11 +252,11 @@ Les réglages ne font PAS partie du journal. Recherche (20+ jeux avec journal/en
 
 **Coûts des graines :**
 
-| Rareté | Coût (nectar) | Rendement | ROI |
-|--------|---------------|-----------|-----|
-| Common | 5–10 | 3 par récolte | 2× en 2 récoltes |
-| Uncommon | 15–30 | 5 par récolte | 2× en 3 récoltes |
-| Rare | 40–75 | 8–10 par récolte | 2× en 4 récoltes |
+| Rareté | Coût (nectar) | Rendement | Break-even | ROI 2× |
+|--------|---------------|-----------|-----------|--------|
+| Common | 5–10 | 2–3 par récolte | 2–3 récoltes | ~4 récoltes |
+| Uncommon | 10–15 | 4–5 par récolte | 2–3 récoltes | ~5 récoltes |
+| Rare | 30–40 | 8–10 par récolte | 4 récoltes | ~8 récoltes |
 
 **Bonus de découverte — unique source de nectar hors récolte :**
 - **Nouvelle espèce documentée : +10 nectar** (fixe, peu importe la qualité d'étoiles). Montant significatif en début de zone (presque 2 graines communes), mais négligeable une fois l'économie établie. 72 espèces × 10 = 720 nectar total sur une partie complète — un complément, pas le moteur économique.
@@ -564,14 +564,15 @@ Raisons :
 - **Palette :** Verts sombres, bruns, éclats de lime/rose — lumière tamisée
 
 ### Zone 4 — Deep Wood 🪵
-*Bûches moussues, compost, champignons, décomposition*
+*Bûches moussues, champignons, fougères, décomposition*
 
-**9 espèces** (2 Common, 2 Uncommon, 2 Rare, 2 Very Rare, 1 Legendary) | 2–3 plantes + bûches/compost
+**9 espèces** (2 Common, 2 Uncommon, 2 Rare, 2 Very Rare, 1 Legendary) | 4 plantes + bûches pré-placées
 - P. de nuit : Polyphemus Moth (Rare), Cecropia Moth (Very Rare), Death's-head Hawkmoth (Very Rare)
 - Coléoptères : Rhinoceros Beetle (Rare, nuit), Colorado Potato Beetle, Weevil/Myllocerus, Firefly (Uncommon, nuit)
 - Abeilles : Carpenter Bee (Uncommon)
 - Autres : Leaf Insect (Legendary, nuit, mimétisme)
-- **Plantes :** Champignons (décor), Mousse. **Bûches à 3 stades de décomposition** (frais → moisi → pourri) + **tas de compost** à retourner
+- **Bûches pré-placées** à 3 stades de décomposition (frais → moisi → pourri, ~180s jeu par stade). Les insectes spawnent sur les bûches selon leur stade (stage 0/1/2).
+- **Plantes :** Champignon, Mousse, Polypore, Fougère des bois — rendement faible (2₦), rôle décoratif + revenu complémentaire.
 - **Mécanique :** Les insectes sont attirés par le bois mort et la décomposition, pas les fleurs. 5 espèces nocturnes — zone idéale pour exploration de nuit.
 - **Palette :** Bruns, verts mousse, éclats bioluminescents
 
@@ -644,15 +645,15 @@ Raisons :
 | Starter | 5–6 | Lavande, Tournesol, Marguerite, Œillet d'Inde, Souci, Onagre | Apprentissage, insectes Common |
 | Meadow | 5–6 | Asclépiade, Verge d'or, Trèfle, Bleuet, Séneçon, Chardon | Combinaisons pour Uncommon |
 | Forest | 4–5 | Fougère, Muguet, Digitale, Violette, Chèvrefeuille | Plantes d'ombre, moths |
-| Deep Wood | 2–3 | Champignons, Mousse + Bûches + Compost | Insectes de décomposition |
+| Deep Wood | 4 | Champignon, Mousse, Polypore, Fougère des bois + Bûches pré-placées | Insectes de décomposition |
 | Rock Garden | 3–4 | Thym, Edelweiss, Saxifrage, Lavande de mer | Plantes résistantes |
 | Pond | 2–3 | Nénuphar, Quenouille, Iris d'eau | Support aquatique |
 | Tropical | 4–5 | Orchidée, Passiflore, Hibiscus, Lantana, Bougainvillier | Haute valeur, Rare+ |
-| **Total** | **~28–32** | | |
+| **Total** | **~33** | | |
 
 **Mécaniques d'attraction non-plantes (~40% des insectes) :**
 - Tuiles d'eau (14% des insectes — libellules, gerris)
-- Bûches/compost en décomposition (11% — coléoptères de bois mort, Leaf Insect)
+- Bûches en décomposition (11% — coléoptères de bois mort, Leaf Insect)
 - Pierres chauffées par le soleil (5% — scarabée, grillon)
 - Lampe UV / drap blanc (7% — papillons de nuit rares dans toutes les zones la nuit)
 - Prédateurs suivant les proies (3% — Mantis apparaît quand 5+ insectes actifs)
@@ -807,18 +808,18 @@ project-flutter/
 - [x] **+10 nectar par nouvelle espèce documentée** (unique par espèce, peu importe étoiles)
 - [x] UI Shop de graines (acheter graines avec nectar)
 - [x] Système de déblocage de zones temporaire (coût nectar + seuil journal simple — sera remplacé par babillard au Sprint 5)
-- [ ] **Expansion de zones** (§4.13) : achat de sections de terrain, grille dynamique, cap insectes scaling
+- [x] **Expansion de zones** (§4.13) : achat de sections de terrain, grille dynamique, cap insectes scaling
 - [x] **Construire les 7 zones avec grilles configurables**
 - [x] **Navigation par onglets entre zones (signets horizontaux, Tropical caché <54 journal)**
 - [x] **ZoneManager autoload avec transitions de visibilité**
-- [ ] Tuiles d'eau pour Pond (CellType.Water, animation sine-wave)
-- [ ] Bûches et compost pour Deep Wood (3 stades de décomposition)
-- [ ] Pierres chauffantes pour Rock Garden
-- [ ] Mécanique de serre pour Tropical (brume, lampe UV)
-- [ ] Balancement économie : 25 nectar départ → Meadow ~15 min → Tropical ~4h30
+- [x] Tuiles d'eau pour Pond (CellType.Water, animation sine-wave)
+- [x] Bûches pour Deep Wood (3 stades de décomposition, spawn sur bûches)
+- [x] Pierres chauffantes pour Rock Garden (chaleur dynamique jour/nuit)
+- [x] Mécanique de serre pour Tropical (brume visuelle, lampe UV, spawn conditions)
+- [x] Balancement économie : audit valeurs, simulation OK, plantes Deep Wood nettoyées
 - [x] Hotbar de graines en bas d'écran + curseur fantôme
 - [x] **Contrôles complets** (§4.12) : left-click contextuel, right-click deselect, 1-9 hotbar, Q/E zones, ESC cascading, X pour retrait de plante
-- [ ] **Key rebinding** : UI dans réglages journal, InputMap + user://settings.cfg, reset par défaut
+- [x] **Key rebinding** : UI dans pause menu, InputMap + user://settings.cfg, reset par défaut
 - [x] 9+ nouveaux événements EventBus (ZoneChanged, NectarChanged, SeedPurchased, etc.)
 - [x] Sprinklers 3 niveaux (passifs, rayon 3×3 / 5×5 / 7×7) — voir §4.8 pour UX complète (inventaire hotbar, ghost preview, retrait non-destructif)
 - [x] Lanterne de jardin (achat unique, toggle on/off, affecte qualité photo nuit)

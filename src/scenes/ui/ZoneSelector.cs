@@ -76,7 +76,8 @@ public partial class ZoneSelector : Control
 		var button = new Button
 		{
 			Text = label,
-			CustomMinimumSize = new Vector2(110, 36),
+			CustomMinimumSize = new Vector2(zone == ZoneType.Tropical ? 160 : 110, 36),
+			ClipText = false,
 			FocusMode = FocusModeEnum.None,
 		};
 		button.AddThemeFontSizeOverride("font_size", 14);

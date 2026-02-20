@@ -8,6 +8,9 @@ public partial class GardenGrid : Node2D
 	[Export] public Vector2I GridSize { get; set; } = new(4, 4);
 	[Export] public int TileSize { get; set; } = 128;
 	[Export] public int[] WaterTileData { get; set; } = System.Array.Empty<int>();
+	[Export] public int[] LogTileData { get; set; } = System.Array.Empty<int>();
+	[Export] public int[] StoneTileData { get; set; } = System.Array.Empty<int>();
+	[Export] public int[] UVLampTileData { get; set; } = System.Array.Empty<int>();
 	[Export] public ZoneType ZoneType { get; set; }
 
 	private TileMapLayer _groundLayer;
@@ -15,6 +18,8 @@ public partial class GardenGrid : Node2D
 	private Vector2I? _hoveredCell;
 	private string _selectedPlantId;
 	private bool _expansionConfirmPending;
+	private bool _hasWaterTiles;
+	private float _waterAnimationTime;
 
 	private static readonly Color SoilTilledColor = new(0.45f, 0.28f, 0.12f);
 	private static readonly Color SoilWateredColor = new(0.35f, 0.22f, 0.10f);
@@ -33,6 +38,22 @@ public partial class GardenGrid : Node2D
 	private static readonly Color SproutColor = new(0.4f, 0.7f, 0.3f);
 	private static readonly Color GrowingColor = new(0.2f, 0.65f, 0.15f);
 	private static readonly Color WaterDropColor = new(0.3f, 0.6f, 0.9f);
+
+	// UV Lamp + Mist colors (Tropical)
+	private static readonly Color UVLampGlowColor = new(0.6f, 0.3f, 0.9f);
+	private static readonly Color UVLampBodyColor = new(0.4f, 0.4f, 0.5f);
+	private static readonly Color MistColor = new(0.8f, 0.9f, 0.85f, 0.15f);
+
+	// Heated stone colors (Rock Garden)
+	private static readonly Color StoneCoolColor = new(0.55f, 0.55f, 0.53f);
+	private static readonly Color StoneWarmColor = new(0.75f, 0.5f, 0.25f);
+	private static readonly Color StoneLichenColor = new(0.6f, 0.65f, 0.3f);
+
+	// Log decomposition colors (Deep Wood)
+	private static readonly Color LogFreshColor = new(0.55f, 0.35f, 0.15f);
+	private static readonly Color LogMoldyColor = new(0.35f, 0.38f, 0.18f);
+	private static readonly Color LogRottenColor = new(0.22f, 0.20f, 0.12f);
+	private static readonly Color LogMossAccent = new(0.3f, 0.5f, 0.2f);
 
 	// Expansion preview colors
 	private static readonly Color ExpansionPreviewColor = new(0.25f, 0.35f, 0.15f, 0.5f);
@@ -69,6 +90,38 @@ public partial class GardenGrid : Node2D
 			{
 				waterCell.IsWater = true;
 				waterCell.CurrentState = CellState.State.Empty;
+			}
+		}
+		_hasWaterTiles = WaterTileData.Length > 0;
+
+		for (int i = 0; i + 1 < LogTileData.Length; i += 2)
+		{
+			var logPos = new Vector2I(LogTileData[i], LogTileData[i + 1]);
+			if (_cells.TryGetValue(logPos, out var logCell))
+			{
+				logCell.HasLog = true;
+				logCell.DecompositionStage = 0;
+				logCell.CurrentState = CellState.State.Empty;
+			}
+		}
+
+		for (int i = 0; i + 1 < StoneTileData.Length; i += 2)
+		{
+			var stonePos = new Vector2I(StoneTileData[i], StoneTileData[i + 1]);
+			if (_cells.TryGetValue(stonePos, out var stoneCell))
+			{
+				stoneCell.HasHeatedStone = true;
+				stoneCell.CurrentState = CellState.State.Empty;
+			}
+		}
+
+		for (int i = 0; i + 1 < UVLampTileData.Length; i += 2)
+		{
+			var uvPos = new Vector2I(UVLampTileData[i], UVLampTileData[i + 1]);
+			if (_cells.TryGetValue(uvPos, out var uvCell))
+			{
+				uvCell.HasUVLamp = true;
+				uvCell.CurrentState = CellState.State.Empty;
 			}
 		}
 
@@ -157,6 +210,19 @@ public partial class GardenGrid : Node2D
 			QueueRedraw();
 		}
 
+		// Animate water tiles
+		if (_hasWaterTiles)
+		{
+			_waterAnimationTime += (float)delta;
+			QueueRedraw();
+		}
+
+		// Advance log decomposition timers
+		AdvanceDecomposition((float)delta);
+
+		// Update heated stone temperatures
+		UpdateStoneHeat((float)delta);
+
 		// Redraw for expansion preview hover effect
 		if (MouseToExpansionPreview() != null)
 			QueueRedraw();
@@ -193,6 +259,44 @@ public partial class GardenGrid : Node2D
 		return tier switch { 1 => 1, 2 => 2, 3 => 3, _ => 1 };
 	}
 
+	private void AdvanceDecomposition(float delta)
+	{
+		// Decomposition time per stage: ~3 in-game minutes (180 game-seconds)
+		const float decompositionDuration = 180f;
+		float gameDelta = delta * TimeManager.Instance.SpeedMultiplier;
+		bool changed = false;
+		foreach (var (_, cell) in _cells)
+		{
+			if (!cell.HasLog || cell.DecompositionStage >= 2) continue;
+			cell.DecompositionTimer += gameDelta;
+			if (cell.DecompositionTimer >= decompositionDuration)
+			{
+				cell.DecompositionTimer -= decompositionDuration;
+				cell.DecompositionStage++;
+				changed = true;
+				GD.Print($"Log decomposed to stage {cell.DecompositionStage}");
+			}
+		}
+		if (changed) QueueRedraw();
+	}
+
+	private void UpdateStoneHeat(float delta)
+	{
+		float gameDelta = delta * TimeManager.Instance.SpeedMultiplier;
+		// Heat rate: full heat in ~120 game-seconds, cool in ~180 game-seconds
+		float heatRate = gameDelta / 120f;
+		float coolRate = gameDelta / 180f;
+		bool isDaytime = TimeManager.Instance.IsDaytime();
+		foreach (var (_, cell) in _cells)
+		{
+			if (!cell.HasHeatedStone) continue;
+			if (isDaytime)
+				cell.StoneHeat = Mathf.Min(1.0f, cell.StoneHeat + heatRate);
+			else
+				cell.StoneHeat = Mathf.Max(0.0f, cell.StoneHeat - coolRate);
+		}
+	}
+
 	public override void _Draw()
 	{
 		// Draw grass background — large enough to fill screen at any zoom/resolution
@@ -215,11 +319,32 @@ public partial class GardenGrid : Node2D
 				if (cell.IsWater)
 				{
 					DrawRect(rect, WaterTileColor);
-					// Simple wave accent in center
 					float cx = x * TileSize + TileSize / 2.0f;
 					float cy = y * TileSize + TileSize / 2.0f;
-					DrawLine(new Vector2(cx - 16, cy), new Vector2(cx + 16, cy), WaterTileDeepColor, 2);
-					DrawLine(new Vector2(cx - 10, cy + 10), new Vector2(cx + 10, cy + 10), WaterTileDeepColor, 1.5f);
+					// Animated sine-wave lines (phase offset per tile for variety)
+					float phase = x * 1.2f + y * 0.8f;
+					float wave1 = Mathf.Sin(_waterAnimationTime * 2.0f + phase) * 4f;
+					float wave2 = Mathf.Sin(_waterAnimationTime * 1.5f + phase + 2f) * 3f;
+					DrawLine(new Vector2(cx - 20, cy - 4 + wave1), new Vector2(cx + 20, cy - 4 + wave1), WaterTileDeepColor, 2);
+					DrawLine(new Vector2(cx - 14, cy + 8 + wave2), new Vector2(cx + 14, cy + 8 + wave2), WaterTileDeepColor, 1.5f);
+					// Ripple circles
+					float rippleRadius = 3f + Mathf.Sin(_waterAnimationTime * 3f + phase * 0.5f) * 2f;
+					DrawArc(new Vector2(cx + 10, cy - 10), rippleRadius, 0, Mathf.Tau, 12, WaterTileDeepColor, 1f);
+				}
+				else if (cell.HasLog)
+				{
+					DrawRect(rect, SoilTilledColor.Darkened(0.2f));
+					DrawLogPlaceholder(x, y, cell);
+				}
+				else if (cell.HasHeatedStone)
+				{
+					DrawRect(rect, SoilTilledColor);
+					DrawStonePlaceholder(x, y, cell);
+				}
+				else if (cell.HasUVLamp)
+				{
+					DrawRect(rect, SoilTilledColor);
+					DrawUVLampPlaceholder(x, y);
 				}
 				else
 				{
@@ -280,6 +405,10 @@ public partial class GardenGrid : Node2D
 				}
 			}
 		}
+
+		// Draw tropical mist overlay
+		if (ZoneType == ZoneType.Tropical)
+			DrawTropicalMist();
 
 		// Draw expansion preview
 		DrawExpansionPreview();
@@ -425,6 +554,109 @@ public partial class GardenGrid : Node2D
 		if (cell.IsWatered && cell.CurrentState is CellState.State.Planted or CellState.State.Growing)
 		{
 			DrawCircle(new Vector2(x * TileSize + 10, y * TileSize + 10), 4, WaterDropColor);
+		}
+	}
+
+	private void DrawLogPlaceholder(int x, int y, CellState cell)
+	{
+		float cx = x * TileSize + TileSize / 2.0f;
+		float cy = y * TileSize + TileSize / 2.0f;
+
+		Color logColor = cell.DecompositionStage switch
+		{
+			0 => LogFreshColor,
+			1 => LogMoldyColor,
+			_ => LogRottenColor,
+		};
+
+		// Log body: horizontal rounded rectangle
+		DrawRect(new Rect2(cx - 28, cy - 10, 56, 20), logColor);
+		// Wood rings (ends)
+		DrawCircle(new Vector2(cx - 26, cy), 10, logColor.Darkened(0.15f));
+		DrawCircle(new Vector2(cx + 26, cy), 10, logColor.Darkened(0.15f));
+		// Rings inside
+		DrawArc(new Vector2(cx - 26, cy), 5, 0, Mathf.Tau, 8, logColor.Darkened(0.3f), 1f);
+		DrawArc(new Vector2(cx + 26, cy), 5, 0, Mathf.Tau, 8, logColor.Darkened(0.3f), 1f);
+
+		// Moss accents for moldy and rotten stages
+		if (cell.DecompositionStage >= 1)
+		{
+			DrawCircle(new Vector2(cx - 12, cy - 8), 4, LogMossAccent);
+			DrawCircle(new Vector2(cx + 8, cy + 6), 3, LogMossAccent);
+		}
+		if (cell.DecompositionStage >= 2)
+		{
+			DrawCircle(new Vector2(cx + 18, cy - 6), 3, LogMossAccent.Darkened(0.2f));
+			DrawCircle(new Vector2(cx - 5, cy + 8), 5, LogMossAccent);
+		}
+
+		// Stage indicator dots at bottom
+		for (int i = 0; i <= cell.DecompositionStage; i++)
+		{
+			float dotX = cx - (cell.DecompositionStage) * 5 + i * 10;
+			DrawCircle(new Vector2(dotX, cy + 22), 2.5f, Colors.White);
+		}
+	}
+
+	private void DrawUVLampPlaceholder(int x, int y)
+	{
+		float cx = x * TileSize + TileSize / 2.0f;
+		float cy = y * TileSize + TileSize / 2.0f;
+
+		// Lamp body: metallic cylinder
+		DrawRect(new Rect2(cx - 8, cy - 16, 16, 24), UVLampBodyColor);
+		// UV glow: purple circle on top
+		DrawCircle(new Vector2(cx, cy - 18), 12, UVLampGlowColor);
+		DrawCircle(new Vector2(cx, cy - 18), 7, UVLampGlowColor.Lightened(0.3f));
+		// Glow aura (pulsing)
+		float pulse = 0.3f + Mathf.Sin(_waterAnimationTime * 2.5f) * 0.15f;
+		DrawCircle(new Vector2(cx, cy - 18), 20, new Color(UVLampGlowColor.R, UVLampGlowColor.G, UVLampGlowColor.B, pulse));
+		// Base
+		DrawRect(new Rect2(cx - 10, cy + 6, 20, 6), UVLampBodyColor.Darkened(0.2f));
+	}
+
+	private void DrawTropicalMist()
+	{
+		// Animated mist: semi-transparent patches drifting across the zone
+		for (int i = 0; i < 5; i++)
+		{
+			float phaseX = i * 1.7f;
+			float phaseY = i * 2.3f;
+			float driftX = Mathf.Sin(_waterAnimationTime * 0.3f + phaseX) * GridSize.X * TileSize * 0.3f;
+			float driftY = Mathf.Sin(_waterAnimationTime * 0.2f + phaseY) * GridSize.Y * TileSize * 0.2f;
+			float centerX = GridSize.X * TileSize * (0.2f + i * 0.15f) + driftX;
+			float centerY = GridSize.Y * TileSize * (0.15f + i * 0.18f) + driftY;
+			float alpha = 0.08f + Mathf.Sin(_waterAnimationTime * 0.5f + i) * 0.04f;
+			var mistPatchColor = new Color(MistColor.R, MistColor.G, MistColor.B, alpha);
+			DrawCircle(new Vector2(centerX, centerY), 80 + i * 20, mistPatchColor);
+		}
+	}
+
+	private void DrawStonePlaceholder(int x, int y, CellState cell)
+	{
+		float cx = x * TileSize + TileSize / 2.0f;
+		float cy = y * TileSize + TileSize / 2.0f;
+
+		// Lerp color from cool grey to warm orange based on heat
+		Color stoneColor = StoneCoolColor.Lerp(StoneWarmColor, cell.StoneHeat);
+
+		// Main stone: large rounded shape (two overlapping circles)
+		DrawCircle(new Vector2(cx - 6, cy + 2), 22, stoneColor);
+		DrawCircle(new Vector2(cx + 8, cy - 4), 18, stoneColor.Lightened(0.05f));
+		// Stone edge highlight
+		DrawArc(new Vector2(cx, cy), 20, 0.3f, 2.5f, 10, stoneColor.Darkened(0.2f), 2f);
+
+		// Lichen patches
+		DrawCircle(new Vector2(cx - 14, cy - 12), 4, StoneLichenColor);
+		DrawCircle(new Vector2(cx + 12, cy + 8), 3, StoneLichenColor);
+
+		// Heat shimmer indicator when hot
+		if (cell.StoneHeat > 0.5f)
+		{
+			float shimmerAlpha = (cell.StoneHeat - 0.5f) * 0.6f;
+			var shimmerColor = new Color(1f, 0.7f, 0.3f, shimmerAlpha);
+			DrawCircle(new Vector2(cx, cy - 20), 3, shimmerColor);
+			DrawCircle(new Vector2(cx + 10, cy - 18), 2, shimmerColor);
 		}
 	}
 

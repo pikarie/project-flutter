@@ -113,26 +113,28 @@ public static class PlantRegistry
 			new Color(1.0f, 0.9f, 0.6f)),
 
 		// ── Deep Wood Zone ──────────────────────────────────────────
-
-		CreatePlant("dead_log", "Dead Log", ZoneType.DeepWood, "common",
-			0, 0, 1, 2, false,
-			new[] { "polyphemus_moth", "cecropia_moth", "deaths_head_hawkmoth", "carpenter_bee" },
-			new Color(0.45f, 0.3f, 0.15f)),
-
-		CreatePlant("compost_pile", "Compost Pile", ZoneType.DeepWood, "common",
-			30, 0, 1, 2, false,
-			new[] { "rhinoceros_beetle", "colorado_potato_beetle" },
-			new Color(0.35f, 0.25f, 0.1f)),
+		// Note: insects spawn on log tiles via decomposition system, not plants.
+		// These plants provide supplemental nectar income and decoration.
 
 		CreatePlant("mushroom_cluster", "Mushroom Cluster", ZoneType.DeepWood, "common",
-			5, 1, 1, 1, true,
-			new[] { "weevil" },
+			5, 2, 1, 1, true,
+			new[] { "weevil", "firefly" },
 			new Color(0.8f, 0.7f, 0.5f)),
 
 		CreatePlant("moss_patch", "Moss Patch", ZoneType.DeepWood, "common",
-			5, 1, 1, 1, false,
-			new[] { "firefly", "leaf_insect" },
+			5, 2, 1, 1, false,
+			new[] { "carpenter_bee", "leaf_insect" },
 			new Color(0.2f, 0.55f, 0.2f)),
+
+		CreatePlant("bracket_fungus", "Bracket Fungus", ZoneType.DeepWood, "common",
+			8, 2, 2, 2, false,
+			new[] { "colorado_potato_beetle", "rhinoceros_beetle" },
+			new Color(0.6f, 0.4f, 0.25f)),
+
+		CreatePlant("woodland_fern", "Woodland Fern", ZoneType.DeepWood, "common",
+			5, 2, 1, 1, false,
+			new[] { "polyphemus_moth", "cecropia_moth" },
+			new Color(0.25f, 0.6f, 0.25f)),
 
 		// ── Rock Garden Zone ────────────────────────────────────────
 

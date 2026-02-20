@@ -43,23 +43,40 @@ public partial class SpawnSystem : Node
 		int insectCap = ZoneManager.Instance.GetInsectCap(GameManager.Instance.CurrentZone);
 		if (_insectContainer.GetChildCount() >= insectCap) return;
 
+		// 40% quiet ticks for anticipation
+		if (_rng.Randf() > 0.6f) return;
+
+		var allCells = _gardenGrid.GetCells();
+
 		// Find blooming cells with available insect slots
-		var bloomingCells = _gardenGrid.GetCells()
+		var bloomingCells = allCells
 			.Where(kv => kv.Value.CurrentState == CellState.State.Blooming
 						 && kv.Value.HasAvailableSlot())
 			.ToList();
 
-		if (bloomingCells.Count == 0) return;
+		// Find water tiles with available insect slots (for aquatic insects)
+		var waterCells = allCells
+			.Where(kv => kv.Value.IsWater && kv.Value.HasAvailableSlot())
+			.ToList();
 
-		// 40% quiet ticks for anticipation
-		if (_rng.Randf() > 0.6f) return;
+		// Find log tiles with available insect slots (for decomposition insects)
+		var logCells = allCells
+			.Where(kv => kv.Value.HasLog && kv.Value.HasAvailableSlot())
+			.ToList();
 
-		// Pick a random blooming cell with a free slot
-		var target = bloomingCells[_rng.RandiRange(0, bloomingCells.Count - 1)];
-		Vector2 plantWorldPos = _gardenGrid.GlobalPosition + _gardenGrid.GridToWorld(target.Key);
+		// Find heated stone tiles with available slots (for heat-loving insects)
+		var stoneCells = allCells
+			.Where(kv => kv.Value.HasHeatedStone && kv.Value.HasAvailableSlot())
+			.ToList();
+
+		// Check if any UV lamp exists in zone (for tropical moths)
+		bool hasUVLamp = allCells.Any(kv => kv.Value.HasUVLamp);
+
+		if (bloomingCells.Count == 0 && waterCells.Count == 0
+			&& logCells.Count == 0 && stoneCells.Count == 0) return;
 
 		// Build set of all blooming plant types for attraction matching
-		var bloomingPlantTypes = _gardenGrid.GetCells()
+		var bloomingPlantTypes = allCells
 			.Where(kv => kv.Value.CurrentState == CellState.State.Blooming)
 			.Select(kv => kv.Value.PlantType)
 			.Where(pt => !string.IsNullOrEmpty(pt))
@@ -67,18 +84,62 @@ public partial class SpawnSystem : Node
 
 		// Filter eligible insects
 		int waterTileCount = _gardenGrid.CountWaterTiles();
+		int maxDecompositionStage = logCells.Count > 0
+			? logCells.Max(kv => kv.Value.DecompositionStage) : -1;
+		float maxStoneHeat = stoneCells.Count > 0
+			? stoneCells.Max(kv => kv.Value.StoneHeat) : 0f;
 		var eligible = InsectRegistry.AllSpecies
 			.Where(i => MatchesTimeOfDay(i.TimeOfDay))
 			.Where(i => i.Zone == GameManager.Instance.CurrentZone || i.Zone == ZoneType.Starter)
 			.Where(i => MeetsPlantRequirements(i, bloomingPlantTypes))
 			.Where(i => MeetsWaterRequirements(i, waterTileCount))
+			.Where(i => MeetsDecompositionRequirements(i, maxDecompositionStage))
+			.Where(i => MeetsHeatedStoneRequirements(i, maxStoneHeat))
+			.Where(i => MeetsUVLampRequirements(i, hasUVLamp))
 			.ToList();
 
 		if (eligible.Count == 0) return;
 
 		// Weighted random selection
 		var selected = WeightedRandomSelect(eligible);
-		SpawnInsect(selected, plantWorldPos, target.Key, target.Value);
+
+		// Choose spawn target based on insect type
+		bool isAquatic = selected.RequiredWaterTiles > 0
+			&& (selected.RequiredPlants == null || selected.RequiredPlants.Length == 0);
+		bool isDecomposition = selected.RequiredDecompositionStage >= 0;
+		bool isHeatLover = selected.RequiresHeatedStone;
+
+		KeyValuePair<Vector2I, CellState> target;
+		if (isHeatLover && stoneCells.Count > 0)
+		{
+			var warmStones = stoneCells.Where(kv => kv.Value.StoneHeat >= 0.5f).ToList();
+			if (warmStones.Count == 0) return;
+			target = warmStones[_rng.RandiRange(0, warmStones.Count - 1)];
+		}
+		else if (isDecomposition && logCells.Count > 0)
+		{
+			// Pick a log with sufficient decomposition stage
+			var validLogs = logCells
+				.Where(kv => kv.Value.DecompositionStage >= selected.RequiredDecompositionStage)
+				.ToList();
+			if (validLogs.Count == 0) return;
+			target = validLogs[_rng.RandiRange(0, validLogs.Count - 1)];
+		}
+		else if (isAquatic && waterCells.Count > 0)
+		{
+			target = waterCells[_rng.RandiRange(0, waterCells.Count - 1)];
+		}
+		else if (bloomingCells.Count > 0)
+		{
+			target = bloomingCells[_rng.RandiRange(0, bloomingCells.Count - 1)];
+		}
+		else
+		{
+			return;
+		}
+
+		Vector2 spawnWorldPos = _gardenGrid.GlobalPosition + _gardenGrid.GridToWorld(target.Key);
+		SpawnInsect(selected, spawnWorldPos, target.Key, target.Value);
 	}
 
 	private void SpawnInsect(InsectData data, Vector2 plantWorldPos, Vector2I cellPos, CellState cell)
@@ -120,6 +181,24 @@ public partial class SpawnSystem : Node
 	private static bool MeetsWaterRequirements(InsectData insect, int waterTileCount)
 	{
 		return insect.RequiredWaterTiles <= 0 || waterTileCount >= insect.RequiredWaterTiles;
+	}
+
+	private static bool MeetsDecompositionRequirements(InsectData insect, int maxDecompositionStage)
+	{
+		if (insect.RequiredDecompositionStage < 0) return true;
+		return maxDecompositionStage >= insect.RequiredDecompositionStage;
+	}
+
+	private static bool MeetsHeatedStoneRequirements(InsectData insect, float maxStoneHeat)
+	{
+		if (!insect.RequiresHeatedStone) return true;
+		return maxStoneHeat >= 0.5f;
+	}
+
+	private static bool MeetsUVLampRequirements(InsectData insect, bool hasUVLamp)
+	{
+		if (!insect.RequiresUVLamp) return true;
+		return hasUVLamp;
 	}
 
 	private InsectData WeightedRandomSelect(List<InsectData> candidates)
